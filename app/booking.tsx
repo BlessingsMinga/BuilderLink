@@ -1,0 +1,1 @@
+import { PlaceholderScreen } from '@/shared/components/placeholder-screen'; export default function Booking() { return <PlaceholderScreen title="Booking workflow" description="Service selection, scheduling, photos, and requests will be built in Milestone 6." />; }

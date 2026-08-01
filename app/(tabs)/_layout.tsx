@@ -1,0 +1,4 @@
+import { Tabs } from 'expo-router';
+import { Bell, Heart, House, Search, UserRound } from 'lucide-react-native';
+const icons = { index: House, search: Search, favorites: Heart, notifications: Bell, profile: UserRound };
+export default function TabLayout() { return <Tabs screenOptions={({ route }) => ({ headerShown: false, tabBarActiveTintColor: '#F97316', tabBarInactiveTintColor: '#94A3B8', tabBarStyle: { borderTopColor: '#E2E8F0' }, tabBarIcon: ({ color, size }) => { const Icon = icons[route.name as keyof typeof icons]; return <Icon color={color} size={size} />; } })}><Tabs.Screen name="index" options={{ title: 'Home' }} /><Tabs.Screen name="search" options={{ title: 'Search' }} /><Tabs.Screen name="favorites" options={{ title: 'Saved' }} /><Tabs.Screen name="notifications" options={{ title: 'Alerts' }} /><Tabs.Screen name="profile" options={{ title: 'Profile' }} /></Tabs>; }

@@ -1,0 +1,8 @@
+{
+  "expo": {
+    "name": "BuilderLink Malawi", "slug": "builderlink-malawi", "scheme": "builderlink",
+    "version": "0.1.0", "orientation": "portrait", "userInterfaceStyle": "light",
+    "plugins": ["expo-router"], "experiments": { "typedRoutes": true },
+    "android": { "package": "mw.builderlink.app" }, "ios": { "bundleIdentifier": "mw.builderlink.app" }
+  }
+}

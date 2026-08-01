@@ -1,0 +1,1 @@
+import { PlaceholderScreen } from '@/shared/components/placeholder-screen'; export default function Favorites() { return <PlaceholderScreen title="Saved professionals" description="Builders you save will appear here, ready whenever your project is." />; }
