@@ -1,0 +1,6 @@
+import { z } from 'zod';
+const malawiPhone = /^(\+265|0)(88|99|98|21|31|11|1)\d{7}$/;
+export const signInSchema = z.object({ identifier: z.string().min(1, 'Enter your email or phone number'), password: z.string().min(8, 'Password must be at least 8 characters') });
+export const registrationSchema = z.object({ fullName: z.string().min(2, 'Enter your full name'), phone: z.string().regex(malawiPhone, 'Use a valid Malawi number, e.g. +265 991 234 567'), email: z.string().email('Enter a valid email address'), password: z.string().min(8, 'Use at least 8 characters'), businessName: z.string().optional(), trade: z.string().optional() }).superRefine((value, ctx) => { if (value.businessName !== undefined && value.businessName.trim().length < 2) ctx.addIssue({ code: 'custom', message: 'Enter your business or professional name', path: ['businessName'] }); if (value.trade !== undefined && value.trade.trim().length < 2) ctx.addIssue({ code: 'custom', message: 'Enter your primary trade', path: ['trade'] }); });
+export const forgotPasswordSchema = z.object({ email: z.string().email('Enter the email address linked to your account') });
+export type SignInInput = z.infer<typeof signInSchema>; export type RegistrationInput = z.infer<typeof registrationSchema>; export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
