@@ -1,0 +1,871 @@
+[debug] [2026-08-03T11:59:51.169Z] ----------------------------------------------------------------------
+[debug] [2026-08-03T11:59:51.176Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MINGA-HP\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\bin\firebase.js use
+[debug] [2026-08-03T11:59:51.177Z] CLI Version:   15.25.1
+[debug] [2026-08-03T11:59:51.177Z] Platform:      win32
+[debug] [2026-08-03T11:59:51.178Z] Node Version:  v24.16.0
+[debug] [2026-08-03T11:59:51.178Z] Detected Agent: unknown
+[debug] [2026-08-03T11:59:51.178Z] Time:          Mon Aug 03 2026 13:59:51 GMT+0200 (Central Africa Time)
+[debug] [2026-08-03T11:59:51.179Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-03T11:59:51.189Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-03T11:59:51.190Z] > authorizing via signed-in user (blessingsminga11@gmail.com)
+[error] 
+[error] Error: firebase use must be run from a Firebase project directory.
+
+Run firebase init to start a project directory in the current folder.
+[debug] [2026-08-03T12:00:07.565Z] ----------------------------------------------------------------------
+[debug] [2026-08-03T12:00:07.569Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MINGA-HP\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\bin\firebase.js use 505701030512
+[debug] [2026-08-03T12:00:07.570Z] CLI Version:   15.25.1
+[debug] [2026-08-03T12:00:07.570Z] Platform:      win32
+[debug] [2026-08-03T12:00:07.570Z] Node Version:  v24.16.0
+[debug] [2026-08-03T12:00:07.570Z] Detected Agent: unknown
+[debug] [2026-08-03T12:00:07.571Z] Time:          Mon Aug 03 2026 14:00:07 GMT+0200 (Central Africa Time)
+[debug] [2026-08-03T12:00:07.571Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-03T12:00:07.581Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-03T12:00:07.582Z] > authorizing via signed-in user (blessingsminga11@gmail.com)
+[error] 
+[error] Error: firebase use must be run from a Firebase project directory.
+
+Run firebase init to start a project directory in the current folder.
+[debug] [2026-08-03T12:00:28.420Z] ----------------------------------------------------------------------
+[debug] [2026-08-03T12:00:28.424Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MINGA-HP\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\bin\firebase.js projects:list
+[debug] [2026-08-03T12:00:28.424Z] CLI Version:   15.25.1
+[debug] [2026-08-03T12:00:28.425Z] Platform:      win32
+[debug] [2026-08-03T12:00:28.425Z] Node Version:  v24.16.0
+[debug] [2026-08-03T12:00:28.425Z] Detected Agent: unknown
+[debug] [2026-08-03T12:00:28.425Z] Time:          Mon Aug 03 2026 14:00:28 GMT+0200 (Central Africa Time)
+[debug] [2026-08-03T12:00:28.426Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-03T12:00:28.435Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-03T12:00:28.436Z] > authorizing via signed-in user (blessingsminga11@gmail.com)
+[debug] [2026-08-03T12:00:28.452Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:00:28.453Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:00:28.454Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects pageSize=1000
+[debug] [2026-08-03T12:00:29.618Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects 200
+[debug] [2026-08-03T12:00:29.618Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects [omitted]
+[info] ┌──────────────────────┬─────────────────────┬────────────────┬──────────────────────┐
+│ Project Display Name │ Project ID          │ Project Number │ Resource Location ID │
+├──────────────────────┼─────────────────────┼────────────────┼──────────────────────┤
+│ builderLink          │ builderlink-cd7d0   │ 505701030512   │ [Not specified]      │
+├──────────────────────┼─────────────────────┼────────────────┼──────────────────────┤
+│ MediAlert            │ medialert-e0d8e     │ 795527232372   │ [Not specified]      │
+├──────────────────────┼─────────────────────┼────────────────┼──────────────────────┤
+│ MediAlert            │ medialert-fcc1b     │ 750468628279   │ [Not specified]      │
+├──────────────────────┼─────────────────────┼────────────────┼──────────────────────┤
+│ netflix-clone        │ netflix-clone-8f7b8 │ 404287187327   │ [Not specified]      │
+└──────────────────────┴─────────────────────┴────────────────┴──────────────────────┘
+[info] 
+[info] 4 project(s) total.
+[debug] [2026-08-03T12:01:02.452Z] ----------------------------------------------------------------------
+[debug] [2026-08-03T12:01:02.456Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MINGA-HP\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\bin\firebase.js use
+[debug] [2026-08-03T12:01:02.457Z] CLI Version:   15.25.1
+[debug] [2026-08-03T12:01:02.457Z] Platform:      win32
+[debug] [2026-08-03T12:01:02.457Z] Node Version:  v24.16.0
+[debug] [2026-08-03T12:01:02.458Z] Detected Agent: unknown
+[debug] [2026-08-03T12:01:02.458Z] Time:          Mon Aug 03 2026 14:01:02 GMT+0200 (Central Africa Time)
+[debug] [2026-08-03T12:01:02.458Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-03T12:01:02.469Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-03T12:01:02.469Z] > authorizing via signed-in user (blessingsminga11@gmail.com)
+[error] 
+[error] Error: firebase use must be run from a Firebase project directory.
+
+Run firebase init to start a project directory in the current folder.
+[debug] [2026-08-03T12:01:57.624Z] ----------------------------------------------------------------------
+[debug] [2026-08-03T12:01:57.629Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MINGA-HP\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\bin\firebase.js use
+[debug] [2026-08-03T12:01:57.629Z] CLI Version:   15.25.1
+[debug] [2026-08-03T12:01:57.629Z] Platform:      win32
+[debug] [2026-08-03T12:01:57.629Z] Node Version:  v24.16.0
+[debug] [2026-08-03T12:01:57.630Z] Detected Agent: unknown
+[debug] [2026-08-03T12:01:57.630Z] Time:          Mon Aug 03 2026 14:01:57 GMT+0200 (Central Africa Time)
+[debug] [2026-08-03T12:01:57.630Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-03T12:01:57.967Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-03T12:01:57.967Z] > authorizing via signed-in user (blessingsminga11@gmail.com)
+[info] builderlink-cd7d0
+[debug] [2026-08-03T12:02:23.134Z] ----------------------------------------------------------------------
+[debug] [2026-08-03T12:02:23.274Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MINGA-HP\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\bin\firebase.js apps:create ANDROID BuilderLink Malawi --package-name mw.builderlink.app --project builderlink-cd7d0
+[debug] [2026-08-03T12:02:23.275Z] CLI Version:   15.25.1
+[debug] [2026-08-03T12:02:23.275Z] Platform:      win32
+[debug] [2026-08-03T12:02:23.275Z] Node Version:  v24.16.0
+[debug] [2026-08-03T12:02:23.275Z] Detected Agent: unknown
+[debug] [2026-08-03T12:02:23.276Z] Time:          Mon Aug 03 2026 14:02:23 GMT+0200 (Central Africa Time)
+[debug] [2026-08-03T12:02:23.276Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-03T12:02:23.566Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-03T12:02:23.567Z] > authorizing via signed-in user (blessingsminga11@gmail.com)
+[info] Create your ANDROID app in project builderlink-cd7d0:
+[debug] [2026-08-03T12:02:23.607Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:02:23.607Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:02:23.609Z] >>> [apiv2][query] POST https://firebase.googleapis.com/v1beta1/projects/builderlink-cd7d0/androidApps [none]
+[debug] [2026-08-03T12:02:23.609Z] >>> [apiv2][body] POST https://firebase.googleapis.com/v1beta1/projects/builderlink-cd7d0/androidApps {"displayName":"BuilderLink Malawi","packageName":"mw.builderlink.app"}
+[debug] [2026-08-03T12:02:25.835Z] <<< [apiv2][status] POST https://firebase.googleapis.com/v1beta1/projects/builderlink-cd7d0/androidApps 200
+[debug] [2026-08-03T12:02:25.836Z] <<< [apiv2][body] POST https://firebase.googleapis.com/v1beta1/projects/builderlink-cd7d0/androidApps {"name":"operations/workflows/ZTc4YmY3N2UtYWZjZC00OWE1LTk5NzQtY2UyYTFjZjkxN2Qw"}
+[debug] [2026-08-03T12:02:25.840Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:02:25.841Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:02:25.842Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTc4YmY3N2UtYWZjZC00OWE1LTk5NzQtY2UyYTFjZjkxN2Qw [none]
+[debug] [2026-08-03T12:02:26.386Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTc4YmY3N2UtYWZjZC00OWE1LTk5NzQtY2UyYTFjZjkxN2Qw 200
+[debug] [2026-08-03T12:02:26.387Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTc4YmY3N2UtYWZjZC00OWE1LTk5NzQtY2UyYTFjZjkxN2Qw {"name":"operations/workflows/ZTc4YmY3N2UtYWZjZC00OWE1LTk5NzQtY2UyYTFjZjkxN2Qw"}
+[debug] [2026-08-03T12:02:26.895Z] [Create Android app Poller] Retrying task index 0
+[debug] [2026-08-03T12:02:26.896Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:02:26.897Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:02:26.897Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTc4YmY3N2UtYWZjZC00OWE1LTk5NzQtY2UyYTFjZjkxN2Qw [none]
+[debug] [2026-08-03T12:02:27.509Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTc4YmY3N2UtYWZjZC00OWE1LTk5NzQtY2UyYTFjZjkxN2Qw 200
+[debug] [2026-08-03T12:02:27.510Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTc4YmY3N2UtYWZjZC00OWE1LTk5NzQtY2UyYTFjZjkxN2Qw {"name":"operations/workflows/ZTc4YmY3N2UtYWZjZC00OWE1LTk5NzQtY2UyYTFjZjkxN2Qw"}
+[debug] [2026-08-03T12:02:28.518Z] [Create Android app Poller] Retrying task index 0
+[debug] [2026-08-03T12:02:28.520Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:02:28.520Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:02:28.521Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTc4YmY3N2UtYWZjZC00OWE1LTk5NzQtY2UyYTFjZjkxN2Qw [none]
+[debug] [2026-08-03T12:02:29.066Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTc4YmY3N2UtYWZjZC00OWE1LTk5NzQtY2UyYTFjZjkxN2Qw 200
+[debug] [2026-08-03T12:02:29.066Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTc4YmY3N2UtYWZjZC00OWE1LTk5NzQtY2UyYTFjZjkxN2Qw {"name":"operations/workflows/ZTc4YmY3N2UtYWZjZC00OWE1LTk5NzQtY2UyYTFjZjkxN2Qw"}
+[debug] [2026-08-03T12:02:31.069Z] [Create Android app Poller] Retrying task index 0
+[debug] [2026-08-03T12:02:31.071Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:02:31.071Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:02:31.072Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTc4YmY3N2UtYWZjZC00OWE1LTk5NzQtY2UyYTFjZjkxN2Qw [none]
+[debug] [2026-08-03T12:02:31.730Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTc4YmY3N2UtYWZjZC00OWE1LTk5NzQtY2UyYTFjZjkxN2Qw 200
+[debug] [2026-08-03T12:02:31.730Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTc4YmY3N2UtYWZjZC00OWE1LTk5NzQtY2UyYTFjZjkxN2Qw {"name":"operations/workflows/ZTc4YmY3N2UtYWZjZC00OWE1LTk5NzQtY2UyYTFjZjkxN2Qw","done":true,"response":{"@type":"type.googleapis.com/google.firebase.service.v1beta1.AndroidApp","name":"projects/builderlink-cd7d0/androidApps/1:505701030512:android:008d38f20b5ebc7466f2b5","appId":"1:505701030512:android:008d38f20b5ebc7466f2b5","displayName":"BuilderLink Malawi","projectId":"builderlink-cd7d0","packageName":"mw.builderlink.app","apiKeyId":"c3863c04-d9a2-47e3-ad5c-76596156a28d","state":"ACTIVE","expireTime":"1970-01-01T00:00:00Z","framework":{},"etag":"1_2c95804c-60ef-4181-b50e-4a4807123822"}}
+[info] 
+[info] 🎉🎉🎉 Your Firebase ANDROID App is ready! 🎉🎉🎉
+[info] 
+[info] App information:
+[info]   - App ID: 1:505701030512:android:008d38f20b5ebc7466f2b5
+[info]   - Display name: BuilderLink Malawi
+[info]   - Package name: mw.builderlink.app
+[info] 
+[info] You can run this command to print out your new app's Google Services config:
+[info]   firebase apps:sdkconfig ANDROID 1:505701030512:android:008d38f20b5ebc7466f2b5
+[debug] [2026-08-03T12:02:58.718Z] ----------------------------------------------------------------------
+[debug] [2026-08-03T12:02:58.722Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MINGA-HP\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\bin\firebase.js apps:sdkconfig ANDROID 1:505701030512:android:008d38f20b5ebc7466f2b5 --project builderlink-cd7d0
+[debug] [2026-08-03T12:02:58.724Z] CLI Version:   15.25.1
+[debug] [2026-08-03T12:02:58.724Z] Platform:      win32
+[debug] [2026-08-03T12:02:58.725Z] Node Version:  v24.16.0
+[debug] [2026-08-03T12:02:58.726Z] Detected Agent: unknown
+[debug] [2026-08-03T12:02:58.726Z] Time:          Mon Aug 03 2026 14:02:58 GMT+0200 (Central Africa Time)
+[debug] [2026-08-03T12:02:58.726Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-03T12:02:58.993Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-03T12:02:58.994Z] > authorizing via signed-in user (blessingsminga11@gmail.com)
+[debug] [2026-08-03T12:02:59.027Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:02:59.027Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:02:59.031Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/-/androidApps/1:505701030512:android:008d38f20b5ebc7466f2b5/config [none]
+[debug] [2026-08-03T12:03:00.789Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/-/androidApps/1:505701030512:android:008d38f20b5ebc7466f2b5/config 200
+[debug] [2026-08-03T12:03:00.790Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/-/androidApps/1:505701030512:android:008d38f20b5ebc7466f2b5/config {"configFilename":"google-services.json","configFileContents":"ewogICJwcm9qZWN0X2luZm8iOiB7CiAgICAicHJvamVjdF9udW1iZXIiOiAiNTA1NzAxMDMwNTEyIiwKICAgICJwcm9qZWN0X2lkIjogImJ1aWxkZXJsaW5rLWNkN2QwIiwKICAgICJzdG9yYWdlX2J1Y2tldCI6ICJidWlsZGVybGluay1jZDdkMC5maXJlYmFzZXN0b3JhZ2UuYXBwIgogIH0sCiAgImNsaWVudCI6IFsKICAgIHsKICAgICAgImNsaWVudF9pbmZvIjogewogICAgICAgICJtb2JpbGVzZGtfYXBwX2lkIjogIjE6NTA1NzAxMDMwNTEyOmFuZHJvaWQ6MDA4ZDM4ZjIwYjVlYmM3NDY2ZjJiNSIsCiAgICAgICAgImFuZHJvaWRfY2xpZW50X2luZm8iOiB7CiAgICAgICAgICAicGFja2FnZV9uYW1lIjogIm13LmJ1aWxkZXJsaW5rLmFwcCIKICAgICAgICB9CiAgICAgIH0sCiAgICAgICJvYXV0aF9jbGllbnQiOiBbXSwKICAgICAgImFwaV9rZXkiOiBbCiAgICAgICAgewogICAgICAgICAgImN1cnJlbnRfa2V5IjogIkFJemFTeUFjQVgtY1VQUWN6dFU4ZXpWekZSaXd6STVEZHhwSV8tWSIKICAgICAgICB9CiAgICAgIF0sCiAgICAgICJzZXJ2aWNlcyI6IHsKICAgICAgICAiYXBwaW52aXRlX3NlcnZpY2UiOiB7CiAgICAgICAgICAib3RoZXJfcGxhdGZvcm1fb2F1dGhfY2xpZW50IjogW10KICAgICAgICB9CiAgICAgIH0KICAgIH0KICBdLAogICJjb25maWd1cmF0aW9uX3ZlcnNpb24iOiAiMSIKfQ=="}
+[info] {
+  "project_info": {
+    "project_number": "505701030512",
+    "project_id": "builderlink-cd7d0",
+    "storage_bucket": "builderlink-cd7d0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:505701030512:android:008d38f20b5ebc7466f2b5",
+        "android_client_info": {
+          "package_name": "mw.builderlink.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAcAX-cUPQcztU8ezVzFRiwzI5DdxpI_-Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
+[debug] [2026-08-03T12:04:23.624Z] ----------------------------------------------------------------------
+[debug] [2026-08-03T12:04:23.630Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MINGA-HP\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\bin\firebase.js deploy --only auth
+[debug] [2026-08-03T12:04:23.630Z] CLI Version:   15.25.1
+[debug] [2026-08-03T12:04:23.630Z] Platform:      win32
+[debug] [2026-08-03T12:04:23.630Z] Node Version:  v24.16.0
+[debug] [2026-08-03T12:04:23.631Z] Detected Agent: unknown
+[debug] [2026-08-03T12:04:23.631Z] Time:          Mon Aug 03 2026 14:04:23 GMT+0200 (Central Africa Time)
+[debug] [2026-08-03T12:04:23.631Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-03T12:04:29.183Z] Object "/auth" in "firebase.json" has unknown property: {"additionalProperty":"authorizedDomains"}
+[debug] [2026-08-03T12:04:29.198Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-03T12:04:29.199Z] > authorizing via signed-in user (blessingsminga11@gmail.com)
+[debug] [2026-08-03T12:04:29.200Z] [iam] checking project builderlink-cd7d0 for permissions ["firebase.projects.get","firebase.projects.update","firebaseauth.configs.update"]
+[debug] [2026-08-03T12:04:29.264Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:29.264Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:29.267Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions [none]
+[debug] [2026-08-03T12:04:29.268Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions  x-goog-user-project=builderlink-cd7d0
+[debug] [2026-08-03T12:04:29.268Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["firebase.projects.get","firebase.projects.update","firebaseauth.configs.update"]}
+[debug] [2026-08-03T12:04:31.780Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions 200
+[debug] [2026-08-03T12:04:31.781Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["firebase.projects.get","firebase.projects.update","firebaseauth.configs.update"]}
+[info] 
+[info] === Deploying to 'builderlink-cd7d0'...
+[info] 
+[info] i  deploying auth 
+[debug] [2026-08-03T12:04:31.787Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:31.787Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:31.788Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/builderlink-cd7d0/webApps pageSize=100
+[debug] [2026-08-03T12:04:32.907Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/builderlink-cd7d0/webApps 200
+[debug] [2026-08-03T12:04:32.908Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/builderlink-cd7d0/webApps {}
+[info] No Firebase Web App found. Creating 'Default Web App' for Auth provisioning...
+[debug] [2026-08-03T12:04:32.909Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:32.909Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:32.910Z] >>> [apiv2][query] POST https://firebase.googleapis.com/v1beta1/projects/builderlink-cd7d0/webApps [none]
+[debug] [2026-08-03T12:04:32.910Z] >>> [apiv2][body] POST https://firebase.googleapis.com/v1beta1/projects/builderlink-cd7d0/webApps {"displayName":"Default Web App"}
+[debug] [2026-08-03T12:04:34.391Z] <<< [apiv2][status] POST https://firebase.googleapis.com/v1beta1/projects/builderlink-cd7d0/webApps 200
+[debug] [2026-08-03T12:04:34.391Z] <<< [apiv2][body] POST https://firebase.googleapis.com/v1beta1/projects/builderlink-cd7d0/webApps {"name":"operations/workflows/Y2FkZWRkYTUtNmFmMS00YTY4LWEzMjgtMDI2NWJhNjNlNjBj"}
+[debug] [2026-08-03T12:04:34.394Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:34.395Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:34.395Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/Y2FkZWRkYTUtNmFmMS00YTY4LWEzMjgtMDI2NWJhNjNlNjBj [none]
+[debug] [2026-08-03T12:04:34.969Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/Y2FkZWRkYTUtNmFmMS00YTY4LWEzMjgtMDI2NWJhNjNlNjBj 200
+[debug] [2026-08-03T12:04:34.970Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/Y2FkZWRkYTUtNmFmMS00YTY4LWEzMjgtMDI2NWJhNjNlNjBj {"name":"operations/workflows/Y2FkZWRkYTUtNmFmMS00YTY4LWEzMjgtMDI2NWJhNjNlNjBj"}
+[debug] [2026-08-03T12:04:35.478Z] [Create Web app Poller] Retrying task index 0
+[debug] [2026-08-03T12:04:35.479Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:35.479Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:35.480Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/Y2FkZWRkYTUtNmFmMS00YTY4LWEzMjgtMDI2NWJhNjNlNjBj [none]
+[debug] [2026-08-03T12:04:36.116Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/Y2FkZWRkYTUtNmFmMS00YTY4LWEzMjgtMDI2NWJhNjNlNjBj 200
+[debug] [2026-08-03T12:04:36.117Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/Y2FkZWRkYTUtNmFmMS00YTY4LWEzMjgtMDI2NWJhNjNlNjBj {"name":"operations/workflows/Y2FkZWRkYTUtNmFmMS00YTY4LWEzMjgtMDI2NWJhNjNlNjBj"}
+[debug] [2026-08-03T12:04:37.130Z] [Create Web app Poller] Retrying task index 0
+[debug] [2026-08-03T12:04:37.132Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:37.133Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:37.134Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/Y2FkZWRkYTUtNmFmMS00YTY4LWEzMjgtMDI2NWJhNjNlNjBj [none]
+[debug] [2026-08-03T12:04:37.779Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/Y2FkZWRkYTUtNmFmMS00YTY4LWEzMjgtMDI2NWJhNjNlNjBj 200
+[debug] [2026-08-03T12:04:37.779Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/Y2FkZWRkYTUtNmFmMS00YTY4LWEzMjgtMDI2NWJhNjNlNjBj {"name":"operations/workflows/Y2FkZWRkYTUtNmFmMS00YTY4LWEzMjgtMDI2NWJhNjNlNjBj"}
+[debug] [2026-08-03T12:04:39.780Z] [Create Web app Poller] Retrying task index 0
+[debug] [2026-08-03T12:04:39.782Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:39.782Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:39.782Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/Y2FkZWRkYTUtNmFmMS00YTY4LWEzMjgtMDI2NWJhNjNlNjBj [none]
+[debug] [2026-08-03T12:04:40.306Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/Y2FkZWRkYTUtNmFmMS00YTY4LWEzMjgtMDI2NWJhNjNlNjBj 200
+[debug] [2026-08-03T12:04:40.307Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/Y2FkZWRkYTUtNmFmMS00YTY4LWEzMjgtMDI2NWJhNjNlNjBj {"name":"operations/workflows/Y2FkZWRkYTUtNmFmMS00YTY4LWEzMjgtMDI2NWJhNjNlNjBj","done":true,"response":{"@type":"type.googleapis.com/google.firebase.service.v1beta1.WebApp","name":"projects/builderlink-cd7d0/webApps/1:505701030512:web:6e95556e761878ac66f2b5","appId":"1:505701030512:web:6e95556e761878ac66f2b5","displayName":"Default Web App","projectId":"builderlink-cd7d0","webId":"MjgxMmM3MzEtZDU3ZC00NDBjLWE2Y2MtMzU1NTIzNjhhMmJl","apiKeyId":"37930391-e8ad-42a8-a572-03e792ebc60f","state":"ACTIVE","expireTime":"1970-01-01T00:00:00Z","etag":"1_c60e0542-6f10-4bf5-98f2-9ba8d8a74a56"}}
+[info] Enabling auth providers: email/password, Google sign-in...
+[debug] [2026-08-03T12:04:40.312Z] [provision] Starting Firebase app provisioning...
+[debug] [2026-08-03T12:04:40.312Z] [provision] Request: {
+  "appNamespace": "1:505701030512:web:6e95556e761878ac66f2b5",
+  "parent": "projects/builderlink-cd7d0",
+  "firebaseAuthInput": {
+    "emailAuthProviderMode": "PROVIDER_ENABLED",
+    "googleSigninProviderMode": "PROVIDER_ENABLED",
+    "googleSigninProviderConfig": {
+      "publicDisplayName": "BuilderLink Malawi",
+      "customerSupportEmail": "blessingsminga11@gmail.com"
+    }
+  },
+  "webInput": {}
+}
+[debug] [2026-08-03T12:04:40.313Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:40.313Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:40.314Z] >>> [apiv2][query] POST https://firebase.googleapis.com/v1alpha/firebase:provisionFirebaseApp [none]
+[debug] [2026-08-03T12:04:40.314Z] >>> [apiv2][body] POST https://firebase.googleapis.com/v1alpha/firebase:provisionFirebaseApp {"appNamespace":"1:505701030512:web:6e95556e761878ac66f2b5","parent":"projects/builderlink-cd7d0","firebaseAuthInput":{"emailAuthProviderMode":"PROVIDER_ENABLED","googleSigninProviderMode":"PROVIDER_ENABLED","googleSigninProviderConfig":{"publicDisplayName":"BuilderLink Malawi","customerSupportEmail":"blessingsminga11@gmail.com"}},"webInput":{}}
+[debug] [2026-08-03T12:04:41.779Z] <<< [apiv2][status] POST https://firebase.googleapis.com/v1alpha/firebase:provisionFirebaseApp 200
+[debug] [2026-08-03T12:04:41.779Z] <<< [apiv2][body] POST https://firebase.googleapis.com/v1alpha/firebase:provisionFirebaseApp {"name":"operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm"}
+[debug] [2026-08-03T12:04:41.779Z] [provision] Operation started: operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm
+[debug] [2026-08-03T12:04:41.779Z] [provision] Polling for operation completion...
+[debug] [2026-08-03T12:04:41.780Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:41.781Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:41.781Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm [none]
+[debug] [2026-08-03T12:04:42.472Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm 200
+[debug] [2026-08-03T12:04:42.473Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm {"name":"operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm"}
+[debug] [2026-08-03T12:04:42.678Z] [Provision Firebase App Poller] Retrying task index 0
+[debug] [2026-08-03T12:04:42.679Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:42.680Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:42.680Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm [none]
+[debug] [2026-08-03T12:04:43.329Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm 200
+[debug] [2026-08-03T12:04:43.329Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm {"name":"operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm"}
+[debug] [2026-08-03T12:04:43.739Z] [Provision Firebase App Poller] Retrying task index 0
+[debug] [2026-08-03T12:04:43.740Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:43.741Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:43.741Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm [none]
+[debug] [2026-08-03T12:04:44.356Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm 200
+[debug] [2026-08-03T12:04:44.357Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm {"name":"operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm"}
+[debug] [2026-08-03T12:04:45.159Z] [Provision Firebase App Poller] Retrying task index 0
+[debug] [2026-08-03T12:04:45.161Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:45.161Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:45.161Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm [none]
+[debug] [2026-08-03T12:04:45.859Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm 200
+[debug] [2026-08-03T12:04:45.860Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm {"name":"operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm"}
+[debug] [2026-08-03T12:04:47.469Z] [Provision Firebase App Poller] Retrying task index 0
+[debug] [2026-08-03T12:04:47.471Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:47.472Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:47.472Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm [none]
+[debug] [2026-08-03T12:04:48.201Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm 200
+[debug] [2026-08-03T12:04:48.201Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm {"name":"operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm"}
+[debug] [2026-08-03T12:04:51.409Z] [Provision Firebase App Poller] Retrying task index 0
+[debug] [2026-08-03T12:04:51.411Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:51.411Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:51.411Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm [none]
+[debug] [2026-08-03T12:04:52.054Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm 200
+[debug] [2026-08-03T12:04:52.054Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm {"name":"operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm"}
+[debug] [2026-08-03T12:04:57.066Z] [Provision Firebase App Poller] Retrying task index 0
+[debug] [2026-08-03T12:04:57.068Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:57.068Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:04:57.069Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm [none]
+[debug] [2026-08-03T12:04:58.060Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm 200
+[debug] [2026-08-03T12:04:58.061Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm {"name":"operations/workflows/YjVhZjcwNTctZjllMy00NTM2LTg5YzAtYjk0MTllZTQ0N2Jm","done":true,"response":{"@type":"type.googleapis.com/google.firebase.service.v1alpha.ProvisionFirebaseAppResponse","configMimeType":"application/json","configData":"ewogICJ2ZXJzaW9uIjogIjIiLAogICJwcm9qZWN0TnVtYmVyIjogIjUwNTcwMTAzMDUxMiIsCiAgInByb2plY3RJZCI6ICJidWlsZGVybGluay1jZDdkMCIsCiAgImFwcElkIjogIjE6NTA1NzAxMDMwNTEyOndlYjo2ZTk1NTU2ZTc2MTg3OGFjNjZmMmI1IiwKICAicmVhbHRpbWVEYXRhYmFzZUluc3RhbmNlVXJpIjogIiIsCiAgInJlYWx0aW1lRGF0YWJhc2VVcmwiOiAiIiwKICAic3RvcmFnZUJ1Y2tldCI6ICJidWlsZGVybGluay1jZDdkMC5maXJlYmFzZXN0b3JhZ2UuYXBwIiwKICAibG9jYXRpb25JZCI6ICIiLAogICJhcGlLZXkiOiAiQUl6YVN5QnVwcGozUHN4TTg3d0tEZEoyVTlWVnlWdU1paml5UVU0IiwKICAiYXV0aERvbWFpbiI6ICJidWlsZGVybGluay1jZDdkMC5maXJlYmFzZWFwcC5jb20iLAogICJtZXNzYWdpbmdTZW5kZXJJZCI6ICI1MDU3MDEwMzA1MTIiLAogICJtZWFzdXJlbWVudElkIjogIkctREVKUkdMRlBORiIsCiAgInJlY2FwdGNoYVNpdGVLZXkiOiAiIgp9","appResource":"projects/builderlink-cd7d0/apps/1:505701030512:web:6e95556e761878ac66f2b5"}}
+[debug] [2026-08-03T12:04:58.061Z] [provision] Firebase app provisioning completed successfully
+[info] +  Auth providers enabled: email/password, Google sign-in 
+[info] 
+[info] +  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/builderlink-cd7d0/overview
+[debug] [2026-08-03T12:05:45.340Z] ----------------------------------------------------------------------
+[debug] [2026-08-03T12:05:45.345Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MINGA-HP\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\bin\firebase.js firestore:databases:list
+[debug] [2026-08-03T12:05:45.345Z] CLI Version:   15.25.1
+[debug] [2026-08-03T12:05:45.345Z] Platform:      win32
+[debug] [2026-08-03T12:05:45.346Z] Node Version:  v24.16.0
+[debug] [2026-08-03T12:05:45.346Z] Detected Agent: unknown
+[debug] [2026-08-03T12:05:45.346Z] Time:          Mon Aug 03 2026 14:05:45 GMT+0200 (Central Africa Time)
+[debug] [2026-08-03T12:05:45.346Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-03T12:05:47.612Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-03T12:05:47.612Z] > authorizing via signed-in user (blessingsminga11@gmail.com)
+[debug] [2026-08-03T12:05:47.612Z] [iam] checking project builderlink-cd7d0 for permissions ["datastore.databases.list","firebase.projects.get"]
+[debug] [2026-08-03T12:05:47.644Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:05:47.644Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:05:47.646Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions [none]
+[debug] [2026-08-03T12:05:47.647Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions  x-goog-user-project=builderlink-cd7d0
+[debug] [2026-08-03T12:05:47.647Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["datastore.databases.list","firebase.projects.get"]}
+[debug] [2026-08-03T12:05:49.726Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions 200
+[debug] [2026-08-03T12:05:49.726Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["datastore.databases.list","firebase.projects.get"]}
+[debug] [2026-08-03T12:05:49.728Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:05:49.728Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:05:49.728Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases [none]
+[debug] [2026-08-03T12:05:50.693Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases 403
+[debug] [2026-08-03T12:05:50.694Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases {"error":{"code":403,"message":"Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"consumer":"projects/builderlink-cd7d0","service":"firestore.googleapis.com","activationUrl":"https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0","serviceTitle":"Cloud Firestore API","containerInfo":"builderlink-cd7d0"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0"}]}]}}
+[error] 
+[error] Error: Request to https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases had HTTP Error: 403, Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+[debug] [2026-08-03T12:05:51.513Z] Error Context: {
+  "body": {
+    "error": {
+      "code": 403,
+      "message": "Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "status": "PERMISSION_DENIED",
+      "details": [
+        {
+          "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+          "reason": "SERVICE_DISABLED",
+          "domain": "googleapis.com",
+          "metadata": {
+            "consumer": "projects/builderlink-cd7d0",
+            "service": "firestore.googleapis.com",
+            "activationUrl": "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0",
+            "serviceTitle": "Cloud Firestore API",
+            "containerInfo": "builderlink-cd7d0"
+          }
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+          "locale": "en-US",
+          "message": "Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.Help",
+          "links": [
+            {
+              "description": "Google developers console API activation",
+              "url": "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "response": {
+    "statusCode": 403
+  }
+}
+[debug] [2026-08-03T12:06:16.926Z] ----------------------------------------------------------------------
+[debug] [2026-08-03T12:06:16.930Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MINGA-HP\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\bin\firebase.js firestore:locations
+[debug] [2026-08-03T12:06:16.930Z] CLI Version:   15.25.1
+[debug] [2026-08-03T12:06:16.931Z] Platform:      win32
+[debug] [2026-08-03T12:06:16.931Z] Node Version:  v24.16.0
+[debug] [2026-08-03T12:06:16.931Z] Detected Agent: unknown
+[debug] [2026-08-03T12:06:16.931Z] Time:          Mon Aug 03 2026 14:06:16 GMT+0200 (Central Africa Time)
+[debug] [2026-08-03T12:06:16.932Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-03T12:06:19.066Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-03T12:06:19.066Z] > authorizing via signed-in user (blessingsminga11@gmail.com)
+[debug] [2026-08-03T12:06:19.067Z] [iam] checking project builderlink-cd7d0 for permissions ["datastore.locations.list","firebase.projects.get"]
+[debug] [2026-08-03T12:06:19.097Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:06:19.098Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:06:19.099Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions [none]
+[debug] [2026-08-03T12:06:19.099Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions  x-goog-user-project=builderlink-cd7d0
+[debug] [2026-08-03T12:06:19.099Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["datastore.locations.list","firebase.projects.get"]}
+[debug] [2026-08-03T12:06:21.227Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions 200
+[debug] [2026-08-03T12:06:21.227Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["datastore.locations.list","firebase.projects.get"]}
+[debug] [2026-08-03T12:06:21.228Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:06:21.228Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:06:21.228Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/locations [none]
+[debug] [2026-08-03T12:06:22.178Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/locations 403
+[debug] [2026-08-03T12:06:22.179Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/locations {"error":{"code":403,"message":"Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"containerInfo":"builderlink-cd7d0","activationUrl":"https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0","service":"firestore.googleapis.com","serviceTitle":"Cloud Firestore API","consumer":"projects/builderlink-cd7d0"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0"}]}]}}
+[error] 
+[error] Error: Request to https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/locations had HTTP Error: 403, Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+[debug] [2026-08-03T12:06:22.947Z] Error Context: {
+  "body": {
+    "error": {
+      "code": 403,
+      "message": "Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "status": "PERMISSION_DENIED",
+      "details": [
+        {
+          "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+          "reason": "SERVICE_DISABLED",
+          "domain": "googleapis.com",
+          "metadata": {
+            "containerInfo": "builderlink-cd7d0",
+            "activationUrl": "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0",
+            "service": "firestore.googleapis.com",
+            "serviceTitle": "Cloud Firestore API",
+            "consumer": "projects/builderlink-cd7d0"
+          }
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+          "locale": "en-US",
+          "message": "Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.Help",
+          "links": [
+            {
+              "description": "Google developers console API activation",
+              "url": "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "response": {
+    "statusCode": 403
+  }
+}
+[debug] [2026-08-03T12:11:33.281Z] ----------------------------------------------------------------------
+[debug] [2026-08-03T12:11:33.311Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MINGA-HP\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\bin\firebase.js firestore:databases:create builderlink --edition=enterprise --location=europe-west1
+[debug] [2026-08-03T12:11:33.312Z] CLI Version:   15.25.1
+[debug] [2026-08-03T12:11:33.312Z] Platform:      win32
+[debug] [2026-08-03T12:11:33.313Z] Node Version:  v24.16.0
+[debug] [2026-08-03T12:11:33.314Z] Detected Agent: unknown
+[debug] [2026-08-03T12:11:33.314Z] Time:          Mon Aug 03 2026 14:11:33 GMT+0200 (Central Africa Time)
+[debug] [2026-08-03T12:11:33.315Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-03T12:11:38.040Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-03T12:11:38.042Z] > authorizing via signed-in user (blessingsminga11@gmail.com)
+[debug] [2026-08-03T12:11:38.042Z] [iam] checking project builderlink-cd7d0 for permissions ["datastore.databases.create","firebase.projects.get"]
+[debug] [2026-08-03T12:11:38.100Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:11:38.101Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:11:38.105Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions [none]
+[debug] [2026-08-03T12:11:38.106Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions  x-goog-user-project=builderlink-cd7d0
+[debug] [2026-08-03T12:11:38.106Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["datastore.databases.create","firebase.projects.get"]}
+[debug] [2026-08-03T12:11:39.394Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions 200
+[debug] [2026-08-03T12:11:39.395Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["datastore.databases.create","firebase.projects.get"]}
+[debug] [2026-08-03T12:11:39.397Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:11:39.397Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:11:39.399Z] >>> [apiv2][query] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases databaseId=builderlink
+[debug] [2026-08-03T12:11:39.399Z] >>> [apiv2][body] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases {"locationId":"europe-west1","type":"FIRESTORE_NATIVE","databaseEdition":"ENTERPRISE","deleteProtectionState":"DELETE_PROTECTION_DISABLED","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","firestoreDataAccessMode":"DATA_ACCESS_MODE_ENABLED","mongodbCompatibleDataAccessMode":"DATA_ACCESS_MODE_DISABLED"}
+[debug] [2026-08-03T12:11:40.264Z] <<< [apiv2][status] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases 403
+[debug] [2026-08-03T12:11:40.265Z] <<< [apiv2][body] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases {"error":{"code":403,"message":"Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"consumer":"projects/builderlink-cd7d0","service":"firestore.googleapis.com","activationUrl":"https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0","serviceTitle":"Cloud Firestore API","containerInfo":"builderlink-cd7d0"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0"}]}]}}
+[error] 
+[error] Error: Request to https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases?databaseId=builderlink had HTTP Error: 403, Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+[debug] [2026-08-03T12:11:41.308Z] Error Context: {
+  "body": {
+    "error": {
+      "code": 403,
+      "message": "Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "status": "PERMISSION_DENIED",
+      "details": [
+        {
+          "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+          "reason": "SERVICE_DISABLED",
+          "domain": "googleapis.com",
+          "metadata": {
+            "consumer": "projects/builderlink-cd7d0",
+            "service": "firestore.googleapis.com",
+            "activationUrl": "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0",
+            "serviceTitle": "Cloud Firestore API",
+            "containerInfo": "builderlink-cd7d0"
+          }
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+          "locale": "en-US",
+          "message": "Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.Help",
+          "links": [
+            {
+              "description": "Google developers console API activation",
+              "url": "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "response": {
+    "statusCode": 403
+  }
+}
+[debug] [2026-08-03T12:17:23.407Z] ----------------------------------------------------------------------
+[debug] [2026-08-03T12:17:23.411Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MINGA-HP\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\bin\firebase.js firestore:databases:create (default) --edition=enterprise --location=europe-west1
+[debug] [2026-08-03T12:17:23.412Z] CLI Version:   15.25.1
+[debug] [2026-08-03T12:17:23.412Z] Platform:      win32
+[debug] [2026-08-03T12:17:23.412Z] Node Version:  v24.16.0
+[debug] [2026-08-03T12:17:23.413Z] Detected Agent: unknown
+[debug] [2026-08-03T12:17:23.413Z] Time:          Mon Aug 03 2026 14:17:23 GMT+0200 (Central Africa Time)
+[debug] [2026-08-03T12:17:23.413Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-03T12:17:24.904Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-03T12:17:24.905Z] > authorizing via signed-in user (blessingsminga11@gmail.com)
+[debug] [2026-08-03T12:17:24.905Z] [iam] checking project builderlink-cd7d0 for permissions ["datastore.databases.create","firebase.projects.get"]
+[debug] [2026-08-03T12:17:24.932Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:17:24.933Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:17:24.934Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions [none]
+[debug] [2026-08-03T12:17:24.934Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions  x-goog-user-project=builderlink-cd7d0
+[debug] [2026-08-03T12:17:24.935Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["datastore.databases.create","firebase.projects.get"]}
+[debug] [2026-08-03T12:17:27.270Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions 200
+[debug] [2026-08-03T12:17:27.270Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["datastore.databases.create","firebase.projects.get"]}
+[debug] [2026-08-03T12:17:27.272Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:17:27.273Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:17:27.274Z] >>> [apiv2][query] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases databaseId=%28default%29
+[debug] [2026-08-03T12:17:27.274Z] >>> [apiv2][body] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases {"locationId":"europe-west1","type":"FIRESTORE_NATIVE","databaseEdition":"ENTERPRISE","deleteProtectionState":"DELETE_PROTECTION_DISABLED","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","firestoreDataAccessMode":"DATA_ACCESS_MODE_ENABLED","mongodbCompatibleDataAccessMode":"DATA_ACCESS_MODE_DISABLED"}
+[debug] [2026-08-03T12:17:27.910Z] <<< [apiv2][status] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases 403
+[debug] [2026-08-03T12:17:27.911Z] <<< [apiv2][body] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases {"error":{"code":403,"message":"Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"consumer":"projects/builderlink-cd7d0","service":"firestore.googleapis.com","activationUrl":"https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0","serviceTitle":"Cloud Firestore API","containerInfo":"builderlink-cd7d0"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0"}]}]}}
+[error] 
+[error] Error: Request to https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases?databaseId=%28default%29 had HTTP Error: 403, Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+[debug] [2026-08-03T12:17:28.641Z] Error Context: {
+  "body": {
+    "error": {
+      "code": 403,
+      "message": "Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "status": "PERMISSION_DENIED",
+      "details": [
+        {
+          "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+          "reason": "SERVICE_DISABLED",
+          "domain": "googleapis.com",
+          "metadata": {
+            "consumer": "projects/builderlink-cd7d0",
+            "service": "firestore.googleapis.com",
+            "activationUrl": "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0",
+            "serviceTitle": "Cloud Firestore API",
+            "containerInfo": "builderlink-cd7d0"
+          }
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+          "locale": "en-US",
+          "message": "Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.Help",
+          "links": [
+            {
+              "description": "Google developers console API activation",
+              "url": "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "response": {
+    "statusCode": 403
+  }
+}
+[debug] [2026-08-03T12:17:45.127Z] ----------------------------------------------------------------------
+[debug] [2026-08-03T12:17:45.131Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MINGA-HP\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\bin\firebase.js firestore:databases:list
+[debug] [2026-08-03T12:17:45.132Z] CLI Version:   15.25.1
+[debug] [2026-08-03T12:17:45.132Z] Platform:      win32
+[debug] [2026-08-03T12:17:45.132Z] Node Version:  v24.16.0
+[debug] [2026-08-03T12:17:45.132Z] Detected Agent: unknown
+[debug] [2026-08-03T12:17:45.132Z] Time:          Mon Aug 03 2026 14:17:45 GMT+0200 (Central Africa Time)
+[debug] [2026-08-03T12:17:45.133Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-03T12:17:46.667Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-03T12:17:46.667Z] > authorizing via signed-in user (blessingsminga11@gmail.com)
+[debug] [2026-08-03T12:17:46.667Z] [iam] checking project builderlink-cd7d0 for permissions ["datastore.databases.list","firebase.projects.get"]
+[debug] [2026-08-03T12:17:46.687Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:17:46.688Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:17:46.689Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions [none]
+[debug] [2026-08-03T12:17:46.690Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions  x-goog-user-project=builderlink-cd7d0
+[debug] [2026-08-03T12:17:46.690Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["datastore.databases.list","firebase.projects.get"]}
+[debug] [2026-08-03T12:17:48.834Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions 200
+[debug] [2026-08-03T12:17:48.835Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["datastore.databases.list","firebase.projects.get"]}
+[debug] [2026-08-03T12:17:48.836Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:17:48.836Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:17:48.836Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases [none]
+[debug] [2026-08-03T12:17:49.517Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases 403
+[debug] [2026-08-03T12:17:49.517Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases {"error":{"code":403,"message":"Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"consumer":"projects/builderlink-cd7d0","service":"firestore.googleapis.com","activationUrl":"https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0","serviceTitle":"Cloud Firestore API","containerInfo":"builderlink-cd7d0"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0"}]}]}}
+[error] 
+[error] Error: Request to https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases had HTTP Error: 403, Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+[debug] [2026-08-03T12:17:50.167Z] Error Context: {
+  "body": {
+    "error": {
+      "code": 403,
+      "message": "Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "status": "PERMISSION_DENIED",
+      "details": [
+        {
+          "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+          "reason": "SERVICE_DISABLED",
+          "domain": "googleapis.com",
+          "metadata": {
+            "consumer": "projects/builderlink-cd7d0",
+            "service": "firestore.googleapis.com",
+            "activationUrl": "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0",
+            "serviceTitle": "Cloud Firestore API",
+            "containerInfo": "builderlink-cd7d0"
+          }
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+          "locale": "en-US",
+          "message": "Cloud Firestore API has not been used in project builderlink-cd7d0 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.Help",
+          "links": [
+            {
+              "description": "Google developers console API activation",
+              "url": "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=builderlink-cd7d0"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "response": {
+    "statusCode": 403
+  }
+}
+[debug] [2026-08-03T12:19:01.850Z] ----------------------------------------------------------------------
+[debug] [2026-08-03T12:19:01.945Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MINGA-HP\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\bin\firebase.js firestore:databases:create (default) --edition=enterprise --location=europe-west1
+[debug] [2026-08-03T12:19:01.946Z] CLI Version:   15.25.1
+[debug] [2026-08-03T12:19:01.946Z] Platform:      win32
+[debug] [2026-08-03T12:19:01.946Z] Node Version:  v24.16.0
+[debug] [2026-08-03T12:19:01.947Z] Detected Agent: unknown
+[debug] [2026-08-03T12:19:01.948Z] Time:          Mon Aug 03 2026 14:19:01 GMT+0200 (Central Africa Time)
+[debug] [2026-08-03T12:19:01.949Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-03T12:19:04.732Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-03T12:19:04.733Z] > authorizing via signed-in user (blessingsminga11@gmail.com)
+[debug] [2026-08-03T12:19:04.733Z] [iam] checking project builderlink-cd7d0 for permissions ["datastore.databases.create","firebase.projects.get"]
+[debug] [2026-08-03T12:19:04.776Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:19:04.777Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:19:04.779Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions [none]
+[debug] [2026-08-03T12:19:04.780Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions  x-goog-user-project=builderlink-cd7d0
+[debug] [2026-08-03T12:19:04.780Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["datastore.databases.create","firebase.projects.get"]}
+[debug] [2026-08-03T12:19:06.878Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions 200
+[debug] [2026-08-03T12:19:06.879Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["datastore.databases.create","firebase.projects.get"]}
+[debug] [2026-08-03T12:19:06.883Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:19:06.883Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:19:06.885Z] >>> [apiv2][query] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases databaseId=%28default%29
+[debug] [2026-08-03T12:19:06.885Z] >>> [apiv2][body] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases {"locationId":"europe-west1","type":"FIRESTORE_NATIVE","databaseEdition":"ENTERPRISE","deleteProtectionState":"DELETE_PROTECTION_DISABLED","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","firestoreDataAccessMode":"DATA_ACCESS_MODE_ENABLED","mongodbCompatibleDataAccessMode":"DATA_ACCESS_MODE_DISABLED"}
+[debug] [2026-08-03T12:19:08.215Z] <<< [apiv2][status] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases 400
+[debug] [2026-08-03T12:19:08.215Z] <<< [apiv2][body] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases {"error":{"code":400,"message":"Firestore Enterprise requires a named database not a (default) -- please name your database.","status":"FAILED_PRECONDITION"}}
+[error] 
+[error] Error: Request to https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases?databaseId=%28default%29 had HTTP Error: 400, Firestore Enterprise requires a named database not a (default) -- please name your database.
+[debug] [2026-08-03T12:19:08.894Z] Error Context: {
+  "body": {
+    "error": {
+      "code": 400,
+      "message": "Firestore Enterprise requires a named database not a (default) -- please name your database.",
+      "status": "FAILED_PRECONDITION"
+    }
+  },
+  "response": {
+    "statusCode": 400
+  }
+}
+[debug] [2026-08-03T12:20:12.799Z] ----------------------------------------------------------------------
+[debug] [2026-08-03T12:20:12.803Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MINGA-HP\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\bin\firebase.js firestore:databases:create builderlink --edition=enterprise --location=europe-west1
+[debug] [2026-08-03T12:20:12.804Z] CLI Version:   15.25.1
+[debug] [2026-08-03T12:20:12.804Z] Platform:      win32
+[debug] [2026-08-03T12:20:12.804Z] Node Version:  v24.16.0
+[debug] [2026-08-03T12:20:12.804Z] Detected Agent: unknown
+[debug] [2026-08-03T12:20:12.804Z] Time:          Mon Aug 03 2026 14:20:12 GMT+0200 (Central Africa Time)
+[debug] [2026-08-03T12:20:12.804Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-03T12:20:14.882Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-03T12:20:14.883Z] > authorizing via signed-in user (blessingsminga11@gmail.com)
+[debug] [2026-08-03T12:20:14.883Z] [iam] checking project builderlink-cd7d0 for permissions ["datastore.databases.create","firebase.projects.get"]
+[debug] [2026-08-03T12:20:14.915Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:20:14.916Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:20:14.917Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions [none]
+[debug] [2026-08-03T12:20:14.918Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions  x-goog-user-project=builderlink-cd7d0
+[debug] [2026-08-03T12:20:14.918Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["datastore.databases.create","firebase.projects.get"]}
+[debug] [2026-08-03T12:20:17.003Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions 200
+[debug] [2026-08-03T12:20:17.003Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["datastore.databases.create","firebase.projects.get"]}
+[debug] [2026-08-03T12:20:17.005Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:20:17.005Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:20:17.006Z] >>> [apiv2][query] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases databaseId=builderlink
+[debug] [2026-08-03T12:20:17.006Z] >>> [apiv2][body] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases {"locationId":"europe-west1","type":"FIRESTORE_NATIVE","databaseEdition":"ENTERPRISE","deleteProtectionState":"DELETE_PROTECTION_DISABLED","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","firestoreDataAccessMode":"DATA_ACCESS_MODE_ENABLED","mongodbCompatibleDataAccessMode":"DATA_ACCESS_MODE_DISABLED"}
+[debug] [2026-08-03T12:20:24.618Z] <<< [apiv2][status] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases 200
+[debug] [2026-08-03T12:20:24.618Z] <<< [apiv2][body] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases {"name":"projects/builderlink-cd7d0/databases/builderlink/operations/61ycLHdWVLeAQ1QHmKGL0xAqMXRzZXctZXBvcnVlDCIFEAKVzeiQEAbTwo-HCAwKMBo","metadata":{"@type":"type.googleapis.com/google.firestore.admin.v1.CreateDatabaseMetadata"},"done":true,"response":{"@type":"type.googleapis.com/google.firestore.admin.v1.Database","name":"projects/builderlink-cd7d0/databases/builderlink","uid":"d38ba198-0754-4380-b754-56772c9c5ceb","createTime":"2026-08-03T12:20:23.582186Z","updateTime":"2026-08-03T12:20:23.582186Z","locationId":"europe-west1","type":"FIRESTORE_NATIVE","concurrencyMode":"OPTIMISTIC","versionRetentionPeriod":"3600s","earliestVersionTime":"2026-08-03T12:20:23.582186Z","appEngineIntegrationMode":"DISABLED","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","deleteProtectionState":"DELETE_PROTECTION_DISABLED","databaseEdition":"ENTERPRISE","freeTier":true,"realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","firestoreDataAccessMode":"DATA_ACCESS_MODE_ENABLED","mongodbCompatibleDataAccessMode":"DATA_ACCESS_MODE_DISABLED","etag":"IPnIkoC5hJYDMOqjkoC5hJYD"}}
+[debug] [2026-08-03T12:20:24.620Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:20:24.621Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:20:24.621Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases/builderlink/operations/61ycLHdWVLeAQ1QHmKGL0xAqMXRzZXctZXBvcnVlDCIFEAKVzeiQEAbTwo-HCAwKMBo [none]
+[debug] [2026-08-03T12:20:26.101Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases/builderlink/operations/61ycLHdWVLeAQ1QHmKGL0xAqMXRzZXctZXBvcnVlDCIFEAKVzeiQEAbTwo-HCAwKMBo 200
+[debug] [2026-08-03T12:20:26.101Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases/builderlink/operations/61ycLHdWVLeAQ1QHmKGL0xAqMXRzZXctZXBvcnVlDCIFEAKVzeiQEAbTwo-HCAwKMBo {"name":"projects/builderlink-cd7d0/databases/builderlink/operations/61ycLHdWVLeAQ1QHmKGL0xAqMXRzZXctZXBvcnVlDCIFEAKVzeiQEAbTwo-HCAwKMBo","metadata":{"@type":"type.googleapis.com/google.firestore.admin.v1.CreateDatabaseMetadata"},"done":true,"response":{"@type":"type.googleapis.com/google.firestore.admin.v1.Database","name":"projects/builderlink-cd7d0/databases/builderlink","uid":"d38ba198-0754-4380-b754-56772c9c5ceb","createTime":"2026-08-03T12:20:23.582186Z","updateTime":"2026-08-03T12:20:23.582186Z","locationId":"europe-west1","type":"FIRESTORE_NATIVE","concurrencyMode":"OPTIMISTIC","versionRetentionPeriod":"3600s","earliestVersionTime":"2026-08-03T12:20:23.582186Z","appEngineIntegrationMode":"DISABLED","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","deleteProtectionState":"DELETE_PROTECTION_DISABLED","databaseEdition":"ENTERPRISE","freeTier":true,"realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","firestoreDataAccessMode":"DATA_ACCESS_MODE_ENABLED","mongodbCompatibleDataAccessMode":"DATA_ACCESS_MODE_DISABLED","etag":"IIfR64C5hJYDMOqjkoC5hJYD"}}
+[info] Successfully created projects/builderlink-cd7d0/databases/builderlink
+[info] Please be sure to configure Firebase rules in your Firebase config file for
+the new database. By default, created databases will have closed rules that
+block any incoming third-party traffic.
+[info] Your database may be viewed at https://console.firebase.google.com/project/builderlink-cd7d0/firestore/databases/builderlink/data
+[debug] [2026-08-03T12:24:28.330Z] ----------------------------------------------------------------------
+[debug] [2026-08-03T12:24:28.335Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MINGA-HP\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\bin\firebase.js deploy --only firestore:rules --dry-run
+[debug] [2026-08-03T12:24:28.335Z] CLI Version:   15.25.1
+[debug] [2026-08-03T12:24:28.336Z] Platform:      win32
+[debug] [2026-08-03T12:24:28.336Z] Node Version:  v24.16.0
+[debug] [2026-08-03T12:24:28.336Z] Detected Agent: unknown
+[debug] [2026-08-03T12:24:28.336Z] Time:          Mon Aug 03 2026 14:24:28 GMT+0200 (Central Africa Time)
+[debug] [2026-08-03T12:24:28.336Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-03T12:24:31.695Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-03T12:24:31.695Z] > authorizing via signed-in user (blessingsminga11@gmail.com)
+[debug] [2026-08-03T12:24:31.695Z] [iam] checking project builderlink-cd7d0 for permissions ["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]
+[debug] [2026-08-03T12:24:31.723Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:24:31.724Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:24:31.725Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions [none]
+[debug] [2026-08-03T12:24:31.726Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions  x-goog-user-project=builderlink-cd7d0
+[debug] [2026-08-03T12:24:31.726Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[debug] [2026-08-03T12:24:32.911Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions 200
+[debug] [2026-08-03T12:24:32.911Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[info] 
+[info] === Deploying to 'builderlink-cd7d0'...
+[info] 
+[info] i  deploying firestore 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2026-08-03T12:24:32.916Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:24:32.916Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:24:32.917Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/builderlink-cd7d0/services/firestore.googleapis.com [none]
+[debug] [2026-08-03T12:24:32.917Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/builderlink-cd7d0/services/firestore.googleapis.com  x-goog-user-project=builderlink-cd7d0
+[debug] [2026-08-03T12:24:35.346Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/builderlink-cd7d0/services/firestore.googleapis.com 200
+[debug] [2026-08-03T12:24:35.347Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/builderlink-cd7d0/services/firestore.googleapis.com [omitted]
+[info] +  firestore: required API firestore.googleapis.com is enabled 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2026-08-03T12:24:35.360Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:24:35.361Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:24:35.361Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases/(default) [none]
+[debug] [2026-08-03T12:24:37.008Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases/(default) 404
+[debug] [2026-08-03T12:24:37.009Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases/(default) {"error":{"code":404,"message":"Project 'builderlink-cd7d0' or database '(default)' does not exist.","status":"NOT_FOUND"}}
+[info] i  firestore: Creating the new Firestore database (default)... 
+[debug] [2026-08-03T12:24:37.012Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:24:37.012Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:24:37.014Z] >>> [apiv2][query] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases databaseId=%28default%29
+[debug] [2026-08-03T12:24:37.014Z] >>> [apiv2][body] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases {"locationId":"nam5","type":"FIRESTORE_NATIVE","databaseEdition":"STANDARD","deleteProtectionState":"DELETE_PROTECTION_DISABLED","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED"}
+[debug] [2026-08-03T12:24:37.931Z] <<< [apiv2][status] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases 403
+[debug] [2026-08-03T12:24:37.931Z] <<< [apiv2][body] POST https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases {"error":{"code":403,"message":"This API method requires billing to be enabled. Please enable billing on project builderlink-cd7d0 by visiting https://console.developers.google.com/billing/enable?project=builderlink-cd7d0 then retry. If you enabled billing for this project recently, wait a few minutes for the action to propagate to our systems and retry.","status":"PERMISSION_DENIED"}}
+[error] 
+[error] Error: Request to https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases?databaseId=%28default%29 had HTTP Error: 403, This API method requires billing to be enabled. Please enable billing on project builderlink-cd7d0 by visiting https://console.developers.google.com/billing/enable?project=builderlink-cd7d0 then retry. If you enabled billing for this project recently, wait a few minutes for the action to propagate to our systems and retry.
+[debug] [2026-08-03T12:24:38.690Z] Error Context: {
+  "body": {
+    "error": {
+      "code": 403,
+      "message": "This API method requires billing to be enabled. Please enable billing on project builderlink-cd7d0 by visiting https://console.developers.google.com/billing/enable?project=builderlink-cd7d0 then retry. If you enabled billing for this project recently, wait a few minutes for the action to propagate to our systems and retry.",
+      "status": "PERMISSION_DENIED"
+    }
+  },
+  "response": {
+    "statusCode": 403
+  }
+}
+[debug] [2026-08-03T12:25:26.234Z] ----------------------------------------------------------------------
+[debug] [2026-08-03T12:25:26.239Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\MINGA-HP\AppData\Local\npm-cache\_npx\ba4f1959e38407b5\node_modules\firebase-tools\lib\bin\firebase.js deploy --only firestore:rules
+[debug] [2026-08-03T12:25:26.240Z] CLI Version:   15.25.1
+[debug] [2026-08-03T12:25:26.240Z] Platform:      win32
+[debug] [2026-08-03T12:25:26.240Z] Node Version:  v24.16.0
+[debug] [2026-08-03T12:25:26.241Z] Detected Agent: unknown
+[debug] [2026-08-03T12:25:26.241Z] Time:          Mon Aug 03 2026 14:25:26 GMT+0200 (Central Africa Time)
+[debug] [2026-08-03T12:25:26.241Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-03T12:25:29.170Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-03T12:25:29.171Z] > authorizing via signed-in user (blessingsminga11@gmail.com)
+[debug] [2026-08-03T12:25:29.171Z] [iam] checking project builderlink-cd7d0 for permissions ["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]
+[debug] [2026-08-03T12:25:29.204Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:25:29.204Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:25:29.207Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions [none]
+[debug] [2026-08-03T12:25:29.208Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions  x-goog-user-project=builderlink-cd7d0
+[debug] [2026-08-03T12:25:29.208Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[debug] [2026-08-03T12:25:31.382Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions 200
+[debug] [2026-08-03T12:25:31.383Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[info] 
+[info] === Deploying to 'builderlink-cd7d0'...
+[info] 
+[info] i  deploying firestore 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2026-08-03T12:25:31.391Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:25:31.392Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:25:31.392Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases/builderlink [none]
+[debug] [2026-08-03T12:25:32.991Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases/builderlink 200
+[debug] [2026-08-03T12:25:32.992Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/builderlink-cd7d0/databases/builderlink {"name":"projects/builderlink-cd7d0/databases/builderlink","uid":"d38ba198-0754-4380-b754-56772c9c5ceb","createTime":"2026-08-03T12:20:23.582186Z","updateTime":"2026-08-03T12:20:23.582186Z","locationId":"europe-west1","type":"FIRESTORE_NATIVE","concurrencyMode":"OPTIMISTIC","versionRetentionPeriod":"3600s","earliestVersionTime":"2026-08-03T12:20:23.582186Z","appEngineIntegrationMode":"DISABLED","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","deleteProtectionState":"DELETE_PROTECTION_DISABLED","databaseEdition":"ENTERPRISE","freeTier":true,"realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","firestoreDataAccessMode":"DATA_ACCESS_MODE_ENABLED","mongodbCompatibleDataAccessMode":"DATA_ACCESS_MODE_DISABLED","etag":"IL/QlZO6hJYDMKaMxYW5hJYD"}
+[info] i  cloud.firestore: checking firestore.rules for compilation errors... 
+[debug] [2026-08-03T12:25:32.995Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:25:32.995Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:25:32.995Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0:test [none]
+[debug] [2026-08-03T12:25:32.996Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0:test [omitted]
+[debug] [2026-08-03T12:25:34.926Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0:test 200
+[debug] [2026-08-03T12:25:34.926Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0:test {"issues":[{"sourcePosition":{"fileName":"firestore.rules","line":90,"column":10,"currentOffset":3568,"endOffset":3577},"description":"Unused function: isDocOwner.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":91,"column":31,"currentOffset":3614,"endOffset":3620},"description":"Invalid variable name: request.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":91,"column":51,"currentOffset":3634,"endOffset":3641},"description":"Invalid variable name: resource.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":95,"column":10,"currentOffset":3718,"endOffset":3729},"description":"Unused function: uidUnchanged.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":96,"column":20,"currentOffset":3755,"endOffset":3761},"description":"Invalid variable name: request.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":97,"column":5,"currentOffset":3786,"endOffset":3792},"description":"Invalid variable name: request.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":97,"column":33,"currentOffset":3814,"endOffset":3820},"description":"Invalid variable name: request.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":107,"column":10,"currentOffset":4060,"endOffset":4076},"description":"Unused function: hasRequiredFields.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":108,"column":10,"currentOffset":4098,"endOffset":4104},"description":"Invalid variable name: request.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":119,"column":10,"currentOffset":4463,"endOffset":4472},"description":"Unused function: isValidUrl.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":231,"column":5,"currentOffset":9480,"endOffset":9485},"description":"Call to service function 'exists' occurs outside of defining scope.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":231,"column":25,"currentOffset":9500,"endOffset":9507},"description":"Invalid variable name: database.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":237,"column":5,"currentOffset":9652,"endOffset":9654},"description":"Call to service function 'get' occurs outside of defining scope.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":237,"column":22,"currentOffset":9669,"endOffset":9676},"description":"Invalid variable name: database.","severity":"WARNING"}]}
+[warn] !  [W] 90:10 - Unused function: isDocOwner. 
+[warn] !  [W] 91:31 - Invalid variable name: request. 
+[warn] !  [W] 91:51 - Invalid variable name: resource. 
+[warn] !  [W] 95:10 - Unused function: uidUnchanged. 
+[warn] !  [W] 96:20 - Invalid variable name: request. 
+[warn] !  [W] 97:5 - Invalid variable name: request. 
+[warn] !  [W] 97:33 - Invalid variable name: request. 
+[warn] !  [W] 107:10 - Unused function: hasRequiredFields. 
+[warn] !  [W] 108:10 - Invalid variable name: request. 
+[warn] !  [W] 119:10 - Unused function: isValidUrl. 
+[warn] !  [W] 231:5 - Call to service function 'exists' occurs outside of defining scope. 
+[warn] !  [W] 231:25 - Invalid variable name: database. 
+[warn] !  [W] 237:5 - Call to service function 'get' occurs outside of defining scope. 
+[warn] !  [W] 237:22 - Invalid variable name: database. 
+[info] +  cloud.firestore: rules file firestore.rules compiled successfully 
+[debug] [2026-08-03T12:25:34.932Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:25:34.933Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:25:34.933Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0/releases pageSize=10&pageToken=
+[debug] [2026-08-03T12:25:35.858Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0/releases 200
+[debug] [2026-08-03T12:25:35.858Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0/releases {}
+[info] i  firestore: uploading rules firestore.rules... 
+[debug] [2026-08-03T12:25:35.860Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:25:35.860Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:25:35.860Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/builderlink-cd7d0/services/cloudresourcemanager.googleapis.com [none]
+[debug] [2026-08-03T12:25:35.860Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/builderlink-cd7d0/services/cloudresourcemanager.googleapis.com  x-goog-user-project=builderlink-cd7d0
+[debug] [2026-08-03T12:25:37.964Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/builderlink-cd7d0/services/cloudresourcemanager.googleapis.com 200
+[debug] [2026-08-03T12:25:37.965Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/builderlink-cd7d0/services/cloudresourcemanager.googleapis.com [omitted]
+[debug] [2026-08-03T12:25:37.974Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:25:37.974Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:25:37.975Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0 [none]
+[debug] [2026-08-03T12:25:39.879Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0 200
+[debug] [2026-08-03T12:25:39.879Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/builderlink-cd7d0 {"projectNumber":"505701030512","projectId":"builderlink-cd7d0","lifecycleState":"ACTIVE","name":"builderLink","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-08-03T11:16:48.740Z"}
+[debug] [2026-08-03T12:25:39.880Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:25:39.880Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:25:39.881Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0/rulesets [none]
+[debug] [2026-08-03T12:25:39.881Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0/rulesets [omitted]
+[debug] [2026-08-03T12:25:41.595Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0/rulesets 200
+[debug] [2026-08-03T12:25:41.596Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0/rulesets {"name":"projects/builderlink-cd7d0/rulesets/dbd6abb9-8129-47b9-a54b-5d64d8221cf1","source":{"files":[{"content":"rules_version = '2';\r\n\r\n// ===============================================================\r\n// Assumed Data Model\r\n// ===============================================================\r\n//\r\n// This security rules file assumes the following data structures:\r\n//\r\n// Collection: profiles\r\n// Document ID: auto-generated\r\n// Fields:\r\n//   - id: string (required, immutable) - User's Firebase Auth UID\r\n//   - role: string (required, immutable) - 'customer' | 'builder' | 'administrator'\r\n//   - full_name: string (required, 2-100 chars) - User's full name\r\n//   - phone: string (optional, nullable) - User's phone number\r\n//   - avatar_path: string (optional, nullable) - Storage path to avatar\r\n//   - district: string (optional, nullable) - User's district\r\n//   - created_at: timestamp (required, immutable) - Creation time\r\n//   - updated_at: timestamp (required) - Last update time\r\n//\r\n// Collection: builders\r\n// Document ID: auto-generated\r\n// Fields:\r\n//   - profile_id: string (required, immutable) - Reference to profiles.id\r\n//   - business_name: string (optional, nullable, 2-100 chars)\r\n//   - bio: string (optional, nullable, max 1000 chars)\r\n//   - years_experience: number (required, >= 0)\r\n//   - verification_status: string (required) - 'pending' | 'verified' | 'rejected'\r\n//   - average_rating: number (required, 0-5)\r\n//   - completed_jobs: number (required, >= 0)\r\n//   - response_time_minutes: number (optional, nullable, >= 0)\r\n//\r\n// Collection: categories\r\n// Document ID: auto-generated\r\n// Fields:\r\n//   - id: string (required, immutable)\r\n//   - name: string (required, 2-100 chars)\r\n//   - slug: string (required, 2-100 chars)\r\n//   - icon: string (optional, nullable)\r\n//\r\n// Collection: skills\r\n// Document ID: auto-generated\r\n// Fields:\r\n//   - id: string (required, immutable)\r\n//   - category_id: string (optional, nullable) - Reference to categories.id\r\n//   - name: string (required, 2-100 chars)\r\n//\r\n// Collection: builder_skills\r\n// Document ID: auto-generated\r\n// Fields:\r\n//   - builder_id: string (required, immutable) - Reference to builders.profile_id\r\n//   - skill_id: string (required, immutable) - Reference to skills.id\r\n//\r\n// Collection: portfolio_items\r\n// Document ID: auto-generated\r\n// Fields:\r\n//   - id: string (required, immutable)\r\n//   - builder_id: string (required, immutable) - Reference to builders.profile_id\r\n//   - storage_path: string (required, valid URL path)\r\n//   - caption: string (optional, nullable, max 500 chars)\r\n//   - created_at: timestamp (required, immutable)\r\n//\r\n// Collection: builder_documents\r\n// Document ID: auto-generated\r\n// Fields:\r\n//   - id: string (required, immutable)\r\n//   - builder_id: string (required, immutable) - Reference to builders.profile_id\r\n//   - type: string (required) - 'national_id' | 'certificate' | 'license'\r\n//   - storage_path: string (required, valid URL path)\r\n//   - review_status: string (required) - 'pending' | 'approved' | 'rejected'\r\n//   - created_at: timestamp (required, immutable)\r\n//\r\n// ===============================================================\r\n\r\n// ===============================================================\r\n// Helper Functions\r\n// ===============================================================\r\n\r\n// Check if the user is authenticated\r\nfunction isAuthenticated() {\r\n  return request.auth != null;\r\n}\r\n\r\n// Check if user owns the resource (for user-owned documents)\r\nfunction isOwner(userId) {\r\n  return isAuthenticated() && request.auth.uid == userId;\r\n}\r\n\r\n// Check if user is owner based on document's uid field\r\nfunction isDocOwner() {\r\n  return isAuthenticated() && request.auth.uid == resource.data.id;\r\n}\r\n\r\n// Verify UID hasn't been tampered with on create\r\nfunction uidUnchanged() {\r\n  return !('id' in request.resource.data) ||\r\n    request.resource.data.id == request.auth.uid;\r\n}\r\n\r\n// Ensure uid field is not modified on update\r\nfunction uidNotModified() {\r\n  return !('id' in request.resource.data) ||\r\n    request.resource.data.id == resource.data.id;\r\n}\r\n\r\n// Validate required fields exist\r\nfunction hasRequiredFields(fields) {\r\n  return request.resource.data.keys().hasAll(fields);\r\n}\r\n\r\n// Validate string length\r\nfunction validStringLength(field, minLen, maxLen) {\r\n  return request.resource.data[field] is string &&\r\n    request.resource.data[field].size() >= minLen &&\r\n    request.resource.data[field].size() <= maxLen;\r\n}\r\n\r\n// Validate URL format (must start with https:// or http://)\r\nfunction isValidUrl(url) {\r\n  return url is string &&\r\n    (url.matches(\"^https://.*\") || url.matches(\"^http://.*\"));\r\n}\r\n\r\n// Validate that a value is positive\r\nfunction isPositive(field) {\r\n  return request.resource.data[field] is number && request.resource.data[field] >= 0;\r\n}\r\n\r\n// Validate that the document contains only the allowed fields\r\nfunction hasOnlyAllowedFields(fields) {\r\n  return request.resource.data.keys().hasOnly(fields);\r\n}\r\n\r\n// Validate that the document hasn't changed in the fields that are not allowed to be changed\r\nfunction areImmutableFieldsUnchanged(fields) {\r\n  return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);\r\n}\r\n\r\n// Validate optional string (if present, must be string and within length)\r\nfunction isValidOptionalString(field, minLen, maxLen) {\r\n  return !(field in request.resource.data) ||\r\n         request.resource.data[field] == null ||\r\n         (request.resource.data[field] is string &&\r\n          request.resource.data[field].size() >= minLen &&\r\n          request.resource.data[field].size() <= maxLen);\r\n}\r\n\r\n// Validate that a timestamp is a valid timestamp\r\nfunction isValidTimestamp(field) {\r\n  return request.resource.data[field] is timestamp;\r\n}\r\n\r\n// ===============================================================\r\n// Domain Validators\r\n// ===============================================================\r\n\r\n// Validate profile document\r\nfunction isValidProfile(data) {\r\n  return hasOnlyAllowedFields(['id', 'role', 'full_name', 'phone', 'avatar_path', 'district', 'created_at', 'updated_at']) &&\r\n    data.id is string && data.id.size() > 0 && data.id.size() < 128 &&\r\n    data.role in ['customer', 'builder', 'administrator'] &&\r\n    validStringLength('full_name', 2, 100) &&\r\n    isValidOptionalString('phone', 7, 20) &&\r\n    isValidOptionalString('avatar_path', 1, 500) &&\r\n    isValidOptionalString('district', 1, 100) &&\r\n    isValidTimestamp('created_at') &&\r\n    isValidTimestamp('updated_at');\r\n}\r\n\r\n// Validate builder document\r\nfunction isValidBuilder(data) {\r\n  return hasOnlyAllowedFields(['profile_id', 'business_name', 'bio', 'years_experience', 'verification_status', 'average_rating', 'completed_jobs', 'response_time_minutes']) &&\r\n    data.profile_id is string && data.profile_id.size() > 0 && data.profile_id.size() < 128 &&\r\n    isValidOptionalString('business_name', 2, 100) &&\r\n    isValidOptionalString('bio', 1, 1000) &&\r\n    isPositive('years_experience') &&\r\n    data.verification_status in ['pending', 'verified', 'rejected'] &&\r\n    data.average_rating is number && data.average_rating >= 0 && data.average_rating <= 5 &&\r\n    isPositive('completed_jobs') &&\r\n    (data.response_time_minutes == null || (data.response_time_minutes is number && data.response_time_minutes >= 0));\r\n}\r\n\r\n// Validate category document\r\nfunction isValidCategory(data) {\r\n  return hasOnlyAllowedFields(['id', 'name', 'slug', 'icon']) &&\r\n    data.id is string && data.id.size() > 0 && data.id.size() < 128 &&\r\n    validStringLength('name', 2, 100) &&\r\n    validStringLength('slug', 2, 100) &&\r\n    isValidOptionalString('icon', 1, 500);\r\n}\r\n\r\n// Validate skill document\r\nfunction isValidSkill(data) {\r\n  return hasOnlyAllowedFields(['id', 'category_id', 'name']) &&\r\n    data.id is string && data.id.size() > 0 && data.id.size() < 128 &&\r\n    isValidOptionalString('category_id', 1, 128) &&\r\n    validStringLength('name', 2, 100);\r\n}\r\n\r\n// Validate builder_skill document\r\nfunction isValidBuilderSkill(data) {\r\n  return hasOnlyAllowedFields(['builder_id', 'skill_id']) &&\r\n    data.builder_id is string && data.builder_id.size() > 0 && data.builder_id.size() < 128 &&\r\n    data.skill_id is string && data.skill_id.size() > 0 && data.skill_id.size() < 128;\r\n}\r\n\r\n// Validate portfolio item document\r\nfunction isValidPortfolioItem(data) {\r\n  return hasOnlyAllowedFields(['id', 'builder_id', 'storage_path', 'caption', 'created_at']) &&\r\n    data.id is string && data.id.size() > 0 && data.id.size() < 128 &&\r\n    data.builder_id is string && data.builder_id.size() > 0 && data.builder_id.size() < 128 &&\r\n    data.storage_path is string && data.storage_path.size() > 0 && data.storage_path.size() < 500 &&\r\n    isValidOptionalString('caption', 1, 500) &&\r\n    isValidTimestamp('created_at');\r\n}\r\n\r\n// Validate builder document\r\nfunction isValidBuilderDocument(data) {\r\n  return hasOnlyAllowedFields(['id', 'builder_id', 'type', 'storage_path', 'review_status', 'created_at']) &&\r\n    data.id is string && data.id.size() > 0 && data.id.size() < 128 &&\r\n    data.builder_id is string && data.builder_id.size() > 0 && data.builder_id.size() < 128 &&\r\n    data.type in ['national_id', 'certificate', 'license'] &&\r\n    data.storage_path is string && data.storage_path.size() > 0 && data.storage_path.size() < 500 &&\r\n    data.review_status in ['pending', 'approved', 'rejected'] &&\r\n    isValidTimestamp('created_at');\r\n}\r\n\r\n// Check if user is a builder (has a builder profile)\r\nfunction isBuilder() {\r\n  return isAuthenticated() &&\r\n    exists(/databases/$(database)/documents/builders/$(request.auth.uid));\r\n}\r\n\r\n// Check if user is an administrator\r\nfunction isAdmin() {\r\n  return isAuthenticated() &&\r\n    get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.role == 'administrator';\r\n}\r\n\r\n// ===============================================================\r\n// Firestore Rules\r\n// ===============================================================\r\n\r\nservice cloud.firestore {\r\n  match /databases/{database}/documents {\r\n\r\n    // ===========================================================\r\n    // Profiles Collection\r\n    // Users can only read/write their own profile\r\n    // ===========================================================\r\n    match /profiles/{profileId} {\r\n      allow read: if isOwner(profileId);\r\n      allow create: if isOwner(profileId) &&\r\n        isValidProfile(request.resource.data) &&\r\n        request.resource.data.id == request.auth.uid &&\r\n        request.resource.data.role in ['customer', 'builder'] &&\r\n        request.resource.data.created_at == request.time;\r\n      allow update: if isOwner(profileId) &&\r\n        isValidProfile(request.resource.data) &&\r\n        uidNotModified() &&\r\n        areImmutableFieldsUnchanged(['id', 'role', 'created_at']) &&\r\n        request.resource.data.updated_at == request.time;\r\n      allow delete: if false;\r\n    }\r\n\r\n    // ===========================================================\r\n    // Builders Collection\r\n    // Builders can read/write their own builder profile\r\n    // Public can read verified builder profiles\r\n    // ===========================================================\r\n    match /builders/{builderId} {\r\n      allow read: if isOwner(builderId) ||\r\n        (isAuthenticated() && resource.data.verification_status == 'verified');\r\n      allow create: if isOwner(builderId) &&\r\n        isValidBuilder(request.resource.data) &&\r\n        request.resource.data.profile_id == request.auth.uid &&\r\n        request.resource.data.verification_status == 'pending';\r\n      allow update: if isOwner(builderId) &&\r\n        isValidBuilder(request.resource.data) &&\r\n        request.resource.data.profile_id == resource.data.profile_id &&\r\n        areImmutableFieldsUnchanged(['profile_id', 'average_rating', 'completed_jobs']) &&\r\n        (request.resource.data.verification_status == resource.data.verification_status ||\r\n         request.resource.data.verification_status == 'pending');\r\n      allow delete: if false;\r\n    }\r\n\r\n    // ===========================================================\r\n    // Categories Collection\r\n    // Readable by all authenticated users\r\n    // Only administrators can write\r\n    // ===========================================================\r\n    match /categories/{categoryId} {\r\n      allow read: if isAuthenticated();\r\n      allow create: if isAdmin() && isValidCategory(request.resource.data);\r\n      allow update: if isAdmin() && isValidCategory(request.resource.data) &&\r\n        areImmutableFieldsUnchanged(['id']);\r\n      allow delete: if isAdmin();\r\n    }\r\n\r\n    // ===========================================================\r\n    // Skills Collection\r\n    // Readable by all authenticated users\r\n    // Only administrators can write\r\n    // ===========================================================\r\n    match /skills/{skillId} {\r\n      allow read: if isAuthenticated();\r\n      allow create: if isAdmin() && isValidSkill(request.resource.data);\r\n      allow update: if isAdmin() && isValidSkill(request.resource.data) &&\r\n        areImmutableFieldsUnchanged(['id']);\r\n      allow delete: if isAdmin();\r\n    }\r\n\r\n    // ===========================================================\r\n    // Builder Skills Collection\r\n    // Builders can manage their own skills\r\n    // ===========================================================\r\n    match /builder_skills/{builderSkillId} {\r\n      allow read: if isAuthenticated();\r\n      allow create: if isBuilder() &&\r\n        isValidBuilderSkill(request.resource.data) &&\r\n        request.resource.data.builder_id == request.auth.uid;\r\n      allow update: if false;\r\n      allow delete: if isBuilder() &&\r\n        resource.data.builder_id == request.auth.uid;\r\n    }\r\n\r\n    // ===========================================================\r\n    // Portfolio Items Collection\r\n    // Builders can manage their own portfolio items\r\n    // ===========================================================\r\n    match /portfolio_items/{portfolioItemId} {\r\n      allow read: if isAuthenticated();\r\n      allow create: if isBuilder() &&\r\n        isValidPortfolioItem(request.resource.data) &&\r\n        request.resource.data.builder_id == request.auth.uid &&\r\n        request.resource.data.created_at == request.time;\r\n      allow update: if isBuilder() &&\r\n        isValidPortfolioItem(request.resource.data) &&\r\n        request.resource.data.builder_id == resource.data.builder_id &&\r\n        areImmutableFieldsUnchanged(['id', 'builder_id', 'created_at']);\r\n      allow delete: if isBuilder() &&\r\n        resource.data.builder_id == request.auth.uid;\r\n    }\r\n\r\n    // ===========================================================\r\n    // Builder Documents Collection\r\n    // Builders can manage their own documents\r\n    // Only administrators can change review status\r\n    // ===========================================================\r\n    match /builder_documents/{builderDocumentId} {\r\n      allow read: if isOwner(resource.data.builder_id) || isAdmin();\r\n      allow create: if isBuilder() &&\r\n        isValidBuilderDocument(request.resource.data) &&\r\n        request.resource.data.builder_id == request.auth.uid &&\r\n        request.resource.data.review_status == 'pending' &&\r\n        request.resource.data.created_at == request.time;\r\n      allow update: if (isBuilder() &&\r\n        request.resource.data.builder_id == resource.data.builder_id &&\r\n        areImmutableFieldsUnchanged(['id', 'builder_id', 'type', 'storage_path', 'created_at']) &&\r\n        request.resource.data.review_status == resource.data.review_status) ||\r\n        (isAdmin() &&\r\n        isValidBuilderDocument(request.resource.data) &&\r\n        areImmutableFieldsUnchanged(['id', 'builder_id', 'type', 'storage_path', 'created_at']));\r\n      allow delete: if isBuilder() &&\r\n        resource.data.builder_id == request.auth.uid;\r\n    }\r\n  }\r\n}","name":"firestore.rules"}]},"createTime":"2026-08-03T12:25:40.447251Z","metadata":{"services":["cloud.firestore"]},"attachmentPoint":"firestore.googleapis.com/projects/505701030512/databases/builderlink"}
+[debug] [2026-08-03T12:25:41.597Z] [rules] created ruleset projects/builderlink-cd7d0/rulesets/dbd6abb9-8129-47b9-a54b-5d64d8221cf1
+[debug] [2026-08-03T12:25:41.598Z] [rules] releasing cloud.firestore/builderlink with ruleset projects/builderlink-cd7d0/rulesets/dbd6abb9-8129-47b9-a54b-5d64d8221cf1
+[debug] [2026-08-03T12:25:41.599Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:25:41.600Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:25:41.600Z] >>> [apiv2][query] PATCH https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0/releases/cloud.firestore/builderlink [none]
+[debug] [2026-08-03T12:25:41.600Z] >>> [apiv2][body] PATCH https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0/releases/cloud.firestore/builderlink {"release":{"name":"projects/builderlink-cd7d0/releases/cloud.firestore/builderlink","rulesetName":"projects/builderlink-cd7d0/rulesets/dbd6abb9-8129-47b9-a54b-5d64d8221cf1"}}
+[debug] [2026-08-03T12:25:42.491Z] <<< [apiv2][status] PATCH https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0/releases/cloud.firestore/builderlink 404
+[debug] [2026-08-03T12:25:42.492Z] <<< [apiv2][body] PATCH https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0/releases/cloud.firestore/builderlink {"error":{"code":404,"message":"Requested entity was not found.","status":"NOT_FOUND"}}
+[debug] [2026-08-03T12:25:42.494Z] [rules] ruleset update failed, attempting to create instead
+[debug] [2026-08-03T12:25:42.495Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:25:42.495Z] Checked if tokens are valid: true, expires at: 1785761932083
+[debug] [2026-08-03T12:25:42.495Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0/releases [none]
+[debug] [2026-08-03T12:25:42.496Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0/releases {"name":"projects/builderlink-cd7d0/releases/cloud.firestore/builderlink","rulesetName":"projects/builderlink-cd7d0/rulesets/dbd6abb9-8129-47b9-a54b-5d64d8221cf1"}
+[debug] [2026-08-03T12:25:43.750Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0/releases 200
+[debug] [2026-08-03T12:25:43.751Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/builderlink-cd7d0/releases {"name":"projects/builderlink-cd7d0/releases/cloud.firestore/builderlink","rulesetName":"projects/builderlink-cd7d0/rulesets/dbd6abb9-8129-47b9-a54b-5d64d8221cf1","createTime":"2026-08-03T12:25:42.664611Z","updateTime":"2026-08-03T12:25:42.664611Z"}
+[debug] [2026-08-03T12:25:43.751Z] [rules] created release projects/builderlink-cd7d0/releases/cloud.firestore/builderlink
+[info] +  firestore: released rules firestore.rules to cloud.firestore 
+[info] 
+[info] +  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/builderlink-cd7d0/overview

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "505701030512",
+    "project_id": "builderlink-cd7d0",
+    "storage_bucket": "builderlink-cd7d0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:505701030512:android:008d38f20b5ebc7466f2b5",
+        "android_client_info": {
+          "package_name": "mw.builderlink.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAcAX-cUPQcztU8ezVzFRiwzI5DdxpI_-Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

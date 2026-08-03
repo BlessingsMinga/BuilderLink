@@ -1,0 +1,16 @@
+{
+  "auth": {
+    "providers": {
+      "anonymous": false,
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "BuilderLink Malawi",
+        "supportEmail": "blessingsminga11@gmail.com"
+      }
+    }
+  },
+  "firestore": {
+    "database": "builderlink",
+    "rules": "firestore.rules"
+  }
+}

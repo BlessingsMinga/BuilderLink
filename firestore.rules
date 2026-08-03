@@ -1,0 +1,368 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// This security rules file assumes the following data structures:
+//
+// Collection: profiles
+// Document ID: auto-generated
+// Fields:
+//   - id: string (required, immutable) - User's Firebase Auth UID
+//   - role: string (required, immutable) - 'customer' | 'builder' | 'administrator'
+//   - full_name: string (required, 2-100 chars) - User's full name
+//   - phone: string (optional, nullable) - User's phone number
+//   - avatar_path: string (optional, nullable) - Storage path to avatar
+//   - district: string (optional, nullable) - User's district
+//   - created_at: timestamp (required, immutable) - Creation time
+//   - updated_at: timestamp (required) - Last update time
+//
+// Collection: builders
+// Document ID: auto-generated
+// Fields:
+//   - profile_id: string (required, immutable) - Reference to profiles.id
+//   - business_name: string (optional, nullable, 2-100 chars)
+//   - bio: string (optional, nullable, max 1000 chars)
+//   - years_experience: number (required, >= 0)
+//   - verification_status: string (required) - 'pending' | 'verified' | 'rejected'
+//   - average_rating: number (required, 0-5)
+//   - completed_jobs: number (required, >= 0)
+//   - response_time_minutes: number (optional, nullable, >= 0)
+//
+// Collection: categories
+// Document ID: auto-generated
+// Fields:
+//   - id: string (required, immutable)
+//   - name: string (required, 2-100 chars)
+//   - slug: string (required, 2-100 chars)
+//   - icon: string (optional, nullable)
+//
+// Collection: skills
+// Document ID: auto-generated
+// Fields:
+//   - id: string (required, immutable)
+//   - category_id: string (optional, nullable) - Reference to categories.id
+//   - name: string (required, 2-100 chars)
+//
+// Collection: builder_skills
+// Document ID: auto-generated
+// Fields:
+//   - builder_id: string (required, immutable) - Reference to builders.profile_id
+//   - skill_id: string (required, immutable) - Reference to skills.id
+//
+// Collection: portfolio_items
+// Document ID: auto-generated
+// Fields:
+//   - id: string (required, immutable)
+//   - builder_id: string (required, immutable) - Reference to builders.profile_id
+//   - storage_path: string (required, valid URL path)
+//   - caption: string (optional, nullable, max 500 chars)
+//   - created_at: timestamp (required, immutable)
+//
+// Collection: builder_documents
+// Document ID: auto-generated
+// Fields:
+//   - id: string (required, immutable)
+//   - builder_id: string (required, immutable) - Reference to builders.profile_id
+//   - type: string (required) - 'national_id' | 'certificate' | 'license'
+//   - storage_path: string (required, valid URL path)
+//   - review_status: string (required) - 'pending' | 'approved' | 'rejected'
+//   - created_at: timestamp (required, immutable)
+//
+// ===============================================================
+
+// ===============================================================
+// Helper Functions
+// ===============================================================
+
+// Check if the user is authenticated
+function isAuthenticated() {
+  return request.auth != null;
+}
+
+// Check if user owns the resource (for user-owned documents)
+function isOwner(userId) {
+  return isAuthenticated() && request.auth.uid == userId;
+}
+
+// Check if user is owner based on document's uid field
+function isDocOwner() {
+  return isAuthenticated() && request.auth.uid == resource.data.id;
+}
+
+// Verify UID hasn't been tampered with on create
+function uidUnchanged() {
+  return !('id' in request.resource.data) ||
+    request.resource.data.id == request.auth.uid;
+}
+
+// Ensure uid field is not modified on update
+function uidNotModified() {
+  return !('id' in request.resource.data) ||
+    request.resource.data.id == resource.data.id;
+}
+
+// Validate required fields exist
+function hasRequiredFields(fields) {
+  return request.resource.data.keys().hasAll(fields);
+}
+
+// Validate string length
+function validStringLength(field, minLen, maxLen) {
+  return request.resource.data[field] is string &&
+    request.resource.data[field].size() >= minLen &&
+    request.resource.data[field].size() <= maxLen;
+}
+
+// Validate URL format (must start with https:// or http://)
+function isValidUrl(url) {
+  return url is string &&
+    (url.matches("^https://.*") || url.matches("^http://.*"));
+}
+
+// Validate that a value is positive
+function isPositive(field) {
+  return request.resource.data[field] is number && request.resource.data[field] >= 0;
+}
+
+// Validate that the document contains only the allowed fields
+function hasOnlyAllowedFields(fields) {
+  return request.resource.data.keys().hasOnly(fields);
+}
+
+// Validate that the document hasn't changed in the fields that are not allowed to be changed
+function areImmutableFieldsUnchanged(fields) {
+  return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+}
+
+// Validate optional string (if present, must be string and within length)
+function isValidOptionalString(field, minLen, maxLen) {
+  return !(field in request.resource.data) ||
+         request.resource.data[field] == null ||
+         (request.resource.data[field] is string &&
+          request.resource.data[field].size() >= minLen &&
+          request.resource.data[field].size() <= maxLen);
+}
+
+// Validate that a timestamp is a valid timestamp
+function isValidTimestamp(field) {
+  return request.resource.data[field] is timestamp;
+}
+
+// ===============================================================
+// Domain Validators
+// ===============================================================
+
+// Validate profile document
+function isValidProfile(data) {
+  return hasOnlyAllowedFields(['id', 'role', 'full_name', 'phone', 'avatar_path', 'district', 'created_at', 'updated_at']) &&
+    data.id is string && data.id.size() > 0 && data.id.size() < 128 &&
+    data.role in ['customer', 'builder', 'administrator'] &&
+    validStringLength('full_name', 2, 100) &&
+    isValidOptionalString('phone', 7, 20) &&
+    isValidOptionalString('avatar_path', 1, 500) &&
+    isValidOptionalString('district', 1, 100) &&
+    isValidTimestamp('created_at') &&
+    isValidTimestamp('updated_at');
+}
+
+// Validate builder document
+function isValidBuilder(data) {
+  return hasOnlyAllowedFields(['profile_id', 'business_name', 'bio', 'years_experience', 'verification_status', 'average_rating', 'completed_jobs', 'response_time_minutes']) &&
+    data.profile_id is string && data.profile_id.size() > 0 && data.profile_id.size() < 128 &&
+    isValidOptionalString('business_name', 2, 100) &&
+    isValidOptionalString('bio', 1, 1000) &&
+    isPositive('years_experience') &&
+    data.verification_status in ['pending', 'verified', 'rejected'] &&
+    data.average_rating is number && data.average_rating >= 0 && data.average_rating <= 5 &&
+    isPositive('completed_jobs') &&
+    (data.response_time_minutes == null || (data.response_time_minutes is number && data.response_time_minutes >= 0));
+}
+
+// Validate category document
+function isValidCategory(data) {
+  return hasOnlyAllowedFields(['id', 'name', 'slug', 'icon']) &&
+    data.id is string && data.id.size() > 0 && data.id.size() < 128 &&
+    validStringLength('name', 2, 100) &&
+    validStringLength('slug', 2, 100) &&
+    isValidOptionalString('icon', 1, 500);
+}
+
+// Validate skill document
+function isValidSkill(data) {
+  return hasOnlyAllowedFields(['id', 'category_id', 'name']) &&
+    data.id is string && data.id.size() > 0 && data.id.size() < 128 &&
+    isValidOptionalString('category_id', 1, 128) &&
+    validStringLength('name', 2, 100);
+}
+
+// Validate builder_skill document
+function isValidBuilderSkill(data) {
+  return hasOnlyAllowedFields(['builder_id', 'skill_id']) &&
+    data.builder_id is string && data.builder_id.size() > 0 && data.builder_id.size() < 128 &&
+    data.skill_id is string && data.skill_id.size() > 0 && data.skill_id.size() < 128;
+}
+
+// Validate portfolio item document
+function isValidPortfolioItem(data) {
+  return hasOnlyAllowedFields(['id', 'builder_id', 'storage_path', 'caption', 'created_at']) &&
+    data.id is string && data.id.size() > 0 && data.id.size() < 128 &&
+    data.builder_id is string && data.builder_id.size() > 0 && data.builder_id.size() < 128 &&
+    data.storage_path is string && data.storage_path.size() > 0 && data.storage_path.size() < 500 &&
+    isValidOptionalString('caption', 1, 500) &&
+    isValidTimestamp('created_at');
+}
+
+// Validate builder document
+function isValidBuilderDocument(data) {
+  return hasOnlyAllowedFields(['id', 'builder_id', 'type', 'storage_path', 'review_status', 'created_at']) &&
+    data.id is string && data.id.size() > 0 && data.id.size() < 128 &&
+    data.builder_id is string && data.builder_id.size() > 0 && data.builder_id.size() < 128 &&
+    data.type in ['national_id', 'certificate', 'license'] &&
+    data.storage_path is string && data.storage_path.size() > 0 && data.storage_path.size() < 500 &&
+    data.review_status in ['pending', 'approved', 'rejected'] &&
+    isValidTimestamp('created_at');
+}
+
+// Check if user is a builder (has a builder profile)
+function isBuilder() {
+  return isAuthenticated() &&
+    exists(/databases/$(database)/documents/builders/$(request.auth.uid));
+}
+
+// Check if user is an administrator
+function isAdmin() {
+  return isAuthenticated() &&
+    get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.role == 'administrator';
+}
+
+// ===============================================================
+// Firestore Rules
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===========================================================
+    // Profiles Collection
+    // Users can only read/write their own profile
+    // ===========================================================
+    match /profiles/{profileId} {
+      allow read: if isOwner(profileId);
+      allow create: if isOwner(profileId) &&
+        isValidProfile(request.resource.data) &&
+        request.resource.data.id == request.auth.uid &&
+        request.resource.data.role in ['customer', 'builder'] &&
+        request.resource.data.created_at == request.time;
+      allow update: if isOwner(profileId) &&
+        isValidProfile(request.resource.data) &&
+        uidNotModified() &&
+        areImmutableFieldsUnchanged(['id', 'role', 'created_at']) &&
+        request.resource.data.updated_at == request.time;
+      allow delete: if false;
+    }
+
+    // ===========================================================
+    // Builders Collection
+    // Builders can read/write their own builder profile
+    // Public can read verified builder profiles
+    // ===========================================================
+    match /builders/{builderId} {
+      allow read: if isOwner(builderId) ||
+        (isAuthenticated() && resource.data.verification_status == 'verified');
+      allow create: if isOwner(builderId) &&
+        isValidBuilder(request.resource.data) &&
+        request.resource.data.profile_id == request.auth.uid &&
+        request.resource.data.verification_status == 'pending';
+      allow update: if isOwner(builderId) &&
+        isValidBuilder(request.resource.data) &&
+        request.resource.data.profile_id == resource.data.profile_id &&
+        areImmutableFieldsUnchanged(['profile_id', 'average_rating', 'completed_jobs']) &&
+        (request.resource.data.verification_status == resource.data.verification_status ||
+         request.resource.data.verification_status == 'pending');
+      allow delete: if false;
+    }
+
+    // ===========================================================
+    // Categories Collection
+    // Readable by all authenticated users
+    // Only administrators can write
+    // ===========================================================
+    match /categories/{categoryId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() && isValidCategory(request.resource.data);
+      allow update: if isAdmin() && isValidCategory(request.resource.data) &&
+        areImmutableFieldsUnchanged(['id']);
+      allow delete: if isAdmin();
+    }
+
+    // ===========================================================
+    // Skills Collection
+    // Readable by all authenticated users
+    // Only administrators can write
+    // ===========================================================
+    match /skills/{skillId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() && isValidSkill(request.resource.data);
+      allow update: if isAdmin() && isValidSkill(request.resource.data) &&
+        areImmutableFieldsUnchanged(['id']);
+      allow delete: if isAdmin();
+    }
+
+    // ===========================================================
+    // Builder Skills Collection
+    // Builders can manage their own skills
+    // ===========================================================
+    match /builder_skills/{builderSkillId} {
+      allow read: if isAuthenticated();
+      allow create: if isBuilder() &&
+        isValidBuilderSkill(request.resource.data) &&
+        request.resource.data.builder_id == request.auth.uid;
+      allow update: if false;
+      allow delete: if isBuilder() &&
+        resource.data.builder_id == request.auth.uid;
+    }
+
+    // ===========================================================
+    // Portfolio Items Collection
+    // Builders can manage their own portfolio items
+    // ===========================================================
+    match /portfolio_items/{portfolioItemId} {
+      allow read: if isAuthenticated();
+      allow create: if isBuilder() &&
+        isValidPortfolioItem(request.resource.data) &&
+        request.resource.data.builder_id == request.auth.uid &&
+        request.resource.data.created_at == request.time;
+      allow update: if isBuilder() &&
+        isValidPortfolioItem(request.resource.data) &&
+        request.resource.data.builder_id == resource.data.builder_id &&
+        areImmutableFieldsUnchanged(['id', 'builder_id', 'created_at']);
+      allow delete: if isBuilder() &&
+        resource.data.builder_id == request.auth.uid;
+    }
+
+    // ===========================================================
+    // Builder Documents Collection
+    // Builders can manage their own documents
+    // Only administrators can change review status
+    // ===========================================================
+    match /builder_documents/{builderDocumentId} {
+      allow read: if isOwner(resource.data.builder_id) || isAdmin();
+      allow create: if isBuilder() &&
+        isValidBuilderDocument(request.resource.data) &&
+        request.resource.data.builder_id == request.auth.uid &&
+        request.resource.data.review_status == 'pending' &&
+        request.resource.data.created_at == request.time;
+      allow update: if (isBuilder() &&
+        request.resource.data.builder_id == resource.data.builder_id &&
+        areImmutableFieldsUnchanged(['id', 'builder_id', 'type', 'storage_path', 'created_at']) &&
+        request.resource.data.review_status == resource.data.review_status) ||
+        (isAdmin() &&
+        isValidBuilderDocument(request.resource.data) &&
+        areImmutableFieldsUnchanged(['id', 'builder_id', 'type', 'storage_path', 'created_at']));
+      allow delete: if isBuilder() &&
+        resource.data.builder_id == request.auth.uid;
+    }
+  }
+}
