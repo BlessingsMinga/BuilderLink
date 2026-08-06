@@ -13,7 +13,6 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.0",
     "@react-native-async-storage/async-storage": "^2.2.0",
-    "@react-native-google-signin/google-signin": "^16.1.4",
     "@supabase/supabase-js": "2.111.0",
     "@tanstack/react-query": "^5.87.1",
     "expo": "~54.0.0",
