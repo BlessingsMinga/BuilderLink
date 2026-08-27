@@ -7,8 +7,7 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "plugins": [
-      "expo-router",
-      "@react-native-google-signin/google-signin"
+      "expo-router"
     ],
     "experiments": {
       "typedRoutes": true
