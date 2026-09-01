@@ -5,5 +5,90 @@ import { Pressable, Text, TextInput, View } from 'react-native';
 import { Screen } from '@/shared/components/screen';
 
 const districts = ['All districts', 'Lilongwe', 'Blantyre', 'Mzuzu', 'Zomba', 'Kasungu', 'Salima', 'Mangochi', 'Mzimba'];
-const builders = [{ id: 'demo-builder', name: 'Thoko Mbewe', trade: 'Bricklayer', district: 'Lilongwe', rating: 4.9, experience: 8, rate: 'MWK 25,000/day' }, { id: 'paul-moyo', name: 'Paul Moyo', trade: 'Electrician', district: 'Blantyre', rating: 4.8, experience: 6, rate: 'MWK 30,000/day' }, { id: 'ruth-nyirenda', name: 'Ruth Nyirenda', trade: 'Plumber', district: 'Mzuzu', rating: 4.7, experience: 5, rate: 'MWK 22,000/day' }];
-export default function Search() { const [query, setQuery] = useState(''); const [district, setDistrict] = useState('All districts'); const [verified, setVerified] = useState(false); const [showFilters, setShowFilters] = useState(false); const results = useMemo(() => builders.filter((b) => (district === 'All districts' || b.district === district) && `${b.name} ${b.trade}`.toLowerCase().includes(query.toLowerCase())), [district, query]); return <Screen><Text className="text-2xl font-extrabold text-ink">Find professionals</Text><View className="mt-6 flex-row gap-3"><View className="flex-1 flex-row items-center gap-2 rounded-2xl bg-white px-4"><SearchIcon size={19} color="#64748B" /><TextInput value={query} onChangeText={setQuery} className="h-14 flex-1 text-base" placeholder="Search a trade or name" /></View><Pressable onPress={() => setShowFilters(!showFilters)} className="h-14 w-14 items-center justify-center rounded-2xl bg-brand"><Filter color="white" size={20} /></Pressable></View>{showFilters ? <View className="mt-4 rounded-3xl bg-white p-4"><Text className="font-bold text-ink">District</Text><View className="mt-3 flex-row flex-wrap gap-2">{districts.map((item) => <Pressable key={item} onPress={() => setDistrict(item)} className={`rounded-xl px-3 py-2 ${item === district ? 'bg-brand' : 'bg-slate-100'}`}><Text className={`text-sm font-semibold ${item === district ? 'text-white' : 'text-slate-600'}`}>{item}</Text></Pressable>)}</View><Pressable onPress={() => setVerified(!verified)} className="mt-4 flex-row items-center gap-2"><View className={`h-5 w-5 rounded ${verified ? 'bg-success' : 'border border-slate-300'}`} /> <Text className="font-semibold text-ink">Verified professionals only</Text></Pressable></View> : null}<View className="mt-7 flex-row items-center justify-between"><Text className="text-lg font-bold text-ink">{results.length} professionals found</Text><Text className="font-semibold text-brand">Top rated</Text></View><View className="mt-3 gap-3">{results.map((builder) => <Pressable key={builder.id} onPress={() => router.push(`/builders/${builder.id}` as never)} className="rounded-3xl bg-white p-5"><View className="flex-row justify-between"><View><Text className="text-lg font-bold text-ink">{builder.name}</Text><Text className="mt-1 text-slate-500">{builder.trade} · {builder.experience} years</Text></View><View className="flex-row items-center gap-1"><Star size={16} color="#F97316" fill="#F97316" /><Text className="font-bold text-ink">{builder.rating}</Text></View></View><View className="mt-4 flex-row items-center justify-between"><View className="flex-row items-center gap-1"><MapPin size={16} color="#64748B" /><Text className="text-sm text-slate-500">{builder.district}</Text></View><Text className="font-bold text-brand">{builder.rate}</Text></View>{verified ? <View className="mt-3 flex-row items-center gap-1"><ShieldCheck size={16} color="#16A34A" /><Text className="text-sm font-semibold text-success">Verified</Text></View> : null}</Pressable>)}</View></Screen>; }
+const builders = [
+  { id: 'demo-builder', name: 'Thoko Mbewe', trade: 'Bricklayer', district: 'Lilongwe', rating: 4.9, experience: 8, rate: 'MWK 25,000/day', verified: true },
+  { id: 'paul-moyo', name: 'Paul Moyo', trade: 'Electrician', district: 'Blantyre', rating: 4.8, experience: 6, rate: 'MWK 30,000/day', verified: true },
+  { id: 'ruth-nyirenda', name: 'Ruth Nyirenda', trade: 'Plumber', district: 'Mzuzu', rating: 4.7, experience: 5, rate: 'MWK 22,000/day', verified: false },
+];
+
+export default function Search() {
+  const [query, setQuery] = useState('');
+  const [district, setDistrict] = useState('All districts');
+  const [verified, setVerified] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+
+  const results = useMemo(() => {
+    const matchesQuery = (b: { name: string; trade: string }) =>
+      `${b.name} ${b.trade}`.toLowerCase().includes(query.toLowerCase());
+    return builders.filter(
+      (b) =>
+        (district === 'All districts' || b.district === district) &&
+        (!verified || b.verified) &&
+        matchesQuery(b),
+    );
+  }, [district, query, verified]);
+
+  return (
+    <Screen>
+      <Text className="text-2xl font-extrabold text-ink">Find professionals</Text>
+      <View className="mt-6 flex-row gap-3">
+        <View className="flex-1 flex-row items-center gap-2 rounded-2xl bg-white px-4">
+          <SearchIcon size={19} color="#64748B" />
+          <TextInput value={query} onChangeText={setQuery} className="h-14 flex-1 text-base" placeholder="Search a trade or name" />
+        </View>
+        <Pressable onPress={() => setShowFilters(!showFilters)} className="h-14 w-14 items-center justify-center rounded-2xl bg-brand">
+          <Filter color="white" size={20} />
+        </Pressable>
+      </View>
+      {showFilters ? (
+        <View className="mt-4 rounded-3xl bg-white p-4">
+          <Text className="font-bold text-ink">District</Text>
+          <View className="mt-3 flex-row flex-wrap gap-2">
+            {districts.map((item) => (
+              <Pressable key={item} onPress={() => setDistrict(item)} className={`rounded-xl px-3 py-2 ${item === district ? 'bg-brand' : 'bg-slate-100'}`}>
+                <Text className={`text-sm font-semibold ${item === district ? 'text-white' : 'text-slate-600'}`}>{item}</Text>
+              </Pressable>
+            ))}
+          </View>
+          <Pressable onPress={() => setVerified(!verified)} className="mt-4 flex-row items-center gap-2">
+            <View className={`h-5 w-5 rounded ${verified ? 'bg-success' : 'border border-slate-300'}`} />
+            <Text className="font-semibold text-ink">Verified professionals only</Text>
+          </Pressable>
+        </View>
+      ) : null}
+      <View className="mt-7 flex-row items-center justify-between">
+        <Text className="text-lg font-bold text-ink">{results.length} professionals found</Text>
+        <Text className="font-semibold text-brand">Top rated</Text>
+      </View>
+      <View className="mt-3 gap-3">
+        {results.map((builder) => (
+          <Pressable key={builder.id} onPress={() => router.push(`/builders/${builder.id}` as never)} className="rounded-3xl bg-white p-5">
+            <View className="flex-row justify-between">
+              <View>
+                <Text className="text-lg font-bold text-ink">{builder.name}</Text>
+                <Text className="mt-1 text-slate-500">{builder.trade} · {builder.experience} years</Text>
+              </View>
+              <View className="flex-row items-center gap-1">
+                <Star size={16} color="#F97316" fill="#F97316" />
+                <Text className="font-bold text-ink">{builder.rating}</Text>
+              </View>
+            </View>
+            <View className="mt-4 flex-row items-center justify-between">
+              <View className="flex-row items-center gap-1">
+                <MapPin size={16} color="#64748B" />
+                <Text className="text-sm text-slate-500">{builder.district}</Text>
+              </View>
+              <Text className="font-bold text-brand">{builder.rate}</Text>
+            </View>
+            {builder.verified ? (
+              <View className="mt-3 flex-row items-center gap-1">
+                <ShieldCheck size={16} color="#16A34A" />
+                <Text className="text-sm font-semibold text-success">Verified</Text>
+              </View>
+            ) : null}
+          </Pressable>
+        ))}
+      </View>
+    </Screen>
+  );
+}

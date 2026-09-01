@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
-import { Pressable, Text, View } from 'react-native';
+import { Alert, Pressable, Text, View } from 'react-native';
 import { signInSchema, type SignInInput } from '@/features/authentication/schemas/auth-schemas';
 import { authService } from '@/features/authentication/services/auth-service';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
@@ -18,9 +18,13 @@ export default function Login() {
   });
 
   const submit = async (input: SignInInput) => {
-    const session = await authService.signIn(input);
-    setSession(session);
-    router.replace('/(tabs)');
+    try {
+      const session = await authService.signIn(input);
+      setSession(session);
+      router.replace('/(tabs)');
+    } catch {
+      Alert.alert('Could not sign in', 'Check your email and password, then try again.');
+    }
   };
 
   return (
