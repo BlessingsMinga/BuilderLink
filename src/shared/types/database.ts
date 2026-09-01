@@ -5,4 +5,4 @@ export type Category = { id: string; name: string; slug: string; icon: string | 
 export type Skill = { id: string; category_id: string | null; name: string };
 export type BuilderSkill = { builder_id: string; skill_id: string };
 export type PortfolioItem = { id: string; builder_id: string; storage_path: string; caption: string | null; created_at: string };
-export type BuilderDocument = { id: string; builder_id: string; type: 'national_id' | 'certificate' | 'license'; storage_path: string; review_status: 'pending' | 'approved' | 'rejected'; created_at: string };
+export type BuilderDocument = { id: string; builder_id: string; type: 'national_id' | 'certificate' | 'license'; storage_path: string; review_status: 'pending' | 'verified' | 'rejected'; created_at: string };

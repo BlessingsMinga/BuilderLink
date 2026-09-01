@@ -4,6 +4,7 @@ import { Camera, ChevronLeft, FileCheck2, Plus } from 'lucide-react-native';
 import { useState } from 'react';
 import { Alert, Pressable, Text, TextInput, View } from 'react-native';
 import { AppButton } from '@/shared/components/app-button';
+import { Protected } from '@/shared/components/protected';
 import { Screen } from '@/shared/components/screen';
 
 export default function BuilderProfile() {
@@ -45,7 +46,8 @@ export default function BuilderProfile() {
   };
 
   return (
-    <Screen>
+    <Protected>
+      <Screen>
       <Pressable onPress={() => router.back()} className="h-11 w-11 items-center justify-center rounded-2xl bg-white">
         <ChevronLeft color="#1E293B" />
       </Pressable>
@@ -98,6 +100,7 @@ export default function BuilderProfile() {
         <AppButton label="Save builder profile" loading={submitting} onPress={save} />
       </View>
     </Screen>
+    </Protected>
   );
 }
 

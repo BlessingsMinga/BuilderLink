@@ -15,6 +15,9 @@ expo-env.d.ts
 # Firebase debug logs
 firebase-debug.log
 
+# Dependencies — never commit node_modules
+node_modules/
+
 # Native build artifacts
 android/
 ios/
@@ -23,6 +26,10 @@ ios/
 *.p12
 *.key
 *.mobileprovision
+
+# Firebase / native project config — never commit platform credentials
+google-services.json
+GoogleService-Info.plist
 
 # Supabase local artifacts
 supabase/.temp/

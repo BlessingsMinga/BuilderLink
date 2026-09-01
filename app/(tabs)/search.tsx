@@ -1,32 +1,39 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Filter, MapPin, Search as SearchIcon, ShieldCheck, Star } from 'lucide-react-native';
-import { useMemo, useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { useMemo, useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
+import { useBuilders } from '@/features/builders/hooks/use-builders';
+import { MALAWI_DISTRICTS } from '@/features/builders/services/builder-service';
 import { Screen } from '@/shared/components/screen';
 
-const districts = ['All districts', 'Lilongwe', 'Blantyre', 'Mzuzu', 'Zomba', 'Kasungu', 'Salima', 'Mangochi', 'Mzimba'];
-const builders = [
-  { id: 'demo-builder', name: 'Thoko Mbewe', trade: 'Bricklayer', district: 'Lilongwe', rating: 4.9, experience: 8, rate: 'MWK 25,000/day', verified: true },
-  { id: 'paul-moyo', name: 'Paul Moyo', trade: 'Electrician', district: 'Blantyre', rating: 4.8, experience: 6, rate: 'MWK 30,000/day', verified: true },
-  { id: 'ruth-nyirenda', name: 'Ruth Nyirenda', trade: 'Plumber', district: 'Mzuzu', rating: 4.7, experience: 5, rate: 'MWK 22,000/day', verified: false },
-];
+const districts = ['All districts', ...MALAWI_DISTRICTS];
 
 export default function Search() {
-  const [query, setQuery] = useState('');
+  // `q` may be supplied when browsing by trade from the Home screen.
+  const { q } = useLocalSearchParams<{ q?: string }>();
+  const [query, setQuery] = useState(q ?? '');
   const [district, setDistrict] = useState('All districts');
   const [verified, setVerified] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
+  // Keep the search box in sync when navigated to with a new trade query.
+  useEffect(() => {
+    setQuery(q ?? '');
+  }, [q]);
+
+  const { data: builders = [], isLoading, isError, refetch } = useBuilders();
+
   const results = useMemo(() => {
-    const matchesQuery = (b: { name: string; trade: string }) =>
-      `${b.name} ${b.trade}`.toLowerCase().includes(query.toLowerCase());
+    const q = query.trim().toLowerCase();
+    const matchesQuery = (b: { name: string; trades: string[] }) =>
+      !q || `${b.name} ${b.trades.join(' ')}`.toLowerCase().includes(q);
     return builders.filter(
       (b) =>
         (district === 'All districts' || b.district === district) &&
         (!verified || b.verified) &&
         matchesQuery(b),
     );
-  }, [district, query, verified]);
+  }, [builders, district, query, verified]);
 
   return (
     <Screen>
@@ -60,35 +67,63 @@ export default function Search() {
         <Text className="text-lg font-bold text-ink">{results.length} professionals found</Text>
         <Text className="font-semibold text-brand">Top rated</Text>
       </View>
-      <View className="mt-3 gap-3">
-        {results.map((builder) => (
-          <Pressable key={builder.id} onPress={() => router.push(`/builders/${builder.id}` as never)} className="rounded-3xl bg-white p-5">
-            <View className="flex-row justify-between">
-              <View>
-                <Text className="text-lg font-bold text-ink">{builder.name}</Text>
-                <Text className="mt-1 text-slate-500">{builder.trade} · {builder.experience} years</Text>
-              </View>
-              <View className="flex-row items-center gap-1">
-                <Star size={16} color="#F97316" fill="#F97316" />
-                <Text className="font-bold text-ink">{builder.rating}</Text>
-              </View>
-            </View>
-            <View className="mt-4 flex-row items-center justify-between">
-              <View className="flex-row items-center gap-1">
-                <MapPin size={16} color="#64748B" />
-                <Text className="text-sm text-slate-500">{builder.district}</Text>
-              </View>
-              <Text className="font-bold text-brand">{builder.rate}</Text>
-            </View>
-            {builder.verified ? (
-              <View className="mt-3 flex-row items-center gap-1">
-                <ShieldCheck size={16} color="#16A34A" />
-                <Text className="text-sm font-semibold text-success">Verified</Text>
-              </View>
-            ) : null}
+
+      {isLoading ? (
+        <View className="mt-10 items-center gap-3">
+          <ActivityIndicator size="large" color="#F97316" />
+          <Text className="text-slate-500">Loading professionals…</Text>
+        </View>
+      ) : isError ? (
+        <View className="mt-10 items-center gap-4 rounded-3xl bg-white p-6">
+          <Text className="text-base text-slate-500">We couldn’t load professionals right now.</Text>
+          <Pressable onPress={() => refetch()} className="rounded-2xl bg-brand px-6 py-3">
+            <Text className="font-bold text-white">Try again</Text>
           </Pressable>
-        ))}
-      </View>
+        </View>
+      ) : results.length === 0 ? (
+        <View className="mt-10 items-center gap-3 rounded-3xl bg-white p-6">
+          <Text className="text-lg font-bold text-ink">No professionals found</Text>
+          <Text className="text-center text-base leading-6 text-slate-500">
+            Try a different search or clear your filters. New builders appear here once verified.
+          </Text>
+        </View>
+      ) : (
+        <View className="mt-3 gap-3">
+          {results.map((builder) => (
+            <Pressable
+              key={builder.id}
+              onPress={() => router.push({ pathname: '/builders/[id]', params: { id: builder.id } })}
+              className="rounded-3xl bg-white p-5"
+            >
+              <View className="flex-row justify-between">
+                <View className="flex-1 pr-3">
+                  <Text className="text-lg font-bold text-ink">{builder.name}</Text>
+                  <Text className="mt-1 text-slate-500">
+                    {builder.trades.length ? builder.trades.join(' · ') : 'Construction professional'} · {builder.experience} years
+                  </Text>
+                </View>
+                <View className="flex-row items-center gap-1">
+                  <Star size={16} color="#F97316" fill="#F97316" />
+                  <Text className="font-bold text-ink">{builder.rating.toFixed(1)}</Text>
+                </View>
+              </View>
+              <View className="mt-4 flex-row items-center justify-between">
+                <View className="flex-row items-center gap-1">
+                  <MapPin size={16} color="#64748B" />
+                  <Text className="text-sm text-slate-500">{builder.district ?? 'Malawi'}</Text>
+                </View>
+                <Text className="font-semibold text-slate-500">{builder.completedJobs} jobs done</Text>
+              </View>
+              {builder.verified ? (
+                <View className="mt-3 flex-row items-center gap-1">
+                  <ShieldCheck size={16} color="#16A34A" />
+                  <Text className="text-sm font-semibold text-success">Verified</Text>
+                </View>
+              ) : null}
+            </Pressable>
+          ))}
+        </View>
+      )}
     </Screen>
   );
 }

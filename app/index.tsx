@@ -1,2 +1,8 @@
 import { Redirect } from 'expo-router';
-export default function Index() { return <Redirect href="/onboarding" />; }
+import { useAuthStore } from '@/features/authentication/store/auth-store';
+
+export default function Index() {
+  const session = useAuthStore((state) => state.session);
+  // Send signed-in users straight to the app; everyone else to onboarding.
+  return <Redirect href={session ? '/(tabs)' : '/onboarding'} />;
+}

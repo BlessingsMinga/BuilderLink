@@ -38,7 +38,7 @@ export default function Profile() {
       </View>
       <View className="mt-5 rounded-3xl bg-white">
         <Pressable
-          onPress={() => router.push('/builder-profile' as never)}
+          onPress={() => router.push('/builder-profile')}
           className="flex-row items-center gap-4 border-b border-slate-100 p-5"
         >
           <BriefcaseBusiness size={20} color="#F97316" />

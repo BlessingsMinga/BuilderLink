@@ -1,8 +1,10 @@
 import {
   createUserWithEmailAndPassword,
+  GoogleAuthProvider,
   onAuthStateChanged,
   sendEmailVerification,
   sendPasswordResetEmail,
+  signInWithCredential,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   type User,
@@ -56,6 +58,35 @@ async function ensureProfile(
   }
 }
 
+/**
+ * Persist (or refresh) the Supabase profile row for an account created via
+ * Google. Google accounts carry a display name; we default the role to the
+ * chosen registration role ('customer' unless a builder was selected).
+ */
+async function ensureGoogleProfile(
+  uid: string,
+  email: string,
+  displayName: string | null,
+  role: UserRole,
+): Promise<void> {
+  if (!supabase || !isSupabaseConfigured) return;
+  const localPart = email.split('@')[0] || 'BuilderLink member';
+  const resolvedName =
+    displayName && displayName.trim().length >= 2
+      ? displayName.trim()
+      : localPart.trim().length >= 2
+        ? localPart.trim()
+        : 'BuilderLink member';
+
+  const { error } = await supabase.from('profiles').upsert(
+    { id: uid, role, full_name: resolvedName, email },
+    { onConflict: 'id' },
+  );
+  if (error && !String(error.message).includes('duplicate')) {
+    throw new Error('Could not create your profile. Please try again.');
+  }
+}
+
 export const authService = {
   async signIn(input: SignInInput): Promise<AuthSession> {
     const auth = requireAuth();
@@ -72,6 +103,22 @@ export const authService = {
     await ensureProfile(credential.user.uid, input.email.trim(), role, input);
     await sendEmailVerification(credential.user);
     return session(credential.user.uid, input.email, role);
+  },
+
+  /**
+   * Sign in (or sign up) with a Google ID token from the OAuth flow.
+   * Google-created accounts are already email-verified, so no verification
+   * email is required. A profile row is upserted when one doesn't exist yet.
+   * Throws the Firebase error (e.g. `auth/account-exists-with-different-credential`)
+   * so callers can surface a helpful message.
+   */
+  async signInWithGoogle(idToken: string, role: UserRole = 'customer'): Promise<AuthSession> {
+    const auth = requireAuth();
+    const result = await signInWithCredential(auth, GoogleAuthProvider.credential(idToken));
+    const user = result.user;
+    await ensureGoogleProfile(user.uid, user.email ?? '', user.displayName, role);
+    const resolvedRole = await fetchUserRole(user.uid);
+    return session(user.uid, user.email ?? '', resolvedRole);
   },
 
   async requestPasswordReset(input: ForgotPasswordInput): Promise<void> {
