@@ -9,9 +9,9 @@ import {
   signOut as firebaseSignOut,
   type User,
 } from 'firebase/auth';
+import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import type { ForgotPasswordInput, RegistrationInput, SignInInput } from '../schemas/auth-schemas';
-import { firebaseAuth, isFirebaseConfigured } from '@/shared/services/firebase';
-import { supabase, isSupabaseConfigured } from '@/shared/services/supabase';
+import { firebaseAuth, firebaseDb, isFirebaseConfigured } from '@/shared/services/firebase';
 import type { AuthSession, UserRole } from '@/shared/types';
 
 const requireAuth = () => {
@@ -21,45 +21,37 @@ const requireAuth = () => {
 
 const session = (id: string, email: string, role: UserRole): AuthSession => ({ userId: id, email, role });
 
-/** Fetch the user's role from the Supabase profiles table. Defaults to 'customer'. */
+/** Fetch the user's role from their private Firestore profile. */
 async function fetchUserRole(uid: string): Promise<UserRole> {
-  if (!supabase || !isSupabaseConfigured) return 'customer';
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', uid)
-    .single();
-  if (error || !data) return 'customer';
-  return (data.role as UserRole) ?? 'customer';
+  if (!firebaseDb) return 'customer';
+  const snapshot = await getDoc(doc(firebaseDb, 'profiles', uid));
+  if (!snapshot.exists()) return 'customer';
+  return (snapshot.data().role as UserRole) ?? 'customer';
 }
 
-/** Create a profile row immediately after Firebase user creation so the role is persisted. */
+/** Create a private Firestore profile immediately after Firebase user creation. */
 async function ensureProfile(
   uid: string,
   email: string,
   role: UserRole,
   input: RegistrationInput,
 ): Promise<void> {
-  if (!supabase || !isSupabaseConfigured) return;
-  const { error } = await supabase.from('profiles').insert({
+  if (!firebaseDb) throw new Error('Firestore has not been configured.');
+  await setDoc(doc(firebaseDb, 'profiles', uid), {
     id: uid,
     role,
     full_name: input.fullName,
     phone: input.phone || null,
     email,
-    // Builder-specific fields are stored on the builders table once the user
-    // completes their builder profile; the profile row only needs the basics.
+    avatar_path: null,
+    district: null,
+    created_at: serverTimestamp(),
+    updated_at: serverTimestamp(),
   });
-  if (error) {
-    // If the profile already exists (e.g. re-registration edge case), ignore.
-    if (!String(error.message).includes('duplicate')) {
-      throw new Error('Could not create your profile. Please try again.');
-    }
-  }
 }
 
 /**
- * Persist (or refresh) the Supabase profile row for an account created via
+ * Persist (or refresh) the Firestore profile for an account created via
  * Google. Google accounts carry a display name; we default the role to the
  * chosen registration role ('customer' unless a builder was selected).
  */
@@ -69,7 +61,7 @@ async function ensureGoogleProfile(
   displayName: string | null,
   role: UserRole,
 ): Promise<void> {
-  if (!supabase || !isSupabaseConfigured) return;
+  if (!firebaseDb) throw new Error('Firestore has not been configured.');
   const localPart = email.split('@')[0] || 'BuilderLink member';
   const resolvedName =
     displayName && displayName.trim().length >= 2
@@ -78,13 +70,19 @@ async function ensureGoogleProfile(
         ? localPart.trim()
         : 'BuilderLink member';
 
-  const { error } = await supabase.from('profiles').upsert(
-    { id: uid, role, full_name: resolvedName, email },
-    { onConflict: 'id' },
-  );
-  if (error && !String(error.message).includes('duplicate')) {
-    throw new Error('Could not create your profile. Please try again.');
-  }
+  const profileRef = doc(firebaseDb, 'profiles', uid);
+  const existing = await getDoc(profileRef);
+  await setDoc(profileRef, {
+    id: uid,
+    role: existing.exists() ? existing.data().role : role,
+    full_name: resolvedName,
+    email,
+    phone: existing.exists() ? existing.data().phone ?? null : null,
+    avatar_path: existing.exists() ? existing.data().avatar_path ?? null : null,
+    district: existing.exists() ? existing.data().district ?? null : null,
+    created_at: existing.exists() ? existing.data().created_at : serverTimestamp(),
+    updated_at: serverTimestamp(),
+  });
 }
 
 export const authService = {

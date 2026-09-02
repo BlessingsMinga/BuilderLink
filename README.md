@@ -2,8 +2,8 @@
 
 A Malawi-localized construction marketplace connecting customers with verified
 builders. Built with **Expo (React Native)**, **TypeScript**, **NativeWind**, and
-**expo-router**, with **Firebase Authentication** for identity and **Supabase
-(Postgres + Row-Level Security)** for all application data.
+**expo-router**, with **Firebase Authentication** and **Cloud Firestore** for
+the active account and builder-catalogue data paths.
 
 ## Feature status
 
@@ -13,7 +13,7 @@ builders. Built with **Expo (React Native)**, **TypeScript**, **NativeWind**, an
 | Google sign-in (OAuth via `expo-auth-session`) | ✅ Live (native builds) |
 | Forgot password & email verification flows | ✅ Live |
 | Session rehydration on launch + role-aware route guards (`<Protected>`) | ✅ Live |
-| Builder catalogue — browse, search, filter by trade/district, builder detail | ✅ Live (Supabase-backed) |
+| Builder catalogue — browse, search, filter by trade/district, builder detail | ✅ Live (Firestore-backed) |
 | Builder profile screen (business info, skills, photo picker) | 🚧 UI ready, persistence pending |
 | Booking, chat, payments, reviews, favorites, notifications screens | 🚧 Demo content / stubbed services |
 | Admin dashboard (restricted to `administrator` role) | 🚧 UI ready, actions queued for Edge Functions |
@@ -128,7 +128,10 @@ supabase/
 - Google sign-in requires a development/production native build (it is not
   Expo Go-compatible) and the `EXPO_PUBLIC_FIREBASE_*_CLIENT_ID` env vars; the
   button is hidden when the web client id is not configured.
-- The mobile client does not initialize Firestore — Supabase is the data layer.
+- The mobile client initializes the named `builderlink` Firestore database.
+- Enable Email/Password, Google and Phone under Firebase Authentication. Phone
+  also needs an SMS region policy that permits Malawi (`+265`) and a React
+  Native reCAPTCHA verifier.
 
 ## Roadmap
 

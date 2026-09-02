@@ -8,9 +8,10 @@ rules_version = '2';
 //
 // Collection: profiles
 // Document ID: auto-generated
-// Fields:
+// Fields (this is a prototype policy and should be reviewed before launch):
 //   - id: string (required, immutable) - User's Firebase Auth UID
 //   - role: string (required, immutable) - 'customer' | 'builder' | 'administrator'
+//   - email: string (required, immutable for client writes) - private account email
 //   - full_name: string (required, 2-100 chars) - User's full name
 //   - phone: string (optional, nullable) - User's phone number
 //   - avatar_path: string (optional, nullable) - Storage path to avatar
@@ -156,10 +157,11 @@ function isValidTimestamp(field) {
 
 // Validate profile document
 function isValidProfile(data) {
-  return hasOnlyAllowedFields(['id', 'role', 'full_name', 'phone', 'avatar_path', 'district', 'created_at', 'updated_at']) &&
+  return hasOnlyAllowedFields(['id', 'role', 'full_name', 'phone', 'email', 'avatar_path', 'district', 'created_at', 'updated_at']) &&
     data.id is string && data.id.size() > 0 && data.id.size() < 128 &&
     data.role in ['customer', 'builder', 'administrator'] &&
     validStringLength('full_name', 2, 100) &&
+    data.email is string && data.email.size() > 3 && data.email.size() <= 254 &&
     isValidOptionalString('phone', 7, 20) &&
     isValidOptionalString('avatar_path', 1, 500) &&
     isValidOptionalString('district', 1, 100) &&
@@ -258,7 +260,7 @@ service cloud.firestore {
       allow update: if isOwner(profileId) &&
         isValidProfile(request.resource.data) &&
         uidNotModified() &&
-        areImmutableFieldsUnchanged(['id', 'role', 'created_at']) &&
+        areImmutableFieldsUnchanged(['id', 'role', 'email', 'created_at']) &&
         request.resource.data.updated_at == request.time;
       allow delete: if false;
     }

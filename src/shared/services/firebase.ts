@@ -1,9 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import { getAuth, initializeAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 import { getReactNativePersistence } from '@firebase/auth';
 
-const config = {
+export const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
@@ -12,13 +13,14 @@ const config = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
-export const isFirebaseConfigured = Boolean(config.apiKey && config.projectId && config.appId);
+export const isFirebaseConfigured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId);
 
-const app = isFirebaseConfigured ? (getApps().length ? getApp() : initializeApp(config)) : undefined;
+const app = isFirebaseConfigured ? (getApps().length ? getApp() : initializeApp(firebaseConfig)) : undefined;
 
-// (Firestore is intentionally not initialized here. Supabase is the data layer;
-// its RLS + Postgres schema already back profiles, builders, bookings, payments,
-// reviews, messages, notifications, favorites and reports.)
+// This project uses the named Enterprise Firestore Native database, not the
+// default "(default)" database.
+export const firebaseDb = app ? getFirestore(app, 'builderlink') : undefined;
+
 export const firebaseAuth = app
   ? (() => {
       try {

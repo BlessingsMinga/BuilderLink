@@ -1,4 +1,5 @@
-import { supabase, isSupabaseConfigured } from '@/shared/services/supabase';
+import { collection, doc, getDoc, getDocs, orderBy, query, where } from 'firebase/firestore';
+import { firebaseDb } from '@/shared/services/firebase';
 
 /**
  * Presentation shape for a builder shown in browse/search lists.
@@ -15,35 +16,24 @@ export type BuilderSummary = {
   verified: boolean;
 };
 
-type BuilderRow = {
+type BuilderDocument = {
   profile_id: string;
   business_name: string | null;
-  bio: string | null;
   years_experience: number;
   verification_status: 'pending' | 'verified' | 'rejected';
   average_rating: number;
   completed_jobs: number;
-  // Supabase returns to-one joins (over a unique FK) as an object; but the
-  // generic client types them as arrays, so we tolerate both shapes.
-  profiles: { full_name: string; district: string | null } | { full_name: string; district: string | null }[] | null;
-  builder_skills: { skills: { name: string } | { name: string }[] | null }[] | null;
+  display_name?: string;
+  district?: string | null;
+  trades?: string[];
 };
 
-const pick = <T,>(val: T | T[] | null | undefined): T | null =>
-  Array.isArray(val) ? (val[0] ?? null) : (val ?? null);
-
-const toSummary = (raw: BuilderRow): BuilderSummary => {
-  const profile = pick(raw.profiles);
+const toSummary = (raw: BuilderDocument): BuilderSummary => {
   return {
     id: raw.profile_id,
-    name: raw.business_name || profile?.full_name || 'Professional',
-    trades: (raw.builder_skills ?? [])
-      .map((bs) => {
-        const skill = pick(bs.skills);
-        return skill?.name;
-      })
-      .filter((n): n is string => Boolean(n)),
-    district: profile?.district ?? null,
+    name: raw.business_name || raw.display_name || 'Professional',
+    trades: raw.trades ?? [],
+    district: raw.district ?? null,
     rating: raw.average_rating,
     experience: raw.years_experience,
     completedJobs: raw.completed_jobs,
@@ -52,64 +42,30 @@ const toSummary = (raw: BuilderRow): BuilderSummary => {
 };
 
 /**
- * Fetch the builder catalogue (verified professionals) with profile and
- * skill info. RLS on the builders table already restricts clients to
- * verified builders (or their own pending profile), so appending the
- * explicit `.eq('verification_status', 'verified')` is safe and expected.
+ * Fetch the verified builder catalogue. This uses a one-time Firestore query;
+ * public fields are denormalized on each builder document.
  */
 export async function fetchBuilders(): Promise<BuilderSummary[]> {
-  if (!supabase || !isSupabaseConfigured) {
-    throw new Error('Supabase is not configured.');
+  if (!firebaseDb) {
+    throw new Error('Firestore is not configured.');
   }
-
-  const { data, error } = await supabase
-    .from('builders')
-    .select(
-      `
-        profile_id,
-        business_name,
-        bio,
-        years_experience,
-        verification_status,
-        average_rating,
-        completed_jobs,
-        profiles ( id, full_name, district ),
-        builder_skills ( skills ( id, name ) )
-      `,
-    )
-    .eq('verification_status', 'verified')
-    .order('average_rating', { ascending: false });
-
-  if (error) throw error;
-  return (data ?? []).map((row) => toSummary(row as unknown as BuilderRow));
+  const results = await getDocs(query(
+    collection(firebaseDb, 'builders'),
+    where('verification_status', '==', 'verified'),
+    orderBy('average_rating', 'desc'),
+  ));
+  return results.docs.map((result) => toSummary(result.data() as BuilderDocument));
 }
 
 /** Fetch a single builder by profile id (verified only / own profile). */
 export async function fetchBuilder(profileId: string): Promise<BuilderSummary | null> {
-  if (!supabase || !isSupabaseConfigured) {
-    throw new Error('Supabase is not configured.');
+  if (!firebaseDb) {
+    throw new Error('Firestore is not configured.');
   }
-
-  const { data, error } = await supabase
-    .from('builders')
-    .select(
-      `
-        profile_id,
-        business_name,
-        bio,
-        years_experience,
-        verification_status,
-        average_rating,
-        completed_jobs,
-        profiles ( id, full_name, district ),
-        builder_skills ( skills ( id, name ) )
-      `,
-    )
-    .eq('profile_id', profileId)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data ? toSummary(data as unknown as BuilderRow) : null;
+  const result = await getDoc(doc(firebaseDb, 'builders', profileId));
+  if (!result.exists()) return null;
+  const builder = result.data() as BuilderDocument;
+  return builder.verification_status === 'verified' ? toSummary(builder) : null;
 }
 
 /** A single candidate district, pulled from the browsable profile rows. */
