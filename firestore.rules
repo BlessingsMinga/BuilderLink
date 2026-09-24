@@ -77,6 +77,9 @@ rules_version = '2';
 // Helper Functions
 // ===============================================================
 
+service cloud.firestore {
+  match /databases/{database}/documents {
+
 // Check if the user is authenticated
 function isAuthenticated() {
   return request.auth != null;
@@ -87,15 +90,15 @@ function isOwner(userId) {
   return isAuthenticated() && request.auth.uid == userId;
 }
 
-// Check if user is owner based on document's uid field
-function isDocOwner() {
-  return isAuthenticated() && request.auth.uid == resource.data.id;
-}
-
 // Verify UID hasn't been tampered with on create
 function uidUnchanged() {
   return !('id' in request.resource.data) ||
     request.resource.data.id == request.auth.uid;
+}
+
+// Validate required fields exist.
+function hasRequiredFields(fields) {
+  return request.resource.data.keys().hasAll(fields);
 }
 
 // Ensure uid field is not modified on update
@@ -105,21 +108,11 @@ function uidNotModified() {
 }
 
 // Validate required fields exist
-function hasRequiredFields(fields) {
-  return request.resource.data.keys().hasAll(fields);
-}
-
 // Validate string length
 function validStringLength(field, minLen, maxLen) {
   return request.resource.data[field] is string &&
     request.resource.data[field].size() >= minLen &&
     request.resource.data[field].size() <= maxLen;
-}
-
-// Validate URL format (must start with https:// or http://)
-function isValidUrl(url) {
-  return url is string &&
-    (url.matches("^https://.*") || url.matches("^http://.*"));
 }
 
 // Validate that a value is positive
@@ -157,7 +150,8 @@ function isValidTimestamp(field) {
 
 // Validate profile document
 function isValidProfile(data) {
-  return hasOnlyAllowedFields(['id', 'role', 'full_name', 'phone', 'email', 'avatar_path', 'district', 'created_at', 'updated_at']) &&
+  return hasRequiredFields(['id', 'role', 'full_name', 'email', 'created_at', 'updated_at']) &&
+    hasOnlyAllowedFields(['id', 'role', 'full_name', 'phone', 'email', 'avatar_path', 'district', 'created_at', 'updated_at']) &&
     data.id is string && data.id.size() > 0 && data.id.size() < 128 &&
     data.role in ['customer', 'builder', 'administrator'] &&
     validStringLength('full_name', 2, 100) &&
@@ -171,10 +165,14 @@ function isValidProfile(data) {
 
 // Validate builder document
 function isValidBuilder(data) {
-  return hasOnlyAllowedFields(['profile_id', 'business_name', 'bio', 'years_experience', 'verification_status', 'average_rating', 'completed_jobs', 'response_time_minutes']) &&
+  return hasRequiredFields(['profile_id', 'years_experience', 'verification_status', 'average_rating', 'completed_jobs']) &&
+    hasOnlyAllowedFields(['profile_id', 'business_name', 'bio', 'display_name', 'district', 'trades', 'years_experience', 'verification_status', 'average_rating', 'completed_jobs', 'response_time_minutes']) &&
     data.profile_id is string && data.profile_id.size() > 0 && data.profile_id.size() < 128 &&
     isValidOptionalString('business_name', 2, 100) &&
     isValidOptionalString('bio', 1, 1000) &&
+    isValidOptionalString('display_name', 2, 100) &&
+    isValidOptionalString('district', 1, 100) &&
+    (!('trades' in data) || (data.trades is list && data.trades.size() <= 12)) &&
     isPositive('years_experience') &&
     data.verification_status in ['pending', 'verified', 'rejected'] &&
     data.average_rating is number && data.average_rating >= 0 && data.average_rating <= 5 &&
@@ -239,13 +237,6 @@ function isAdmin() {
     get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.role == 'administrator';
 }
 
-// ===============================================================
-// Firestore Rules
-// ===============================================================
-
-service cloud.firestore {
-  match /databases/{database}/documents {
-
     // ===========================================================
     // Profiles Collection
     // Users can only read/write their own profile
@@ -254,6 +245,7 @@ service cloud.firestore {
       allow read: if isOwner(profileId);
       allow create: if isOwner(profileId) &&
         isValidProfile(request.resource.data) &&
+        uidUnchanged() &&
         request.resource.data.id == request.auth.uid &&
         request.resource.data.role in ['customer', 'builder'] &&
         request.resource.data.created_at == request.time;

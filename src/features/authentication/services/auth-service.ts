@@ -6,7 +6,10 @@ import {
   sendPasswordResetEmail,
   signInWithCredential,
   signInWithEmailAndPassword,
+  signInWithPhoneNumber,
   signOut as firebaseSignOut,
+  type ApplicationVerifier,
+  type ConfirmationResult,
   type User,
 } from 'firebase/auth';
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
@@ -117,6 +120,18 @@ export const authService = {
     await ensureGoogleProfile(user.uid, user.email ?? '', user.displayName, role);
     const resolvedRole = await fetchUserRole(user.uid);
     return session(user.uid, user.email ?? '', resolvedRole);
+  },
+
+  /** Send a Firebase SMS verification code after the React Native reCAPTCHA challenge. */
+  async sendPhoneVerificationCode(phoneNumber: string, verifier: ApplicationVerifier): Promise<ConfirmationResult> {
+    return signInWithPhoneNumber(requireAuth(), phoneNumber, verifier);
+  },
+
+  /** Confirm the SMS code and return the signed-in Firebase session. */
+  async confirmPhoneSignIn(confirmation: ConfirmationResult, code: string): Promise<AuthSession> {
+    const credential = await confirmation.confirm(code.trim());
+    const role = await fetchUserRole(credential.user.uid);
+    return session(credential.user.uid, credential.user.email ?? credential.user.phoneNumber ?? '', role);
   },
 
   async requestPasswordReset(input: ForgotPasswordInput): Promise<void> {

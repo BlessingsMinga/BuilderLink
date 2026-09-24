@@ -64,6 +64,7 @@ export default function Login() {
         />
         <Pressable onPress={() => router.push('/forgot-password')}><Text className="text-right font-semibold text-brand">Forgot password?</Text></Pressable>
         <AppButton label="Sign in" loading={isSubmitting} onPress={handleSubmit(submit)} />
+        <Pressable onPress={() => router.push('/phone-sign-in' as never)}><Text className="text-center font-semibold text-brand">Sign in with phone</Text></Pressable>
       </View>
 
       {isGoogleAuthConfigured ? (
