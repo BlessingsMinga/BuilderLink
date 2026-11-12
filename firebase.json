@@ -1,5 +1,6 @@
 {
   "auth": {
+    "authorizedDomains": ["localhost", "builderlink-cd7d0.firebaseapp.com", "builderlink-cd7d0.web.app"],
     "providers": {
       "anonymous": false,
       "emailPassword": true,

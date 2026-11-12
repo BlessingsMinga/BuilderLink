@@ -1,15 +1,13 @@
 import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
+  PhoneAuthProvider,
   onAuthStateChanged,
   sendEmailVerification,
   sendPasswordResetEmail,
   signInWithCredential,
   signInWithEmailAndPassword,
-  signInWithPhoneNumber,
   signOut as firebaseSignOut,
-  type ApplicationVerifier,
-  type ConfirmationResult,
   type User,
 } from 'firebase/auth';
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
@@ -88,6 +86,24 @@ async function ensureGoogleProfile(
   });
 }
 
+/** Create a minimal customer profile the first time a phone-only user signs in. */
+async function ensurePhoneProfile(uid: string, phone: string): Promise<void> {
+  if (!firebaseDb) throw new Error('Firestore has not been configured.');
+  const ref = doc(firebaseDb, 'profiles', uid);
+  if ((await getDoc(ref)).exists()) return;
+  await setDoc(ref, {
+    id: uid,
+    role: 'customer',
+    full_name: 'BuilderLink member',
+    phone,
+    email: null,
+    avatar_path: null,
+    district: null,
+    created_at: serverTimestamp(),
+    updated_at: serverTimestamp(),
+  });
+}
+
 export const authService = {
   async signIn(input: SignInInput): Promise<AuthSession> {
     const auth = requireAuth();
@@ -122,16 +138,12 @@ export const authService = {
     return session(user.uid, user.email ?? '', resolvedRole);
   },
 
-  /** Send a Firebase SMS verification code after the React Native reCAPTCHA challenge. */
-  async sendPhoneVerificationCode(phoneNumber: string, verifier: ApplicationVerifier): Promise<ConfirmationResult> {
-    return signInWithPhoneNumber(requireAuth(), phoneNumber, verifier);
-  },
-
-  /** Confirm the SMS code and return the signed-in Firebase session. */
-  async confirmPhoneSignIn(confirmation: ConfirmationResult, code: string): Promise<AuthSession> {
-    const credential = await confirmation.confirm(code.trim());
-    const role = await fetchUserRole(credential.user.uid);
-    return session(credential.user.uid, credential.user.email ?? credential.user.phoneNumber ?? '', role);
+  /** Exchange a reCAPTCHA-backed verificationId + SMS code for a signed-in session. */
+  async confirmPhoneSignIn(verificationId: string, code: string): Promise<AuthSession> {
+    const credential = await signInWithCredential(requireAuth(), PhoneAuthProvider.credential(verificationId, code.trim()));
+    const { uid, phoneNumber, email } = credential.user;
+    await ensurePhoneProfile(uid, phoneNumber ?? '');
+    return session(uid, email ?? phoneNumber ?? '', await fetchUserRole(uid));
   },
 
   async requestPasswordReset(input: ForgotPasswordInput): Promise<void> {
