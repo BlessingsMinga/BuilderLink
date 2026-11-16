@@ -7,13 +7,15 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "@react-native-google-signin/google-signin"
     ],
     "experiments": {
       "typedRoutes": true
     },
     "android": {
-      "package": "mw.builderlink.app"
+      "package": "mw.builderlink.app",
+      "googleServicesFile": "./google-services.json"
     },
     "ios": {
       "bundleIdentifier": "mw.builderlink.app"

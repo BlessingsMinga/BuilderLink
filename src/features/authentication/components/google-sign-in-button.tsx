@@ -1,16 +1,23 @@
-import * as Google from 'expo-auth-session/providers/google';
-import { useEffect, useRef, useState } from 'react';
+import {
+  GoogleSignin,
+  isErrorWithCode,
+  isSuccessResponse,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
+import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native';
 import { authService } from '../services/auth-service';
 import { useAuthStore } from '../store/auth-store';
 import type { UserRole } from '@/shared/types';
 
 const webClientId = process.env.EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID;
-const androidClientId = process.env.EXPO_PUBLIC_FIREBASE_ANDROID_CLIENT_ID;
-const iosClientId = process.env.EXPO_PUBLIC_FIREBASE_IOS_CLIENT_ID;
 
 /** Google sign-in is only offered when a client ID is configured. */
 export const isGoogleAuthConfigured = Boolean(webClientId);
+
+// The web client ID is what makes Google return an ID token Firebase accepts.
+// The Android OAuth client is matched by Google from the package name + SHA-1.
+if (webClientId) GoogleSignin.configure({ webClientId });
 
 type Props = {
   /** Role to assign when this creates a brand-new account (defaults to 'customer'). */
@@ -21,66 +28,50 @@ type Props = {
 
 /**
  * "Continue with Google" button for sign-in and sign-up.
- * Uses expo-auth-session's Google provider to obtain an ID token, exchanges it
- * for a Firebase credential, and syncs the Supabase profile row.
+ * Uses the native Google Sign-In account picker to obtain an ID token, then
+ * exchanges it for a Firebase credential and syncs the Firestore profile.
  */
 export function GoogleSignInButton({ role = 'customer', onSuccess }: Props) {
   const setSession = useAuthStore((state) => state.setSession);
   const [loading, setLoading] = useState(false);
-  const handledRef = useRef(false);
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    webClientId,
-    androidClientId,
-    iosClientId,
-    selectAccount: true,
-  });
-
-  useEffect(() => {
-    if (response == null) return;
-
-    if (response.type !== 'success') {
-      // Cancel/dismiss/error: just release the loading state.
-      setLoading(false);
-      return;
-    }
-    if (handledRef.current) return;
-    handledRef.current = true;
-
-    setLoading(true);
-    const idToken = response.params.id_token ?? response.authentication?.idToken ?? undefined;
-    (async () => {
-      try {
-        if (!idToken) throw new Error('Google did not return an ID token.');
-        const session = await authService.signInWithGoogle(idToken, role);
-        setSession(session);
-        onSuccess?.();
-      } catch (error) {
-        const code = (error as { code?: string }).code;
-        if (code === 'auth/account-exists-with-different-credential') {
-          Alert.alert(
-            'Account already exists',
-            'An account with this email already exists. Sign in with your email and password instead.',
-          );
-        } else if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
-          return;
-        } else {
-          Alert.alert('Google sign-in failed', 'We couldn’t complete Google sign-in. Please try again.');
-        }
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [response, role, setSession, onSuccess]);
-
-  const handlePress = () => {
+  const handlePress = async () => {
     if (loading) return;
-    if (!request) {
-      Alert.alert('Google sign-in unavailable', 'Google sign-in is not configured for this build yet.');
-      return;
+    setLoading(true);
+    try {
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      // Forget the previously chosen account so the picker is always shown.
+      await GoogleSignin.signOut().catch(() => undefined);
+
+      const response = await GoogleSignin.signIn();
+      if (!isSuccessResponse(response)) return; // user cancelled
+
+      const idToken = response.data.idToken;
+      if (!idToken) throw new Error('Google did not return an ID token.');
+
+      const session = await authService.signInWithGoogle(idToken, role);
+      setSession(session);
+      onSuccess?.();
+    } catch (error) {
+      const code = isErrorWithCode(error) ? error.code : (error as { code?: string }).code;
+      console.warn('Google sign-in failed:', code ?? error, error);
+
+      if (code === statusCodes.IN_PROGRESS || code === statusCodes.SIGN_IN_CANCELLED) {
+        return;
+      } else if (code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        Alert.alert('Google sign-in unavailable', 'Google Play services is missing or out of date on this device.');
+      } else if (code === 'auth/account-exists-with-different-credential') {
+        Alert.alert(
+          'Account already exists',
+          'An account with this email already exists. Sign in with your email and password instead.',
+        );
+      } else {
+        const detail = code ? ` (${code})` : '';
+        Alert.alert('Google sign-in failed', `We couldn’t complete Google sign-in. Please try again.${detail}`);
+      }
+    } finally {
+      setLoading(false);
     }
-    handledRef.current = false;
-    promptAsync().catch(() => setLoading(false));
   };
 
   return (
