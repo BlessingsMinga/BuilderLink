@@ -242,6 +242,32 @@ function isValidBooking(data) {
     isValidTimestamp('updated_at');
 }
 
+// Validate one 1-5 star rating
+function isStarRating(value) {
+  return value is int && value >= 1 && value <= 5;
+}
+
+// Validate review document
+function isValidReview(data) {
+  return hasRequiredFields(['booking_id', 'builder_id', 'customer_id', 'customer_name', 'rating', 'category_ratings', 'comment', 'created_at']) &&
+    hasOnlyAllowedFields(['booking_id', 'builder_id', 'customer_id', 'customer_name', 'rating', 'category_ratings', 'comment', 'created_at']) &&
+    data.booking_id is string && data.booking_id.size() > 0 && data.booking_id.size() < 128 &&
+    data.builder_id is string && data.builder_id.size() > 0 && data.builder_id.size() < 128 &&
+    data.customer_id is string && data.customer_id.size() > 0 && data.customer_id.size() < 128 &&
+    validStringLength('customer_name', 2, 100) &&
+    isStarRating(data.rating) &&
+    data.category_ratings is map &&
+    data.category_ratings.keys().hasAll(['communication', 'work_quality', 'time_management', 'value_for_money', 'professionalism']) &&
+    data.category_ratings.keys().hasOnly(['communication', 'work_quality', 'time_management', 'value_for_money', 'professionalism']) &&
+    isStarRating(data.category_ratings.communication) &&
+    isStarRating(data.category_ratings.work_quality) &&
+    isStarRating(data.category_ratings.time_management) &&
+    isStarRating(data.category_ratings.value_for_money) &&
+    isStarRating(data.category_ratings.professionalism) &&
+    validStringLength('comment', 10, 1000) &&
+    isValidTimestamp('created_at');
+}
+
 // Check if user is a builder (has a builder profile)
 function isBuilder() {
   return isAuthenticated() &&
@@ -416,6 +442,47 @@ function isAdmin() {
             request.resource.data.status == 'cancelled')
         );
       allow delete: if false;
+    }
+
+    // ===========================================================
+    // Reviews Collection
+    // Public to signed-in users. The document id is the booking id,
+    // so each booking can be reviewed once, and only by its customer
+    // after the builder has marked the job completed. Reviews are
+    // permanent; administrators can remove abusive ones.
+    // ===========================================================
+    match /reviews/{reviewId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+        isValidReview(request.resource.data) &&
+        request.resource.data.booking_id == reviewId &&
+        request.resource.data.customer_id == request.auth.uid &&
+        request.resource.data.created_at == request.time &&
+        get(/databases/$(database)/documents/bookings/$(reviewId)).data.customer_id == request.auth.uid &&
+        get(/databases/$(database)/documents/bookings/$(reviewId)).data.status == 'completed' &&
+        get(/databases/$(database)/documents/bookings/$(reviewId)).data.builder_id == request.resource.data.builder_id &&
+        get(/databases/$(database)/documents/bookings/$(reviewId)).data.customer_name == request.resource.data.customer_name;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // ===========================================================
+    // Favorites Collection
+    // A user's private list of saved builders. Document id is
+    // "{userId}_{builderId}"; only the owner can read or change it.
+    // ===========================================================
+    match /favorites/{favoriteId} {
+      allow read: if isAuthenticated() && resource.data.user_id == request.auth.uid;
+      allow create: if isAuthenticated() &&
+        hasRequiredFields(['user_id', 'builder_id', 'created_at']) &&
+        hasOnlyAllowedFields(['user_id', 'builder_id', 'created_at']) &&
+        request.resource.data.user_id == request.auth.uid &&
+        request.resource.data.builder_id is string &&
+        request.resource.data.builder_id.size() > 0 && request.resource.data.builder_id.size() < 128 &&
+        favoriteId == request.auth.uid + '_' + request.resource.data.builder_id &&
+        request.resource.data.created_at == request.time;
+      allow update: if false;
+      allow delete: if isAuthenticated() && resource.data.user_id == request.auth.uid;
     }
   }
 }

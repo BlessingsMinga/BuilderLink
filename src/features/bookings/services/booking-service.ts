@@ -148,3 +148,9 @@ export async function fetchBookings(userId: string, perspective: BookingPerspect
 export async function updateBookingStatus(bookingId: string, status: BookingStatus): Promise<void> {
   await updateDoc(doc(requireDb(), 'bookings', bookingId), { status, updated_at: serverTimestamp() });
 }
+
+/** A single booking the signed-in user is a party to, or null if it doesn't exist. */
+export async function fetchBooking(bookingId: string): Promise<Booking | null> {
+  const result = await getDoc(doc(requireDb(), 'bookings', bookingId));
+  return result.exists() ? toBooking(result.id, result.data() as BookingDocument) : null;
+}

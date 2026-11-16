@@ -1,21 +1,58 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, BadgeCheck, MapPin, Star } from 'lucide-react-native';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ArrowLeft, BadgeCheck, Heart, MapPin, Star } from 'lucide-react-native';
+import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native';
+import { useAuthStore } from '@/features/authentication/store/auth-store';
 import { useBuilder } from '@/features/builders/hooks/use-builders';
+import { useFavoriteBuilderIds, useToggleFavorite } from '@/features/favorites/hooks/use-favorites';
+import { useBuilderReviews } from '@/features/reviews/hooks/use-reviews';
+import { averageRating } from '@/features/reviews/services/review-service';
 import { AppButton } from '@/shared/components/app-button';
 import { Protected } from '@/shared/components/protected';
 import { Screen } from '@/shared/components/screen';
 
 export default function BuilderDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const session = useAuthStore((state) => state.session);
   const { data: builder, isLoading, isError, refetch } = useBuilder(id);
+  const reviews = useBuilderReviews(builder?.id);
+  const { data: favoriteIds } = useFavoriteBuilderIds(session?.userId);
+  const toggleFavorite = useToggleFavorite(session?.userId);
+
+  const isSaved = Boolean(builder && favoriteIds?.includes(builder.id));
+  // Prefer the live average of published reviews over the stored catalogue figure.
+  const rating = averageRating(reviews.data ?? []) ?? builder?.rating ?? 0;
+
+  const onToggleFavorite = () => {
+    if (!builder) return;
+    toggleFavorite.mutate(
+      { builderId: builder.id, saved: !isSaved },
+      {
+        onError: (error) => {
+          console.warn('Saving professional failed:', error);
+          Alert.alert('Could not update saved list', 'Please check your connection and try again.');
+        },
+      },
+    );
+  };
 
   return (
     <Protected>
       <Screen>
-        <Pressable onPress={() => router.back()} className="h-11 w-11 items-center justify-center rounded-2xl bg-white">
-          <ArrowLeft color="#1E293B" />
-        </Pressable>
+        <View className="flex-row items-center justify-between">
+          <Pressable onPress={() => router.back()} className="h-11 w-11 items-center justify-center rounded-2xl bg-white">
+            <ArrowLeft color="#1E293B" />
+          </Pressable>
+          {builder && favoriteIds ? (
+            <Pressable
+              onPress={onToggleFavorite}
+              accessibilityRole="button"
+              accessibilityLabel={isSaved ? 'Remove from saved professionals' : 'Save this professional'}
+              className="h-11 w-11 items-center justify-center rounded-2xl bg-white"
+            >
+              <Heart color="#F97316" fill={isSaved ? '#F97316' : 'transparent'} />
+            </Pressable>
+          ) : null}
+        </View>
 
         {isLoading ? (
           <View className="mt-16 items-center gap-3">
@@ -49,7 +86,7 @@ export default function BuilderDetail() {
               </Text>
             </View>
             <View className="mt-8 flex-row justify-around rounded-3xl bg-white p-5">
-              <Stat value={builder.rating.toFixed(1)} label="Rating" />
+              <Stat value={rating.toFixed(1)} label="Rating" />
               <Stat value={`${builder.experience} yrs`} label="Experience" />
               <Stat value={String(builder.completedJobs)} label="Jobs done" />
             </View>
@@ -60,6 +97,41 @@ export default function BuilderDetail() {
               <MapPin size={16} color="#64748B" />
               <Text className="text-sm text-slate-500">Based in {builder.district ?? 'Malawi'}</Text>
             </View>
+
+            <Text className="mt-8 text-lg font-bold text-ink">
+              Reviews{reviews.data?.length ? ` (${reviews.data.length})` : ''}
+            </Text>
+            {reviews.isLoading ? (
+              <ActivityIndicator className="mt-4" color="#F97316" />
+            ) : reviews.isError ? (
+              <Pressable onPress={() => reviews.refetch()} className="mt-3 rounded-2xl bg-white p-4">
+                <Text className="text-slate-500">We couldn’t load reviews. Tap to try again.</Text>
+              </Pressable>
+            ) : !reviews.data?.length ? (
+              <View className="mt-3 rounded-2xl bg-white p-4">
+                <Text className="text-slate-500">No reviews yet. Customers can review after a completed job.</Text>
+              </View>
+            ) : (
+              <View className="mt-3 gap-3 pb-6">
+                {reviews.data.map((review) => (
+                  <View key={review.id} className="rounded-2xl bg-white p-4">
+                    <View className="flex-row items-center justify-between gap-3">
+                      <Text className="flex-1 font-bold text-ink">{review.customerName}</Text>
+                      <View className="flex-row items-center gap-1">
+                        <Star size={15} color="#F97316" fill="#F97316" />
+                        <Text className="font-bold text-ink">{review.rating}</Text>
+                      </View>
+                    </View>
+                    {review.createdAt ? (
+                      <Text className="mt-0.5 text-xs text-slate-400">
+                        {review.createdAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </Text>
+                    ) : null}
+                    <Text className="mt-2 leading-5 text-slate-600">{review.comment}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
           </>
         )}
       </Screen>

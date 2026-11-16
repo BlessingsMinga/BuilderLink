@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createBooking,
+  fetchBooking,
   fetchBookings,
   updateBookingStatus,
   type Booking,
@@ -17,6 +18,15 @@ export function useBookings(userId: string | undefined, perspective: BookingPers
     queryKey: [...bookingsKey, userId, perspective],
     queryFn: () => fetchBookings(userId!, perspective),
     enabled: Boolean(userId),
+  });
+}
+
+/** A single booking the signed-in user is a party to. */
+export function useBooking(bookingId: string | undefined) {
+  return useQuery<Booking | null>({
+    queryKey: [...bookingsKey, 'detail', bookingId],
+    queryFn: () => fetchBooking(bookingId!),
+    enabled: Boolean(bookingId),
   });
 }
 

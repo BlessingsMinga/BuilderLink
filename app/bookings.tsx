@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { CalendarDays, ChevronLeft, MapPin } from 'lucide-react-native';
+import { CalendarDays, ChevronLeft, MapPin, Star } from 'lucide-react-native';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
@@ -10,6 +10,7 @@ import {
   type BookingPerspective,
   type BookingStatus,
 } from '@/features/bookings/services/booking-service';
+import { useReviewedBookingIds } from '@/features/reviews/hooks/use-reviews';
 import { Protected } from '@/shared/components/protected';
 import { Screen } from '@/shared/components/screen';
 
@@ -49,6 +50,8 @@ export default function Bookings() {
   const [perspective, setPerspective] = useState<BookingPerspective>(isBuilder ? 'builder' : 'customer');
   const { data: bookings = [], isLoading, isError, refetch, isRefetching } = useBookings(session?.userId, perspective);
   const updateStatus = useUpdateBookingStatus();
+  // Undefined until loaded, so the review prompt never flashes on an already-reviewed booking.
+  const { data: reviewedIds } = useReviewedBookingIds(session?.userId);
 
   const runAction = (booking: Booking, action: Action) => {
     Alert.alert(action.label, action.confirm, [
@@ -113,6 +116,8 @@ export default function Bookings() {
             {bookings.map((booking) => {
               const style = statusStyles[booking.status];
               const actions = actionsFor(booking, perspective);
+              const isCompletedForCustomer = perspective === 'customer' && booking.status === 'completed';
+              const reviewed = reviewedIds?.includes(booking.id);
               return (
                 <View key={booking.id} className="rounded-3xl bg-white p-5">
                   <View className="flex-row items-start justify-between gap-3">
@@ -149,6 +154,21 @@ export default function Bookings() {
                           <Text className={`font-bold ${action.destructive ? 'text-red-500' : 'text-white'}`}>{action.label}</Text>
                         </Pressable>
                       ))}
+                    </View>
+                  ) : null}
+
+                  {isCompletedForCustomer && reviewed === false ? (
+                    <Pressable
+                      onPress={() => router.push({ pathname: '/review', params: { bookingId: booking.id } })}
+                      className="mt-4 h-12 flex-row items-center justify-center gap-2 rounded-2xl bg-brand"
+                    >
+                      <Star size={18} color="white" />
+                      <Text className="font-bold text-white">Leave a review</Text>
+                    </Pressable>
+                  ) : isCompletedForCustomer && reviewed ? (
+                    <View className="mt-4 flex-row items-center gap-2">
+                      <Star size={16} color="#F97316" fill="#F97316" />
+                      <Text className="font-semibold text-slate-500">You reviewed this job</Text>
                     </View>
                   ) : null}
                 </View>
