@@ -225,6 +225,23 @@ function isValidBuilderDocument(data) {
     isValidTimestamp('created_at');
 }
 
+// Validate booking document
+function isValidBooking(data) {
+  return hasRequiredFields(['customer_id', 'builder_id', 'customer_name', 'builder_name', 'service', 'preferred_date', 'location', 'description', 'status', 'created_at', 'updated_at']) &&
+    hasOnlyAllowedFields(['customer_id', 'builder_id', 'customer_name', 'builder_name', 'service', 'preferred_date', 'location', 'description', 'status', 'created_at', 'updated_at']) &&
+    data.customer_id is string && data.customer_id.size() > 0 && data.customer_id.size() < 128 &&
+    data.builder_id is string && data.builder_id.size() > 0 && data.builder_id.size() < 128 &&
+    validStringLength('customer_name', 2, 100) &&
+    validStringLength('builder_name', 2, 100) &&
+    validStringLength('service', 2, 100) &&
+    data.preferred_date is string && data.preferred_date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') &&
+    validStringLength('location', 3, 200) &&
+    validStringLength('description', 10, 1000) &&
+    data.status in ['pending', 'accepted', 'declined', 'cancelled', 'completed'] &&
+    isValidTimestamp('created_at') &&
+    isValidTimestamp('updated_at');
+}
+
 // Check if user is a builder (has a builder profile)
 function isBuilder() {
   return isAuthenticated() &&
@@ -362,6 +379,43 @@ function isAdmin() {
         areImmutableFieldsUnchanged(['id', 'builder_id', 'type', 'storage_path', 'created_at']));
       allow delete: if isBuilder() &&
         resource.data.builder_id == request.auth.uid;
+    }
+
+    // ===========================================================
+    // Bookings Collection
+    // A customer sends a request to a verified builder. Only the
+    // two parties (and administrators) can read it. After creation
+    // only the status can change, and only along these paths:
+    //   builder:  pending -> accepted | declined, accepted -> completed
+    //   customer: pending | accepted -> cancelled
+    // ===========================================================
+    match /bookings/{bookingId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.customer_id == request.auth.uid ||
+         resource.data.builder_id == request.auth.uid ||
+         isAdmin());
+      allow create: if isAuthenticated() &&
+        isValidBooking(request.resource.data) &&
+        request.resource.data.customer_id == request.auth.uid &&
+        request.resource.data.builder_id != request.auth.uid &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.created_at == request.time &&
+        request.resource.data.updated_at == request.time &&
+        request.resource.data.customer_name ==
+          get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.full_name &&
+        get(/databases/$(database)/documents/builders/$(request.resource.data.builder_id)).data.verification_status == 'verified';
+      allow update: if isAuthenticated() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updated_at']) &&
+        request.resource.data.updated_at == request.time &&
+        (
+          (resource.data.builder_id == request.auth.uid &&
+            ((resource.data.status == 'pending' && request.resource.data.status in ['accepted', 'declined']) ||
+             (resource.data.status == 'accepted' && request.resource.data.status == 'completed'))) ||
+          (resource.data.customer_id == request.auth.uid &&
+            resource.data.status in ['pending', 'accepted'] &&
+            request.resource.data.status == 'cancelled')
+        );
+      allow delete: if false;
     }
   }
 }

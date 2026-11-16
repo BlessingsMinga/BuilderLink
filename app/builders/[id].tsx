@@ -54,7 +54,7 @@ export default function BuilderDetail() {
               <Stat value={String(builder.completedJobs)} label="Jobs done" />
             </View>
             <View className="mt-8">
-              <AppButton label="Request a booking" onPress={() => router.push('/booking')} />
+              <AppButton label="Request a booking" onPress={() => router.push({ pathname: '/booking', params: { builderId: builder.id } })} />
             </View>
             <View className="mt-4 flex-row items-center gap-1">
               <MapPin size={16} color="#64748B" />

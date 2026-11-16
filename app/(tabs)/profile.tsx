@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { BriefcaseBusiness, LogOut, Settings } from 'lucide-react-native';
+import { router, type Href } from 'expo-router';
+import { BriefcaseBusiness, CalendarDays, LogOut, Settings } from 'lucide-react-native';
 import { Pressable, Text, View } from 'react-native';
 import { authService } from '@/features/authentication/services/auth-service';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
@@ -37,6 +37,13 @@ export default function Profile() {
         </Text>
       </View>
       <View className="mt-5 rounded-3xl bg-white">
+        <Pressable
+          onPress={() => router.push('/bookings' as Href)}
+          className="flex-row items-center gap-4 border-b border-slate-100 p-5"
+        >
+          <CalendarDays size={20} color="#F97316" />
+          <Text className="font-semibold text-ink">My bookings</Text>
+        </Pressable>
         <Pressable
           onPress={() => router.push('/builder-profile')}
           className="flex-row items-center gap-4 border-b border-slate-100 p-5"
