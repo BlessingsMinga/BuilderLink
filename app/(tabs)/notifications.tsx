@@ -1,1 +1,0 @@
-import { PlaceholderScreen } from '@/shared/components/placeholder-screen'; export default function Notifications() { return <PlaceholderScreen title="Stay in the loop" description="Booking, chat, and payment updates will appear here." />; }
