@@ -30,8 +30,3 @@ ios/
 # Firebase / native project config — never commit platform credentials
 google-services.json
 GoogleService-Info.plist
-
-# Supabase local artifacts
-supabase/.temp/
-supabase/.branches/
-supabase/.env

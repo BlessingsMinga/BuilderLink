@@ -116,7 +116,7 @@ export const authService = {
   async register(input: RegistrationInput, role: UserRole): Promise<AuthSession> {
     const auth = requireAuth();
     const credential = await createUserWithEmailAndPassword(auth, input.email.trim(), input.password);
-    // Persist the profile row so the role survives restarts and is visible to RLS.
+    // Persist the profile row so the role survives restarts and the security rules can read it.
     await ensureProfile(credential.user.uid, input.email.trim(), role, input);
     await sendEmailVerification(credential.user);
     return session(credential.user.uid, input.email, role);

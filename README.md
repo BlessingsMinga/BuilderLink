@@ -1,147 +1,115 @@
 # BuilderLink Malawi
 
 A Malawi-localized construction marketplace connecting customers with verified
-builders. Built with **Expo (React Native)**, **TypeScript**, **NativeWind**, and
-**expo-router**, with **Firebase Authentication** and **Cloud Firestore** for
-the active account and builder-catalogue data paths.
+builders. Built with **Expo (React Native)**, **TypeScript**, **NativeWind** and
+**expo-router**, on **Firebase Authentication** and **Cloud Firestore**.
 
 ## Feature status
 
 | Area | Status |
 | --- | --- |
-| Onboarding, role-based registration (customer / builder), email + password sign-in | ✅ Live |
-| Google sign-in (OAuth via `expo-auth-session`) | ✅ Live (native builds) |
-| Forgot password & email verification flows | ✅ Live |
-| Session rehydration on launch + role-aware route guards (`<Protected>`) | ✅ Live |
-| Builder catalogue — browse, search, filter by trade/district, builder detail | ✅ Live (Firestore-backed) |
-| Builder profile screen (business info, skills, photo picker) | 🚧 UI ready, persistence pending |
-| Booking, chat, payments, reviews, favorites, notifications screens | 🚧 Demo content / stubbed services |
-| Admin dashboard (restricted to `administrator` role) | 🚧 UI ready, actions queued for Edge Functions |
+| Onboarding, role-based registration (customer / builder) | ✅ Live |
+| Sign-in with phone (SMS), Google, or email and password | ✅ Live (Google needs a native build) |
+| Forgot password and email verification | ✅ Live |
+| Builder catalogue: browse by trade, search, filter by district, builder profile | ✅ Live |
+| Builder workspace: business details, district, skills | ✅ Live (new listings start as pending) |
+| Bookings: request, accept / decline / complete, cancel | ✅ Live |
+| Reviews (one per completed booking) and saved professionals | ✅ Live |
+| Builder approval, photo and document uploads | 🚧 Approval is manual in the Firebase console; uploads not built |
+| Chat, payments (PayChangu), notifications, admin dashboard | 🚧 Not built |
 
 ## Stack
 
-- **Auth:** Firebase Authentication (Email/Password + Google OAuth provider).
-  Firebase runs as Supabase **Third-Party Auth**, and Firebase users carry the
-  Supabase `role: authenticated` custom claim so RLS trusts the Firebase JWT.
-  Sessions persist to AsyncStorage.
-- **Data:** Supabase (Postgres + Row-Level Security) — profiles, categories,
-  skills, builders, availability, portfolio items, documents, bookings, booking
-  images, payments, reviews, messages, notifications, favorites and reports.
-- **Auth bridge:** `@supabase/supabase-js` configured with an `accessToken`
-  provider that mints the Firebase ID token as the Supabase token.
+- **Auth:** Firebase Authentication (phone, Google, email/password). Sessions
+  persist to AsyncStorage.
+- **Data:** Cloud Firestore, named database `builderlink`. Access is enforced by
+  [`firestore.rules`](firestore.rules).
 - **Client data layer:** TanStack React Query hooks per feature
-  (`useBuilders`, `useBuilder` in `src/features/builders/hooks`).
-- **Forms:** react-hook-form + Zod (via `@hookform/resolvers`).
+  (`src/features/<feature>/hooks`).
+- **Forms:** react-hook-form + Zod.
 - **State:** Zustand `auth-store` holds the session (user id, role, email).
-- **UI:** NativeWind 4 (Tailwind for React Native), `lucide-react-native`
-  icons, Expo SDK 54 / React Native 0.81.
+- **UI:** NativeWind 4 with light and dark themes, Plus Jakarta Sans,
+  `lucide-react-native` icons, Expo SDK 54 / React Native 0.81.
 
-## How auth and data connect
+## Data model (Firestore)
 
-1. The user signs up/signs in through Firebase (email/password or Google).
-2. A `profiles` row is created or upserted in Supabase keyed by the Firebase UID
-   (`auth-service.ts`'s `ensureProfile` / `ensureGoogleProfile`).
-3. The Supabase client (see `src/shared/services/supabase.ts`) mints the
-   Firebase ID token on demand and passes it as the Supabase access token.
-4. Postgres RLS policies read `auth.jwt() ->> 'sub'` to scope every query to the
-   signed-in user. The role is loaded from `profiles.role` (defaults to `customer`).
-5. `<Protected>` declaratively gates routes on session presence and role — e.g.
-   the admin dashboard only renders for `administrator` sessions.
+| Collection | Contents | Who can read |
+| --- | --- | --- |
+| `profiles/{uid}` | Name, role, phone, email | The user (and administrators) |
+| `builders/{uid}` | Business name, trades, district, rating, verification status | Everyone signed in, once verified; the builder always |
+| `bookings/{id}` | Customer, builder, service, date, location, status | The two parties (and administrators) |
+| `reviews/{bookingId}` | Rating, detail ratings, comment | Everyone signed in |
+| `favorites/{uid}_{builderId}` | A user's saved builder | The user |
 
-## Database (Supabase)
+Key rules: a profile's role can't be changed by the client; new builder
+listings start as `pending` and only administrators can verify them; booking
+status can only move along allowed paths (builder accepts, declines or
+completes; customer cancels); a review requires a completed booking and is
+permanent.
 
-Two migrations live in `supabase/migrations/`:
+Deploy rules with:
 
-- **`20260804072116_builderlink_core_schema.sql`** — enum types, tables for
-  profiles, categories, skills, builders, bookings, payments, reviews, messages,
-  notifications, favorites and reports, plus private storage buckets (`avatars`,
-  `portfolio`, `documents`, `booking-images`).
-- **`20260809000001_harden_rls_and_builder_stats.sql`** — hardens RLS for
-  payments, booking images, booking updates and reviews, and adds a
-  `recalculate_builder_stats()` trigger that keeps a builder's `average_rating`
-  and `completed_jobs` in sync with submitted reviews.
+```
+npx firebase-tools deploy --only firestore:rules
+```
 
-Applying the schema (and registering Firebase as Supabase Third-Party Auth) is
-documented in [`supabase/README.md`](supabase/README.md).
+To approve a builder, set `verification_status` to `verified` on their
+`builders` document in the Firebase console.
 
 ## Project structure
 
 ```
 app/                      # expo-router routes (typed routes enabled)
-  (tabs)/                 # Home, Search, Saved, Alerts, Profile
-  login.tsx, register.tsx, register/[role].tsx
-  onboarding.tsx, forgot-password.tsx, verify-email.tsx, reset-sent.tsx
-  builders/[id].tsx, builder-profile.tsx
-  booking.tsx, chat.tsx, payments.tsx, review.tsx
-  admin.tsx               # Admin dashboard (role-guarded)
+  (tabs)/                 # Home, Search, Bookings, Profile
+  bookings/[id].tsx       # Booking detail and actions
+  builders/[id].tsx       # Builder profile
+  booking.tsx, review.tsx, saved.tsx, builder-profile.tsx
+  login.tsx, register.tsx, register/[role].tsx, phone-sign-in.tsx, ...
 src/
-  features/               # authentication, builders, payments, reviews, admin
-    <feature>/services/   # Supabase/Firebase-facing service functions
+  features/               # authentication, builders, bookings, reviews, favorites
+    <feature>/services/   # Firestore / Firebase calls
     <feature>/hooks/      # TanStack Query hooks
-    <feature>/store/      # Zustand stores
-    <feature>/schemas/    # Zod schemas
     <feature>/components/ # Feature-specific UI
   shared/
-    services/             # firebase.ts, supabase.ts client setup
-    components/           # Screen, Protected, AppButton, FormField, ...
-    theme/                # Brand colors
-    types/                # UserRole, AuthSession; generated database types
-supabase/
-  migrations/             # SQL schema + RLS policies
+    services/firebase.ts  # Firebase app, auth and Firestore setup
+    components/           # Screen, ScreenHeader, AppButton, Chip, states, ...
+    theme/                # Colour tokens (keep in sync with global.css)
+firestore.rules           # Security rules
 ```
 
 ## Security boundary
 
-- The Expo app only ever holds public, publishable keys. Supabase
-  `service_role`, PayChangu gateway secrets and Firebase admin credentials must
-  never ship in this client — they belong server-side (Supabase Edge Functions).
-- All table access is enforced by Postgres RLS keyed on the Firebase JWT `sub`
-  claim ("own profile", "verified builders", "booking participants", etc.).
-- Payment flows go through `src/features/payments/services/payment-service.ts`;
-  the server-side PayChangu adapter holds the secret key and keeps the ledger
-  append-only for clients (paid/refunded transitions happen in the Edge Function).
-- Admin actions (`approve_builder`, `reject_document`, `suspend_user`,
-  `resolve_report`) are declared in
-  `src/features/admin/services/admin-service.ts` and must be implemented by an
-  authenticated Edge Function — never by a client-side Supabase call.
+- The app only holds public Firebase configuration. Firebase admin credentials
+  and payment gateway secrets must never ship in the client; they belong in
+  server-side code (Cloud Functions).
+- Builder ratings and job counts can't be written by clients. Keeping them in
+  sync with reviews needs a Cloud Function.
 
 ## Run locally
 
 1. Install Node.js 20.19+.
 2. Run `npm install`.
-3. Run `npx expo install --fix` to align Expo-managed packages with the SDK.
-4. Copy `.env.example` to `.env` and fill in the Firebase and Supabase keys.
-5. Optional: follow [`supabase/README.md`](supabase/README.md) to set up
-   Third-Party Auth and push the migrations.
-6. Run `npm start`.
-
-### Scripts
+3. Copy `.env.example` to `.env` and fill in the Firebase values.
+4. Run `npm start` (or `npm run android` for a development build).
 
 | Command | Purpose |
 | --- | --- |
 | `npm start` | Start the Expo dev server |
-| `npm run android` / `npm run ios` / `npm run web` | Start on a target platform |
+| `npm run android` / `npm run ios` | Build and run on a device or emulator |
 | `npm run typecheck` | Validate TypeScript (`tsc --noEmit`) |
 
 ### Notes
 
-- Google sign-in requires a development/production native build (it is not
-  Expo Go-compatible) and the `EXPO_PUBLIC_FIREBASE_*_CLIENT_ID` env vars; the
-  button is hidden when the web client id is not configured.
-- The mobile client initializes the named `builderlink` Firestore database.
+- Google sign-in requires a native build (not Expo Go) and the
+  `EXPO_PUBLIC_FIREBASE_*_CLIENT_ID` values; the button is hidden without them.
 - Enable Email/Password, Google and Phone under Firebase Authentication. Phone
-  also needs an SMS region policy that permits Malawi (`+265`) and a React
-  Native reCAPTCHA verifier.
+  sign-in also needs an SMS region policy that allows Malawi (`+265`).
 
 ## Roadmap
 
-- **Next:** persist builder profiles (business name, skills, photos, document
-  uploads) to the Supabase `builders` / `builder_skills` / `portfolio_items`
-  tables from the existing `builder-profile` screen; connect bookings end-to-end.
-- **Then:** back the messaging, payments (PayChangu), reviews, favorites and
-  notifications screens with their already-defined RLS-protected tables.
-- **Then:** implement the server-side Supabase Edge Functions for PayChangu and
-  admin actions, apply production RLS verification across customer/builder/admin
-  accounts, and ship EAS builds to physical devices.
+- **Next:** in-app builder approval for administrators; photo and document
+  uploads (Firebase Storage).
+- **Then:** Cloud Functions for builder rating stats and PayChangu payments;
+  chat and notifications.
 - Release-blocking items are tracked in
   [`RELEASE_READINESS.md`](RELEASE_READINESS.md).
