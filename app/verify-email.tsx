@@ -5,8 +5,10 @@ import { Alert, Text, View } from 'react-native';
 import { authService } from '@/features/authentication/services/auth-service';
 import { AppButton } from '@/shared/components/app-button';
 import { Screen } from '@/shared/components/screen';
+import { useThemeColors } from '@/shared/theme';
 
 export default function VerifyEmail() {
+  const colors = useThemeColors();
   const { email } = useLocalSearchParams<{ email: string }>();
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -36,11 +38,11 @@ export default function VerifyEmail() {
   return (
     <Screen>
       <View className="flex-1 items-center justify-center">
-        <View className="h-20 w-20 items-center justify-center rounded-3xl bg-orange-100">
-          <MailCheck size={38} color="#F97316" />
+        <View className="h-20 w-20 items-center justify-center rounded-2xl bg-brand-soft">
+          <MailCheck size={38} color={colors.brand} />
         </View>
-        <Text className="mt-7 text-center text-3xl font-extrabold text-ink">Verify your email</Text>
-        <Text className="mt-3 text-center text-base leading-6 text-slate-500">
+        <Text className="mt-7 text-center text-3xl font-bold text-ink">Verify your email</Text>
+        <Text className="mt-3 text-center text-base leading-6 text-muted">
           We sent a verification link to {email}. Open it to secure your BuilderLink account.
         </Text>
         <View className="mt-9 w-full gap-3">

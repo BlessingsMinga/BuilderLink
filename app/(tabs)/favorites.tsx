@@ -6,8 +6,10 @@ import { BuilderCard } from '@/features/builders/components/builder-card';
 import { useBuilders } from '@/features/builders/hooks/use-builders';
 import { useFavoriteBuilderIds } from '@/features/favorites/hooks/use-favorites';
 import { Screen } from '@/shared/components/screen';
+import { useThemeColors } from '@/shared/theme';
 
 export default function Favorites() {
+  const colors = useThemeColors();
   const session = useAuthStore((state) => state.session);
   const favorites = useFavoriteBuilderIds(session?.userId);
   const builders = useBuilders();
@@ -19,36 +21,36 @@ export default function Favorites() {
 
   return (
     <Screen>
-      <Text className="text-2xl font-extrabold text-ink">Saved professionals</Text>
+      <Text className="text-2xl font-bold text-ink">Saved professionals</Text>
 
       {isLoading ? (
         <View className="mt-16 items-center gap-3">
-          <ActivityIndicator size="large" color="#F97316" />
-          <Text className="text-slate-500">Loading saved professionals…</Text>
+          <ActivityIndicator size="large" color={colors.ink} />
+          <Text className="text-muted">Loading saved professionals…</Text>
         </View>
       ) : isError ? (
-        <View className="mt-10 items-center gap-4 rounded-3xl bg-white p-6">
-          <Text className="text-base text-slate-500">We couldn’t load your saved professionals.</Text>
+        <View className="mt-10 items-center gap-4 rounded-2xl border border-line bg-surface p-6">
+          <Text className="text-base text-muted">We couldn’t load your saved professionals.</Text>
           <Pressable
             onPress={() => {
               favorites.refetch();
               builders.refetch();
             }}
-            className="rounded-2xl bg-brand px-6 py-3"
+            className="rounded-xl bg-ink px-6 py-3"
           >
-            <Text className="font-bold text-white">Try again</Text>
+            <Text className="font-bold text-canvas">Try again</Text>
           </Pressable>
         </View>
       ) : saved.length === 0 ? (
-        <View className="mt-10 items-center gap-4 rounded-3xl bg-white p-6">
-          <View className="h-16 w-16 items-center justify-center rounded-3xl bg-orange-100">
-            <Heart color="#F97316" size={30} />
+        <View className="mt-10 items-center gap-4 rounded-2xl border border-line bg-surface p-6">
+          <View className="h-16 w-16 items-center justify-center rounded-2xl bg-brand-soft">
+            <Heart color={colors.brand} size={30} />
           </View>
-          <Text className="text-center text-base leading-6 text-slate-500">
+          <Text className="text-center text-base leading-6 text-muted">
             Tap the heart on a professional’s profile to save them here, ready whenever your project is.
           </Text>
-          <Pressable onPress={() => router.push('/(tabs)/search')} className="rounded-2xl bg-brand px-6 py-3">
-            <Text className="font-bold text-white">Find a professional</Text>
+          <Pressable onPress={() => router.push('/(tabs)/search')} className="rounded-xl bg-ink px-6 py-3">
+            <Text className="font-bold text-canvas">Find a professional</Text>
           </Pressable>
         </View>
       ) : (

@@ -50,8 +50,8 @@ export default function PhoneSignIn() {
   return (
     <Screen>
       <PhoneRecaptcha ref={recaptcha} />
-      <Text className="text-3xl font-extrabold text-ink">Sign in with phone</Text>
-      <Text className="mt-2 text-base leading-6 text-slate-500">We’ll send a one-time SMS verification code to your Malawi number.</Text>
+      <Text className="text-3xl font-bold text-ink">Sign in with phone</Text>
+      <Text className="mt-2 text-base leading-6 text-muted">We’ll send a one-time SMS verification code to your Malawi number.</Text>
       <View className="mt-8 gap-4">
         <FormField label="Malawi phone number" value={phone} onChangeText={setPhone} keyboardType="phone-pad" placeholder="+265 991 234 567" />
         {verificationId ? <FormField label="SMS verification code" value={code} onChangeText={setCode} keyboardType="number-pad" placeholder="123456" /> : null}

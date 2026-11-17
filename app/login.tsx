@@ -31,8 +31,8 @@ export default function Login() {
   return (
     <Screen>
       <BrandMark />
-      <Text className="mt-8 text-3xl font-extrabold text-ink">Welcome back</Text>
-      <Text className="mt-2 text-base text-slate-500">Sign in to manage your construction projects.</Text>
+      <Text className="mt-8 text-3xl font-bold text-ink">Welcome back</Text>
+      <Text className="mt-2 text-base text-muted">Sign in to manage your construction projects.</Text>
 
       <View className="mt-9 gap-4">
         <Controller
@@ -70,9 +70,9 @@ export default function Login() {
       {isGoogleAuthConfigured ? (
         <>
           <View className="mt-6 flex-row items-center gap-3">
-            <View className="h-px flex-1 bg-slate-200" />
-            <Text className="text-sm text-slate-400">or</Text>
-            <View className="h-px flex-1 bg-slate-200" />
+            <View className="h-px flex-1 bg-line" />
+            <Text className="text-sm text-faint">or</Text>
+            <View className="h-px flex-1 bg-line" />
           </View>
           <View className="mt-6">
             <GoogleSignInButton onSuccess={() => router.replace('/(tabs)')} />
@@ -80,7 +80,7 @@ export default function Login() {
         </>
       ) : null}
 
-      <Text className="mt-8 text-center text-slate-500">
+      <Text className="mt-8 text-center text-muted">
         New to BuilderLink?{' '}
         <Text className="font-bold text-brand" onPress={() => router.push('/register')}>
           Create an account

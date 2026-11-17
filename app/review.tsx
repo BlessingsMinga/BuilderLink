@@ -9,6 +9,7 @@ import { REVIEW_CATEGORIES, type CategoryRatings } from '@/features/reviews/serv
 import { AppButton } from '@/shared/components/app-button';
 import { Protected } from '@/shared/components/protected';
 import { Screen } from '@/shared/components/screen';
+import { useThemeColors } from '@/shared/theme';
 
 const MIN_COMMENT_LENGTH = 10;
 
@@ -17,6 +18,7 @@ const initialCategoryRatings = Object.fromEntries(
 ) as CategoryRatings;
 
 export default function Review() {
+  const colors = useThemeColors();
   const { bookingId } = useLocalSearchParams<{ bookingId?: string }>();
   const session = useAuthStore((state) => state.session);
   const { data: booking, isLoading, isError, refetch } = useBooking(bookingId);
@@ -67,48 +69,48 @@ export default function Review() {
   return (
     <Protected>
       <Screen>
-        <Pressable onPress={() => router.back()} className="h-11 w-11 items-center justify-center rounded-2xl bg-white">
-          <ChevronLeft color="#1E293B" />
+        <Pressable onPress={() => router.back()} className="h-11 w-11 items-center justify-center rounded-xl border border-line bg-surface">
+          <ChevronLeft color={colors.ink} />
         </Pressable>
-        <Text className="mt-6 text-3xl font-extrabold text-ink">Rate your experience</Text>
+        <Text className="mt-6 text-3xl font-bold text-ink">Rate your experience</Text>
 
         {blocked ? (
-          <View className="mt-10 items-center gap-4 rounded-3xl bg-white p-6">
-            <Text className="text-center text-base text-slate-500">{blocked}</Text>
-            <Pressable onPress={() => router.replace('/bookings' as Href)} className="rounded-2xl bg-brand px-6 py-3">
-              <Text className="font-bold text-white">My bookings</Text>
+          <View className="mt-10 items-center gap-4 rounded-2xl border border-line bg-surface p-6">
+            <Text className="text-center text-base text-muted">{blocked}</Text>
+            <Pressable onPress={() => router.replace('/bookings' as Href)} className="rounded-xl bg-ink px-6 py-3">
+              <Text className="font-bold text-canvas">My bookings</Text>
             </Pressable>
           </View>
         ) : isLoading || isLoadingReviewed ? (
           <View className="mt-16 items-center gap-3">
-            <ActivityIndicator size="large" color="#F97316" />
-            <Text className="text-slate-500">Loading…</Text>
+            <ActivityIndicator size="large" color={colors.ink} />
+            <Text className="text-muted">Loading…</Text>
           </View>
         ) : isError || !booking ? (
-          <View className="mt-10 items-center gap-4 rounded-3xl bg-white p-6">
-            <Text className="text-base text-slate-500">We couldn’t load this booking.</Text>
-            <Pressable onPress={() => refetch()} className="rounded-2xl bg-brand px-6 py-3">
-              <Text className="font-bold text-white">Try again</Text>
+          <View className="mt-10 items-center gap-4 rounded-2xl border border-line bg-surface p-6">
+            <Text className="text-base text-muted">We couldn’t load this booking.</Text>
+            <Pressable onPress={() => refetch()} className="rounded-xl bg-ink px-6 py-3">
+              <Text className="font-bold text-canvas">Try again</Text>
             </Pressable>
           </View>
         ) : (
           <>
-            <Text className="mt-2 text-slate-500">
+            <Text className="mt-2 text-muted">
               How was working with {booking.builderName} on {booking.service.toLowerCase()}?
             </Text>
 
-            <View className="mt-8 items-center rounded-3xl bg-white p-6">
+            <View className="mt-8 items-center rounded-2xl border border-line bg-surface p-6">
               <Text className="text-lg font-bold text-ink">Overall rating</Text>
               <View className="mt-4">
                 <Stars value={rating} onChange={setRating} size={34} label="Overall rating" />
               </View>
-              <Text className="mt-3 font-semibold text-slate-500">{rating} out of 5</Text>
+              <Text className="mt-3 font-semibold text-muted">{rating} out of 5</Text>
             </View>
 
             <Text className="mt-8 text-lg font-bold text-ink">Rate the details</Text>
             <View className="mt-3 gap-2">
               {REVIEW_CATEGORIES.map((category) => (
-                <View key={category.key} className="flex-row items-center justify-between rounded-2xl bg-white p-4">
+                <View key={category.key} className="flex-row items-center justify-between rounded-xl border border-line bg-surface p-4">
                   <Text className="font-semibold text-ink">{category.label}</Text>
                   <Stars
                     value={categoryRatings[category.key]}
@@ -121,16 +123,16 @@ export default function Review() {
             </View>
 
             <Text className="mt-8 text-lg font-bold text-ink">Your review</Text>
-            <TextInput
+            <TextInput placeholderTextColor={colors.faint}
               value={comment}
               onChangeText={setComment}
               multiline
               textAlignVertical="top"
               maxLength={1000}
-              className="mt-3 h-32 rounded-2xl bg-white px-4 pt-4 text-base"
+              className="mt-3 h-32 rounded-xl border border-line bg-surface px-4 pt-4 text-base text-ink"
               placeholder="Share what went well and what could improve."
             />
-            <Text className="mt-3 text-sm text-slate-500">
+            <Text className="mt-3 text-sm text-muted">
               Your review is public and shows your name. It can’t be edited after you publish it.
             </Text>
 
@@ -145,6 +147,7 @@ export default function Review() {
 }
 
 function Stars({ value, onChange, size, label }: { value: number; onChange: (value: number) => void; size: number; label: string }) {
+  const colors = useThemeColors();
   return (
     <View className="flex-row gap-1.5">
       {[1, 2, 3, 4, 5].map((star) => (
@@ -156,7 +159,7 @@ function Stars({ value, onChange, size, label }: { value: number; onChange: (val
           accessibilityState={{ selected: star === value }}
           onPress={() => onChange(star)}
         >
-          <Star size={size} color="#F97316" fill={star <= value ? '#F97316' : 'transparent'} />
+          <Star size={size} color={colors.brand} fill={star <= value ? colors.brand : 'transparent'} />
         </Pressable>
       ))}
     </View>

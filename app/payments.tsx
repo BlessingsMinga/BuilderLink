@@ -6,6 +6,7 @@ import { AppButton } from '@/shared/components/app-button';
 import { Protected } from '@/shared/components/protected';
 import { Screen } from '@/shared/components/screen';
 import { paymentService, type PaymentProvider } from '@/features/payments/services/payment-service';
+import { useThemeColors } from '@/shared/theme';
 
 const options: { id: PaymentProvider; label: string }[] = [
   { id: 'paychangu', label: 'PayChangu' },
@@ -15,6 +16,7 @@ const options: { id: PaymentProvider; label: string }[] = [
 ];
 
 export default function Payments() {
+  const colors = useThemeColors();
   const [provider, setProvider] = useState<PaymentProvider>('paychangu');
   const [loading, setLoading] = useState(false);
 
@@ -38,16 +40,16 @@ export default function Payments() {
   return (
     <Protected>
       <Screen>
-        <Pressable onPress={() => router.back()} className="h-11 w-11 items-center justify-center rounded-2xl bg-white">
-          <ChevronLeft color="#1E293B" />
+        <Pressable onPress={() => router.back()} className="h-11 w-11 items-center justify-center rounded-xl border border-line bg-surface">
+          <ChevronLeft color={colors.ink} />
         </Pressable>
-        <Text className="mt-6 text-3xl font-extrabold text-ink">Pay deposit</Text>
-        <Text className="mt-2 text-slate-500">Booking with Thoko Mbewe</Text>
+        <Text className="mt-6 text-3xl font-bold text-ink">Pay deposit</Text>
+        <Text className="mt-2 text-muted">Booking with Thoko Mbewe</Text>
 
-        <View className="mt-7 rounded-3xl bg-white p-5">
-          <Text className="text-sm text-slate-500">Deposit due</Text>
-          <Text className="mt-1 text-3xl font-extrabold text-ink">MWK 50,000</Text>
-          <Text className="mt-2 text-sm text-slate-500">Your payment is held against this booking.</Text>
+        <View className="mt-7 rounded-2xl border border-line bg-surface p-5">
+          <Text className="text-sm text-muted">Deposit due</Text>
+          <Text className="mt-1 text-3xl font-bold text-ink">MWK 50,000</Text>
+          <Text className="mt-2 text-sm text-muted">Your payment is held against this booking.</Text>
         </View>
 
         <Text className="mt-8 text-lg font-bold text-ink">Choose payment method</Text>
@@ -56,22 +58,22 @@ export default function Payments() {
             <Pressable
               key={option.id}
               onPress={() => setProvider(option.id)}
-              className={`rounded-2xl border p-4 ${provider === option.id ? 'border-brand bg-orange-50' : 'border-slate-200 bg-white'}`}
+              className={`rounded-xl border p-4 ${provider === option.id ? 'border-ink bg-subtle' : 'border-line bg-surface'}`}
             >
               <Text className="font-bold text-ink">{option.label}</Text>
             </Pressable>
           ))}
         </View>
 
-        <View className="mt-6 flex-row gap-3 rounded-2xl bg-green-50 p-4">
-          <ShieldCheck color="#16A34A" size={22} />
-          <Text className="flex-1 leading-5 text-green-800">Payments are processed securely. Builder payouts are released after job completion.</Text>
+        <View className="mt-6 flex-row gap-3 rounded-xl bg-success-soft p-4">
+          <ShieldCheck color={colors.success} size={22} />
+          <Text className="flex-1 leading-5 text-success">Payments are processed securely. Builder payouts are released after job completion.</Text>
         </View>
 
         <View className="mt-7 gap-3">
           <AppButton label="Continue to secure payment" loading={loading} onPress={pay} />
           <Pressable onPress={() => Alert.alert('Receipt preview', 'A detailed receipt will be available after payment is confirmed.')} className="flex-row items-center justify-center gap-2 py-2">
-            <FileText size={18} color="#F97316" />
+            <FileText size={18} color={colors.brand} />
             <Text className="font-semibold text-brand">View receipt details</Text>
           </Pressable>
         </View>

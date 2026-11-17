@@ -13,13 +13,14 @@ import {
 import { useReviewedBookingIds } from '@/features/reviews/hooks/use-reviews';
 import { Protected } from '@/shared/components/protected';
 import { Screen } from '@/shared/components/screen';
+import { useThemeColors } from '@/shared/theme';
 
 const statusStyles: Record<BookingStatus, { label: string; badge: string; text: string }> = {
-  pending: { label: 'Pending', badge: 'bg-orange-100', text: 'text-orange-700' },
-  accepted: { label: 'Accepted', badge: 'bg-green-100', text: 'text-green-700' },
-  completed: { label: 'Completed', badge: 'bg-blue-100', text: 'text-blue-700' },
-  declined: { label: 'Declined', badge: 'bg-red-100', text: 'text-red-700' },
-  cancelled: { label: 'Cancelled', badge: 'bg-slate-200', text: 'text-slate-600' },
+  pending: { label: 'Pending', badge: 'bg-brand-soft', text: 'text-brand' },
+  accepted: { label: 'Accepted', badge: 'bg-success-soft', text: 'text-success' },
+  completed: { label: 'Completed', badge: 'bg-info-soft', text: 'text-info' },
+  declined: { label: 'Declined', badge: 'bg-danger-soft', text: 'text-danger' },
+  cancelled: { label: 'Cancelled', badge: 'bg-subtle', text: 'text-muted' },
 };
 
 type Action = { label: string; status: BookingStatus; confirm: string; destructive?: boolean };
@@ -45,6 +46,7 @@ function actionsFor(booking: Booking, perspective: BookingPerspective): Action[]
 }
 
 export default function Bookings() {
+  const colors = useThemeColors();
   const session = useAuthStore((state) => state.session);
   const isBuilder = session?.role === 'builder';
   const [perspective, setPerspective] = useState<BookingPerspective>(isBuilder ? 'builder' : 'customer');
@@ -74,13 +76,13 @@ export default function Bookings() {
   return (
     <Protected>
       <Screen>
-        <Pressable onPress={() => router.back()} className="h-11 w-11 items-center justify-center rounded-2xl bg-white">
-          <ChevronLeft color="#1E293B" />
+        <Pressable onPress={() => router.back()} className="h-11 w-11 items-center justify-center rounded-xl border border-line bg-surface">
+          <ChevronLeft color={colors.ink} />
         </Pressable>
-        <Text className="mt-6 text-3xl font-extrabold text-ink">My bookings</Text>
+        <Text className="mt-6 text-3xl font-bold text-ink">My bookings</Text>
 
         {isBuilder ? (
-          <View className="mt-5 flex-row gap-2 rounded-2xl bg-white p-1">
+          <View className="mt-5 flex-row gap-2 rounded-xl border border-line bg-surface p-1">
             <Tab label="Incoming requests" active={perspective === 'builder'} onPress={() => setPerspective('builder')} />
             <Tab label="Sent by me" active={perspective === 'customer'} onPress={() => setPerspective('customer')} />
           </View>
@@ -88,26 +90,26 @@ export default function Bookings() {
 
         {isLoading ? (
           <View className="mt-16 items-center gap-3">
-            <ActivityIndicator size="large" color="#F97316" />
-            <Text className="text-slate-500">Loading bookings…</Text>
+            <ActivityIndicator size="large" color={colors.ink} />
+            <Text className="text-muted">Loading bookings…</Text>
           </View>
         ) : isError ? (
-          <View className="mt-10 items-center gap-4 rounded-3xl bg-white p-6">
-            <Text className="text-base text-slate-500">We couldn’t load your bookings.</Text>
-            <Pressable onPress={() => refetch()} className="rounded-2xl bg-brand px-6 py-3">
-              <Text className="font-bold text-white">Try again</Text>
+          <View className="mt-10 items-center gap-4 rounded-2xl border border-line bg-surface p-6">
+            <Text className="text-base text-muted">We couldn’t load your bookings.</Text>
+            <Pressable onPress={() => refetch()} className="rounded-xl bg-ink px-6 py-3">
+              <Text className="font-bold text-canvas">Try again</Text>
             </Pressable>
           </View>
         ) : bookings.length === 0 ? (
-          <View className="mt-10 items-center gap-4 rounded-3xl bg-white p-6">
-            <Text className="text-center text-base text-slate-500">
+          <View className="mt-10 items-center gap-4 rounded-2xl border border-line bg-surface p-6">
+            <Text className="text-center text-base text-muted">
               {perspective === 'builder'
                 ? 'No booking requests yet. New requests from customers will appear here.'
                 : 'You haven’t requested any bookings yet.'}
             </Text>
             {perspective === 'customer' ? (
-              <Pressable onPress={() => router.push('/(tabs)/search')} className="rounded-2xl bg-brand px-6 py-3">
-                <Text className="font-bold text-white">Find a professional</Text>
+              <Pressable onPress={() => router.push('/(tabs)/search')} className="rounded-xl bg-ink px-6 py-3">
+                <Text className="font-bold text-canvas">Find a professional</Text>
               </Pressable>
             ) : null}
           </View>
@@ -119,13 +121,13 @@ export default function Bookings() {
               const isCompletedForCustomer = perspective === 'customer' && booking.status === 'completed';
               const reviewed = reviewedIds?.includes(booking.id);
               return (
-                <View key={booking.id} className="rounded-3xl bg-white p-5">
+                <View key={booking.id} className="rounded-2xl border border-line bg-surface p-5">
                   <View className="flex-row items-start justify-between gap-3">
                     <View className="flex-1">
                       <Text className="text-lg font-bold text-ink">
                         {perspective === 'builder' ? booking.customerName : booking.builderName}
                       </Text>
-                      <Text className="text-slate-500">{booking.service}</Text>
+                      <Text className="text-muted">{booking.service}</Text>
                     </View>
                     <View className={`rounded-full px-3 py-1 ${style.badge}`}>
                       <Text className={`text-xs font-bold ${style.text}`}>{style.label}</Text>
@@ -133,14 +135,14 @@ export default function Bookings() {
                   </View>
 
                   <View className="mt-4 flex-row items-center gap-2">
-                    <CalendarDays size={16} color="#64748B" />
-                    <Text className="text-slate-600">{formatBookingDate(booking.preferredDate)}</Text>
+                    <CalendarDays size={16} color={colors.muted} />
+                    <Text className="text-muted">{formatBookingDate(booking.preferredDate)}</Text>
                   </View>
                   <View className="mt-2 flex-row items-center gap-2">
-                    <MapPin size={16} color="#64748B" />
-                    <Text className="flex-1 text-slate-600">{booking.location}</Text>
+                    <MapPin size={16} color={colors.muted} />
+                    <Text className="flex-1 text-muted">{booking.location}</Text>
                   </View>
-                  <Text className="mt-3 leading-5 text-slate-600">{booking.description}</Text>
+                  <Text className="mt-3 leading-5 text-muted">{booking.description}</Text>
 
                   {actions.length > 0 ? (
                     <View className="mt-4 flex-row gap-3">
@@ -149,9 +151,9 @@ export default function Bookings() {
                           key={action.status}
                           disabled={updateStatus.isPending}
                           onPress={() => runAction(booking, action)}
-                          className={`h-12 flex-1 items-center justify-center rounded-2xl ${action.destructive ? 'border border-slate-200 bg-white' : 'bg-brand'} ${updateStatus.isPending ? 'opacity-60' : ''}`}
+                          className={`h-12 flex-1 items-center justify-center rounded-xl ${action.destructive ? 'border border-line bg-surface' : 'bg-ink'} ${updateStatus.isPending ? 'opacity-60' : ''}`}
                         >
-                          <Text className={`font-bold ${action.destructive ? 'text-red-500' : 'text-white'}`}>{action.label}</Text>
+                          <Text className={`font-bold ${action.destructive ? 'text-danger' : 'text-canvas'}`}>{action.label}</Text>
                         </Pressable>
                       ))}
                     </View>
@@ -160,15 +162,15 @@ export default function Bookings() {
                   {isCompletedForCustomer && reviewed === false ? (
                     <Pressable
                       onPress={() => router.push({ pathname: '/review', params: { bookingId: booking.id } })}
-                      className="mt-4 h-12 flex-row items-center justify-center gap-2 rounded-2xl bg-brand"
+                      className="mt-4 h-12 flex-row items-center justify-center gap-2 rounded-xl bg-ink"
                     >
-                      <Star size={18} color="white" />
-                      <Text className="font-bold text-white">Leave a review</Text>
+                      <Star size={18} color={colors.canvas} />
+                      <Text className="font-bold text-canvas">Leave a review</Text>
                     </Pressable>
                   ) : isCompletedForCustomer && reviewed ? (
                     <View className="mt-4 flex-row items-center gap-2">
-                      <Star size={16} color="#F97316" fill="#F97316" />
-                      <Text className="font-semibold text-slate-500">You reviewed this job</Text>
+                      <Star size={16} color={colors.brand} fill={colors.brand} />
+                      <Text className="font-semibold text-muted">You reviewed this job</Text>
                     </View>
                   ) : null}
                 </View>
@@ -186,8 +188,8 @@ export default function Bookings() {
 
 function Tab({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} className={`h-11 flex-1 items-center justify-center rounded-xl ${active ? 'bg-brand' : ''}`}>
-      <Text className={`font-bold ${active ? 'text-white' : 'text-slate-500'}`}>{label}</Text>
+    <Pressable onPress={onPress} className={`h-11 flex-1 items-center justify-center rounded-xl ${active ? 'bg-ink' : ''}`}>
+      <Text className={`font-bold ${active ? 'text-canvas' : 'text-muted'}`}>{label}</Text>
     </Pressable>
   );
 }

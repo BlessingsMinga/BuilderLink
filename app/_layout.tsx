@@ -7,10 +7,12 @@ import { View, ActivityIndicator } from 'react-native';
 import { authService } from '@/features/authentication/services/auth-service';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
 import type { AuthSession } from '@/shared/types';
+import { useThemeColors } from '@/shared/theme';
 
 const client = new QueryClient();
 
 export default function RootLayout() {
+  const colors = useThemeColors();
   const setSession = useAuthStore((state) => state.setSession);
   const [ready, setReady] = useState(false);
   const unsubRef = useRef<(() => void) | null>(null);
@@ -30,15 +32,15 @@ export default function RootLayout() {
   if (!ready) {
     return (
       <View className="flex-1 items-center justify-center bg-canvas">
-        <ActivityIndicator size="large" color="#F97316" />
+        <ActivityIndicator size="large" color={colors.ink} />
       </View>
     );
   }
 
   return (
     <QueryClientProvider client={client}>
-      <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, animation: 'fade' }} />
+      <StatusBar style="auto" />
+      <Stack screenOptions={{ headerShown: false, animation: 'fade', contentStyle: { backgroundColor: colors.canvas } }} />
     </QueryClientProvider>
   );
 }

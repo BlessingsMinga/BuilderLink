@@ -5,7 +5,7 @@
     "scheme": "builderlink",
     "version": "0.1.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "plugins": [
       "expo-router",
       "@react-native-google-signin/google-signin"

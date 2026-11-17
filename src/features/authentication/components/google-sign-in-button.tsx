@@ -9,6 +9,7 @@ import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native';
 import { authService } from '../services/auth-service';
 import { useAuthStore } from '../store/auth-store';
 import type { UserRole } from '@/shared/types';
+import { useThemeColors } from '@/shared/theme';
 
 const webClientId = process.env.EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID;
 
@@ -32,6 +33,7 @@ type Props = {
  * exchanges it for a Firebase credential and syncs the Firestore profile.
  */
 export function GoogleSignInButton({ role = 'customer', onSuccess }: Props) {
+  const colors = useThemeColors();
   const setSession = useAuthStore((state) => state.setSession);
   const [loading, setLoading] = useState(false);
 
@@ -81,12 +83,12 @@ export function GoogleSignInButton({ role = 'customer', onSuccess }: Props) {
         accessibilityState={{ busy: loading, disabled: loading }}
         disabled={loading}
         onPress={handlePress}
-        className={`h-14 flex-row items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 ${loading ? 'opacity-60' : ''}`}
+        className={`h-14 flex-row items-center justify-center gap-3 rounded-xl border border-line bg-surface px-5 ${loading ? 'opacity-60' : ''}`}
       >
         {loading ? (
-          <ActivityIndicator color="#F97316" />
+          <ActivityIndicator color={colors.ink} />
         ) : (
-          <Text className="text-lg font-extrabold text-brand">G</Text>
+          <Text className="text-lg font-bold text-brand">G</Text>
         )}
         <Text className="text-base font-bold text-ink">Continue with Google</Text>
       </Pressable>

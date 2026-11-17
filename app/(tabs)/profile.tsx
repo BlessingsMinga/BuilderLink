@@ -4,8 +4,10 @@ import { Pressable, Text, View } from 'react-native';
 import { authService } from '@/features/authentication/services/auth-service';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
 import { Screen } from '@/shared/components/screen';
+import { useThemeColors } from '@/shared/theme';
 
 export default function Profile() {
+  const colors = useThemeColors();
   const session = useAuthStore((state) => state.session);
   const signOut = useAuthStore((state) => state.signOut);
 
@@ -24,40 +26,40 @@ export default function Profile() {
 
   return (
     <Screen>
-      <Text className="text-2xl font-extrabold text-ink">Profile</Text>
-      <View className="mt-7 rounded-3xl bg-white p-5">
-        <View className="h-14 w-14 items-center justify-center rounded-full bg-orange-100">
-          <Text className="text-lg font-extrabold text-brand">{initials}</Text>
+      <Text className="text-2xl font-bold text-ink">Profile</Text>
+      <View className="mt-7 rounded-2xl border border-line bg-surface p-5">
+        <View className="h-14 w-14 items-center justify-center rounded-full bg-brand-soft">
+          <Text className="text-lg font-bold text-brand">{initials}</Text>
         </View>
         <Text className="mt-4 text-lg font-bold text-ink">
           {session?.email ?? 'Demo Member'}
         </Text>
-        <Text className="text-slate-500">
+        <Text className="text-muted">
           {session ? `${session.role} · ${session.email}` : 'Customer · Lilongwe'}
         </Text>
       </View>
-      <View className="mt-5 rounded-3xl bg-white">
+      <View className="mt-5 rounded-2xl border border-line bg-surface">
         <Pressable
           onPress={() => router.push('/bookings' as Href)}
-          className="flex-row items-center gap-4 border-b border-slate-100 p-5"
+          className="flex-row items-center gap-4 border-b border-line p-5"
         >
-          <CalendarDays size={20} color="#F97316" />
+          <CalendarDays size={20} color={colors.brand} />
           <Text className="font-semibold text-ink">My bookings</Text>
         </Pressable>
         <Pressable
           onPress={() => router.push('/builder-profile')}
-          className="flex-row items-center gap-4 border-b border-slate-100 p-5"
+          className="flex-row items-center gap-4 border-b border-line p-5"
         >
-          <BriefcaseBusiness size={20} color="#F97316" />
+          <BriefcaseBusiness size={20} color={colors.brand} />
           <Text className="font-semibold text-ink">Builder workspace</Text>
         </Pressable>
-        <Row icon={<Settings size={20} color="#1E293B" />} label="Settings" />
+        <Row icon={<Settings size={20} color={colors.ink} />} label="Settings" />
         <Pressable
           onPress={handleSignOut}
           className="flex-row items-center gap-4 p-5"
         >
-          <LogOut size={20} color="#EF4444" />
-          <Text className="font-semibold text-red-500">Sign out</Text>
+          <LogOut size={20} color={colors.danger} />
+          <Text className="font-semibold text-danger">Sign out</Text>
         </Pressable>
       </View>
     </Screen>
@@ -66,7 +68,7 @@ export default function Profile() {
 
 function Row({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <View className="flex-row items-center gap-4 border-b border-slate-100 p-5">
+    <View className="flex-row items-center gap-4 border-b border-line p-5">
       {icon}
       <Text className="font-semibold text-ink">{label}</Text>
     </View>

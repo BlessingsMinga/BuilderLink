@@ -9,10 +9,12 @@ import { useBuilder } from '@/features/builders/hooks/use-builders';
 import { AppButton } from '@/shared/components/app-button';
 import { Protected } from '@/shared/components/protected';
 import { Screen } from '@/shared/components/screen';
+import { useThemeColors } from '@/shared/theme';
 
 const FALLBACK_SERVICE = 'General construction';
 
 export default function Booking() {
+  const colors = useThemeColors();
   const { builderId } = useLocalSearchParams<{ builderId?: string }>();
   const session = useAuthStore((state) => state.session);
   const { data: builder, isLoading, isError, refetch } = useBuilder(builderId);
@@ -67,62 +69,62 @@ export default function Booking() {
   return (
     <Protected>
       <Screen>
-        <Pressable onPress={() => router.back()} className="h-11 w-11 items-center justify-center rounded-2xl bg-white">
-          <ChevronLeft color="#1E293B" />
+        <Pressable onPress={() => router.back()} className="h-11 w-11 items-center justify-center rounded-xl border border-line bg-surface">
+          <ChevronLeft color={colors.ink} />
         </Pressable>
-        <Text className="mt-6 text-3xl font-extrabold text-ink">Request a booking</Text>
+        <Text className="mt-6 text-3xl font-bold text-ink">Request a booking</Text>
 
         {!builderId ? (
-          <View className="mt-10 items-center gap-4 rounded-3xl bg-white p-6">
-            <Text className="text-center text-base text-slate-500">Choose a professional first, then request a booking from their profile.</Text>
-            <Pressable onPress={() => router.replace('/(tabs)/search')} className="rounded-2xl bg-brand px-6 py-3">
-              <Text className="font-bold text-white">Find a professional</Text>
+          <View className="mt-10 items-center gap-4 rounded-2xl border border-line bg-surface p-6">
+            <Text className="text-center text-base text-muted">Choose a professional first, then request a booking from their profile.</Text>
+            <Pressable onPress={() => router.replace('/(tabs)/search')} className="rounded-xl bg-ink px-6 py-3">
+              <Text className="font-bold text-canvas">Find a professional</Text>
             </Pressable>
           </View>
         ) : isLoading ? (
           <View className="mt-16 items-center gap-3">
-            <ActivityIndicator size="large" color="#F97316" />
-            <Text className="text-slate-500">Loading…</Text>
+            <ActivityIndicator size="large" color={colors.ink} />
+            <Text className="text-muted">Loading…</Text>
           </View>
         ) : isError || !builder ? (
-          <View className="mt-10 items-center gap-4 rounded-3xl bg-white p-6">
-            <Text className="text-base text-slate-500">We couldn’t load this professional.</Text>
-            <Pressable onPress={() => refetch()} className="rounded-2xl bg-brand px-6 py-3">
-              <Text className="font-bold text-white">Try again</Text>
+          <View className="mt-10 items-center gap-4 rounded-2xl border border-line bg-surface p-6">
+            <Text className="text-base text-muted">We couldn’t load this professional.</Text>
+            <Pressable onPress={() => refetch()} className="rounded-xl bg-ink px-6 py-3">
+              <Text className="font-bold text-canvas">Try again</Text>
             </Pressable>
           </View>
         ) : (
           <>
-            <Text className="mt-2 text-slate-500">Send the details to {builder.name}.</Text>
+            <Text className="mt-2 text-muted">Send the details to {builder.name}.</Text>
 
-            <Section icon={<Wrench size={19} color="#F97316" />} title="Service">
+            <Section icon={<Wrench size={19} color={colors.brand} />} title="Service">
               <View className="mt-3 flex-row flex-wrap gap-2">
                 {services.map((item) => {
                   const selected = (service ?? services[0]) === item;
                   return (
-                    <Pressable key={item} onPress={() => setService(item)} className={`rounded-xl px-3 py-2 ${selected ? 'bg-brand' : 'bg-white'}`}>
-                      <Text className={`font-semibold ${selected ? 'text-white' : 'text-ink'}`}>{item}</Text>
+                    <Pressable key={item} onPress={() => setService(item)} className={`rounded-xl border px-3 py-2 ${selected ? 'border-ink bg-ink' : 'border-line bg-surface'}`}>
+                      <Text className={`font-semibold ${selected ? 'text-canvas' : 'text-ink'}`}>{item}</Text>
                     </Pressable>
                   );
                 })}
               </View>
             </Section>
 
-            <Section icon={<CalendarDays size={19} color="#F97316" />} title="Preferred date">
-              <TextInput value={date} onChangeText={setDate} className="mt-3 h-14 rounded-2xl bg-white px-4 text-base" placeholder="DD/MM/YYYY" keyboardType="numbers-and-punctuation" maxLength={10} />
+            <Section icon={<CalendarDays size={19} color={colors.brand} />} title="Preferred date">
+              <TextInput placeholderTextColor={colors.faint} value={date} onChangeText={setDate} className="mt-3 h-14 rounded-xl border border-line bg-surface px-4 text-base text-ink" placeholder="DD/MM/YYYY" keyboardType="numbers-and-punctuation" maxLength={10} />
             </Section>
 
-            <Section icon={<MapPin size={19} color="#F97316" />} title="Job location">
-              <TextInput value={location} onChangeText={setLocation} className="mt-3 h-14 rounded-2xl bg-white px-4 text-base" placeholder="Area, district and nearest landmark" maxLength={200} />
+            <Section icon={<MapPin size={19} color={colors.brand} />} title="Job location">
+              <TextInput placeholderTextColor={colors.faint} value={location} onChangeText={setLocation} className="mt-3 h-14 rounded-xl border border-line bg-surface px-4 text-base text-ink" placeholder="Area, district and nearest landmark" maxLength={200} />
             </Section>
 
             <Section title="Describe the work">
-              <TextInput value={description} onChangeText={setDescription} multiline textAlignVertical="top" className="mt-3 h-32 rounded-2xl bg-white px-4 pt-4 text-base" placeholder="What needs to be done? Include dimensions or materials if you know them." maxLength={1000} />
+              <TextInput placeholderTextColor={colors.faint} value={description} onChangeText={setDescription} multiline textAlignVertical="top" className="mt-3 h-32 rounded-xl border border-line bg-surface px-4 pt-4 text-base text-ink" placeholder="What needs to be done? Include dimensions or materials if you know them." maxLength={1000} />
             </Section>
 
-            <View className="mt-8 rounded-2xl bg-orange-100 p-4">
-              <Text className="font-bold text-orange-800">What happens next</Text>
-              <Text className="mt-1 leading-5 text-orange-700">The builder reviews your request and accepts or declines it. You can follow its status under My bookings.</Text>
+            <View className="mt-8 rounded-xl bg-subtle p-4">
+              <Text className="font-bold text-ink">What happens next</Text>
+              <Text className="mt-1 leading-5 text-muted">The builder reviews your request and accepts or declines it. You can follow its status under My bookings.</Text>
             </View>
 
             <View className="my-7">

@@ -6,8 +6,10 @@ import { Alert, Pressable, Text, TextInput, View } from 'react-native';
 import { AppButton } from '@/shared/components/app-button';
 import { Protected } from '@/shared/components/protected';
 import { Screen } from '@/shared/components/screen';
+import { useThemeColors } from '@/shared/theme';
 
 export default function BuilderProfile() {
+  const colors = useThemeColors();
   const [businessName, setBusinessName] = useState('');
   const [yearsExperience, setYearsExperience] = useState('');
   const [bio, setBio] = useState('');
@@ -48,11 +50,11 @@ export default function BuilderProfile() {
   return (
     <Protected>
       <Screen>
-      <Pressable onPress={() => router.back()} className="h-11 w-11 items-center justify-center rounded-2xl bg-white">
-        <ChevronLeft color="#1E293B" />
+      <Pressable onPress={() => router.back()} className="h-11 w-11 items-center justify-center rounded-xl border border-line bg-surface">
+        <ChevronLeft color={colors.ink} />
       </Pressable>
-      <Text className="mt-6 text-3xl font-extrabold text-ink">Builder profile</Text>
-      <Text className="mt-2 text-slate-500">Show customers your skills and completed work.</Text>
+      <Text className="mt-6 text-3xl font-bold text-ink">Builder profile</Text>
+      <Text className="mt-2 text-muted">Show customers your skills and completed work.</Text>
 
       <Section title="Professional details">
         <Field label="Business or professional name" placeholder="Mbewe Building Services" value={businessName} onChangeText={setBusinessName} />
@@ -63,36 +65,36 @@ export default function BuilderProfile() {
       <Section title="Skills">
         <View className="flex-row flex-wrap gap-2">
           {skills.map((skill) => (
-            <View key={skill} className="rounded-xl bg-orange-100 px-3 py-2">
-              <Text className="font-semibold text-orange-700">{skill}</Text>
+            <View key={skill} className="rounded-xl bg-subtle px-3 py-2">
+              <Text className="font-semibold text-ink">{skill}</Text>
             </View>
           ))}
-          <Pressable onPress={() => setSkills([...skills, 'Site supervision'])} className="flex-row items-center gap-1 rounded-xl border border-orange-200 px-3 py-2">
-            <Plus size={16} color="#F97316" />
+          <Pressable onPress={() => setSkills([...skills, 'Site supervision'])} className="flex-row items-center gap-1 rounded-xl border border-line px-3 py-2">
+            <Plus size={16} color={colors.brand} />
             <Text className="font-semibold text-brand">Add skill</Text>
           </Pressable>
         </View>
       </Section>
 
       <Section title="Work gallery">
-        <Pressable onPress={selectPhotos} className="items-center rounded-3xl border border-dashed border-orange-300 bg-orange-50 px-5 py-7">
-          <Camera size={26} color="#F97316" />
+        <Pressable onPress={selectPhotos} className="items-center rounded-2xl border border-dashed border-line bg-subtle px-5 py-7">
+          <Camera size={26} color={colors.brand} />
           <Text className="mt-2 font-bold text-brand">Add completed work</Text>
-          <Text className="mt-1 text-sm text-slate-500">{photos ? `${photos} photo(s) selected` : 'Up to 6 photos'}</Text>
+          <Text className="mt-1 text-sm text-muted">{photos ? `${photos} photo(s) selected` : 'Up to 6 photos'}</Text>
         </Pressable>
       </Section>
 
       <Section title="Verification documents">
-        <Pressable onPress={() => Alert.alert('Document upload', 'National ID, certificates and licences are securely stored for review.')} className="flex-row items-center gap-3 rounded-2xl bg-white p-4">
-          <FileCheck2 color="#16A34A" />
+        <Pressable onPress={() => Alert.alert('Document upload', 'National ID, certificates and licences are securely stored for review.')} className="flex-row items-center gap-3 rounded-xl border border-line bg-surface p-4">
+          <FileCheck2 color={colors.success} />
           <Text className="font-bold text-ink">Upload ID or certificates</Text>
         </Pressable>
       </Section>
 
       <Section title="Availability">
-        <Pressable onPress={() => setAvailable(!available)} className="rounded-2xl bg-white p-4">
+        <Pressable onPress={() => setAvailable(!available)} className="rounded-xl border border-line bg-surface p-4">
           <Text className="font-bold text-ink">{available ? 'Available for work' : 'Currently unavailable'}</Text>
-          <Text className="mt-1 text-sm text-slate-500">Tap to update your availability</Text>
+          <Text className="mt-1 text-sm text-muted">Tap to update your availability</Text>
         </Pressable>
       </Section>
 
@@ -128,13 +130,14 @@ function Field({
   value: string;
   onChangeText: (text: string) => void;
 }) {
+  const colors = useThemeColors();
   return (
     <View className="mb-3">
       <Text className="mb-2 text-sm font-semibold text-ink">{label}</Text>
       <TextInput
-        className={`rounded-2xl border border-slate-200 bg-white px-4 text-base ${multiline ? 'h-24 pt-4' : 'h-14'}`}
+        className={`rounded-xl border border-line bg-surface px-4 text-base text-ink ${multiline ? 'h-24 pt-4' : 'h-14'}`}
         placeholder={placeholder}
-        placeholderTextColor="#94A3B8"
+        placeholderTextColor={colors.faint}
         multiline={multiline}
         keyboardType={keyboardType}
         value={value}

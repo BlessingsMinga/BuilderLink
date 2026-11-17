@@ -1,3 +1,48 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * Colour tokens as "R G B" triplets, so Tailwind opacity modifiers work.
+ * The dark set applies automatically when the phone is in dark mode.
+ * Keep in sync with src/shared/theme/index.ts.
+ */
+@layer base {
+  :root {
+    --color-canvas: 255 255 255;
+    --color-surface: 255 255 255;
+    --color-subtle: 244 244 245;
+    --color-line: 228 228 231;
+    --color-ink: 24 24 27;
+    --color-muted: 113 113 122;
+    --color-faint: 161 161 170;
+    --color-brand: 234 88 12;
+    --color-brand-soft: 255 247 237;
+    --color-success: 22 163 74;
+    --color-success-soft: 240 253 244;
+    --color-danger: 220 38 38;
+    --color-danger-soft: 254 242 242;
+    --color-info: 37 99 235;
+    --color-info-soft: 239 246 255;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-canvas: 11 11 12;
+      --color-surface: 19 19 21;
+      --color-subtle: 31 31 35;
+      --color-line: 42 42 47;
+      --color-ink: 250 250 250;
+      --color-muted: 161 161 170;
+      --color-faint: 113 113 122;
+      --color-brand: 251 146 60;
+      --color-brand-soft: 43 26 14;
+      --color-success: 74 222 128;
+      --color-success-soft: 16 38 26;
+      --color-danger: 248 113 113;
+      --color-danger-soft: 45 20 20;
+      --color-info: 96 165 250;
+      --color-info-soft: 17 28 48;
+    }
+  }
+}

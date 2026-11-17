@@ -6,10 +6,12 @@ import { BuilderCard } from '@/features/builders/components/builder-card';
 import { useBuilders } from '@/features/builders/hooks/use-builders';
 import { MALAWI_DISTRICTS } from '@/features/builders/services/builder-service';
 import { Screen } from '@/shared/components/screen';
+import { useThemeColors } from '@/shared/theme';
 
 const districts = ['All districts', ...MALAWI_DISTRICTS];
 
 export default function Search() {
+  const colors = useThemeColors();
   // `q` may be supplied when browsing by trade from the Home screen.
   const { q } = useLocalSearchParams<{ q?: string }>();
   const [query, setQuery] = useState(q ?? '');
@@ -38,28 +40,28 @@ export default function Search() {
 
   return (
     <Screen>
-      <Text className="text-2xl font-extrabold text-ink">Find professionals</Text>
+      <Text className="text-2xl font-bold text-ink">Find professionals</Text>
       <View className="mt-6 flex-row gap-3">
-        <View className="flex-1 flex-row items-center gap-2 rounded-2xl bg-white px-4">
-          <SearchIcon size={19} color="#64748B" />
-          <TextInput value={query} onChangeText={setQuery} className="h-14 flex-1 text-base" placeholder="Search a trade or name" />
+        <View className="flex-1 flex-row items-center gap-2 rounded-xl border border-line bg-surface px-4">
+          <SearchIcon size={19} color={colors.muted} />
+          <TextInput placeholderTextColor={colors.faint} value={query} onChangeText={setQuery} className="h-14 flex-1 text-base text-ink" placeholder="Search a trade or name" />
         </View>
-        <Pressable onPress={() => setShowFilters(!showFilters)} className="h-14 w-14 items-center justify-center rounded-2xl bg-brand">
-          <Filter color="white" size={20} />
+        <Pressable onPress={() => setShowFilters(!showFilters)} className="h-14 w-14 items-center justify-center rounded-xl bg-ink">
+          <Filter color={colors.canvas} size={20} />
         </Pressable>
       </View>
       {showFilters ? (
-        <View className="mt-4 rounded-3xl bg-white p-4">
+        <View className="mt-4 rounded-2xl border border-line bg-surface p-4">
           <Text className="font-bold text-ink">District</Text>
           <View className="mt-3 flex-row flex-wrap gap-2">
             {districts.map((item) => (
-              <Pressable key={item} onPress={() => setDistrict(item)} className={`rounded-xl px-3 py-2 ${item === district ? 'bg-brand' : 'bg-slate-100'}`}>
-                <Text className={`text-sm font-semibold ${item === district ? 'text-white' : 'text-slate-600'}`}>{item}</Text>
+              <Pressable key={item} onPress={() => setDistrict(item)} className={`rounded-xl px-3 py-2 ${item === district ? 'bg-ink' : 'bg-subtle'}`}>
+                <Text className={`text-sm font-semibold ${item === district ? 'text-canvas' : 'text-muted'}`}>{item}</Text>
               </Pressable>
             ))}
           </View>
           <Pressable onPress={() => setVerified(!verified)} className="mt-4 flex-row items-center gap-2">
-            <View className={`h-5 w-5 rounded ${verified ? 'bg-success' : 'border border-slate-300'}`} />
+            <View className={`h-5 w-5 rounded ${verified ? 'bg-success' : 'border border-line'}`} />
             <Text className="font-semibold text-ink">Verified professionals only</Text>
           </Pressable>
         </View>
@@ -71,20 +73,20 @@ export default function Search() {
 
       {isLoading ? (
         <View className="mt-10 items-center gap-3">
-          <ActivityIndicator size="large" color="#F97316" />
-          <Text className="text-slate-500">Loading professionals…</Text>
+          <ActivityIndicator size="large" color={colors.ink} />
+          <Text className="text-muted">Loading professionals…</Text>
         </View>
       ) : isError ? (
-        <View className="mt-10 items-center gap-4 rounded-3xl bg-white p-6">
-          <Text className="text-base text-slate-500">We couldn’t load professionals right now.</Text>
-          <Pressable onPress={() => refetch()} className="rounded-2xl bg-brand px-6 py-3">
-            <Text className="font-bold text-white">Try again</Text>
+        <View className="mt-10 items-center gap-4 rounded-2xl border border-line bg-surface p-6">
+          <Text className="text-base text-muted">We couldn’t load professionals right now.</Text>
+          <Pressable onPress={() => refetch()} className="rounded-xl bg-ink px-6 py-3">
+            <Text className="font-bold text-canvas">Try again</Text>
           </Pressable>
         </View>
       ) : results.length === 0 ? (
-        <View className="mt-10 items-center gap-3 rounded-3xl bg-white p-6">
+        <View className="mt-10 items-center gap-3 rounded-2xl border border-line bg-surface p-6">
           <Text className="text-lg font-bold text-ink">No professionals found</Text>
-          <Text className="text-center text-base leading-6 text-slate-500">
+          <Text className="text-center text-base leading-6 text-muted">
             Try a different search or clear your filters. New builders appear here once verified.
           </Text>
         </View>
