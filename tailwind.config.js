@@ -20,8 +20,23 @@ module.exports = {
         danger: { DEFAULT: token('danger'), soft: token('danger-soft') },
         info: { DEFAULT: token('info'), soft: token('info-soft') },
       },
-      fontFamily: { display: ['System'], body: ['System'] },
+      // One family per weight: custom fonts on Android ignore `fontWeight`, so
+      // `font-bold` etc. select a font file instead (see corePlugins below).
+      fontFamily: {
+        body: ['Inter_400Regular'],
+        medium: ['Inter_500Medium'],
+        semibold: ['Inter_600SemiBold'],
+        bold: ['Inter_700Bold'],
+        heading: ['PlusJakartaSans_700Bold'],
+        'heading-semibold': ['PlusJakartaSans_600SemiBold'],
+      },
+      // Type scale: title 28/34, section 18/24, body 16/24, secondary 14/20, caption 12/16.
+      fontSize: {
+        lg: ['18px', { lineHeight: '24px' }],
+        '3xl': ['28px', { lineHeight: '34px' }],
+      },
     },
   },
+  corePlugins: { fontWeight: false },
   plugins: [],
 };

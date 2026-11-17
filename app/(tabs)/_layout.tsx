@@ -1,9 +1,9 @@
 import { Tabs } from 'expo-router';
-import { Bell, Heart, House, Search, UserRound } from 'lucide-react-native';
+import { CalendarDays, House, Search, UserRound } from 'lucide-react-native';
 import { Protected } from '@/shared/components/protected';
 import { useThemeColors } from '@/shared/theme';
 
-const icons = { index: House, search: Search, favorites: Heart, notifications: Bell, profile: UserRound };
+const icons = { index: House, search: Search, bookings: CalendarDays, profile: UserRound };
 
 export default function TabLayout() {
   const colors = useThemeColors();
@@ -15,7 +15,7 @@ export default function TabLayout() {
           tabBarActiveTintColor: colors.ink,
           tabBarInactiveTintColor: colors.faint,
           tabBarStyle: { backgroundColor: colors.canvas, borderTopColor: colors.line, elevation: 0 },
-          tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+          tabBarLabelStyle: { fontSize: 11, fontFamily: 'Inter_600SemiBold' },
           sceneStyle: { backgroundColor: colors.canvas },
           tabBarIcon: ({ color, size, focused }) => {
             const Icon = icons[route.name as keyof typeof icons];
@@ -25,8 +25,7 @@ export default function TabLayout() {
       >
         <Tabs.Screen name="index" options={{ title: 'Home' }} />
         <Tabs.Screen name="search" options={{ title: 'Search' }} />
-        <Tabs.Screen name="favorites" options={{ title: 'Saved' }} />
-        <Tabs.Screen name="notifications" options={{ title: 'Alerts' }} />
+        <Tabs.Screen name="bookings" options={{ title: 'Bookings' }} />
         <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
       </Tabs>
     </Protected>

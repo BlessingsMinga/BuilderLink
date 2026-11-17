@@ -154,3 +154,40 @@ export async function fetchBooking(bookingId: string): Promise<Booking | null> {
   const result = await getDoc(doc(requireDb(), 'bookings', bookingId));
   return result.exists() ? toBooking(result.id, result.data() as BookingDocument) : null;
 }
+
+/** A local calendar date as ISO `YYYY-MM-DD`. */
+export function toIsoDate(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+export type BookingGroups = { needsAction: Booking[]; upcoming: Booking[]; past: Booking[] };
+
+/**
+ * Split bookings by what the viewer should do about them.
+ * - Builders must respond to pending requests; accepted jobs are upcoming.
+ * - Customers are asked to review completed jobs; open requests are upcoming.
+ * `reviewedIds` is undefined while still loading, so nothing is flagged prematurely.
+ */
+export function groupBookings(
+  bookings: Booking[],
+  perspective: BookingPerspective,
+  reviewedIds: string[] | undefined,
+): BookingGroups {
+  const groups: BookingGroups = { needsAction: [], upcoming: [], past: [] };
+  for (const booking of bookings) {
+    if (perspective === 'builder') {
+      if (booking.status === 'pending') groups.needsAction.push(booking);
+      else if (booking.status === 'accepted') groups.upcoming.push(booking);
+      else groups.past.push(booking);
+    } else if (booking.status === 'pending' || booking.status === 'accepted') {
+      groups.upcoming.push(booking);
+    } else if (booking.status === 'completed' && reviewedIds && !reviewedIds.includes(booking.id)) {
+      groups.needsAction.push(booking);
+    } else {
+      groups.past.push(booking);
+    }
+  }
+  // Soonest job first for anything still ahead.
+  groups.upcoming.sort((a, b) => a.preferredDate.localeCompare(b.preferredDate));
+  return groups;
+}

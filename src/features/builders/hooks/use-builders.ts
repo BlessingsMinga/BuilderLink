@@ -1,5 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
-import { fetchBuilders, fetchBuilder, type BuilderSummary } from '../services/builder-service';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  fetchBuilder,
+  fetchBuilders,
+  fetchOwnBuilder,
+  saveOwnBuilder,
+  type BuilderSummary,
+  type OwnBuilder,
+  type OwnBuilderInput,
+} from '../services/builder-service';
 
 const buildersKey = ['builders'] as const;
 
@@ -19,5 +27,23 @@ export function useBuilder(profileId: string | undefined) {
     queryKey: ['builders', profileId],
     queryFn: () => fetchBuilder(profileId!),
     enabled: Boolean(profileId),
+  });
+}
+
+/** The signed-in builder's own listing (null until they create it). */
+export function useOwnBuilder(profileId: string | undefined, enabled = true) {
+  return useQuery<OwnBuilder | null>({
+    queryKey: ['builders', 'own', profileId],
+    queryFn: () => fetchOwnBuilder(profileId!),
+    enabled: Boolean(profileId) && enabled,
+  });
+}
+
+export function useSaveOwnBuilder(profileId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ displayName, input }: { displayName: string; input: OwnBuilderInput }) =>
+      saveOwnBuilder(profileId!, displayName, input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: buildersKey }),
   });
 }

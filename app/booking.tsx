@@ -1,135 +1,165 @@
-import { router, useLocalSearchParams, type Href } from 'expo-router';
-import { CalendarDays, ChevronLeft, MapPin, Wrench } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, Text, TextInput, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
+import { Text, View } from 'react-native';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
+import { DateField } from '@/features/bookings/components/date-field';
 import { useCreateBooking } from '@/features/bookings/hooks/use-bookings';
-import { isPastDate, parseBookingDate } from '@/features/bookings/services/booking-service';
 import { useBuilder } from '@/features/builders/hooks/use-builders';
+import { MALAWI_DISTRICTS } from '@/features/builders/services/builder-service';
 import { AppButton } from '@/shared/components/app-button';
+import { Chip } from '@/shared/components/chip';
+import { FormField } from '@/shared/components/form-field';
 import { Protected } from '@/shared/components/protected';
 import { Screen } from '@/shared/components/screen';
-import { useThemeColors } from '@/shared/theme';
+import { ScreenHeader } from '@/shared/components/screen-header';
+import { Skeleton } from '@/shared/components/skeleton';
+import { EmptyState, ErrorState, ErrorText, isOfflineError } from '@/shared/components/states';
 
 const FALLBACK_SERVICE = 'General construction';
+const MIN_DESCRIPTION_LENGTH = 10;
 
 export default function Booking() {
-  const colors = useThemeColors();
   const { builderId } = useLocalSearchParams<{ builderId?: string }>();
   const session = useAuthStore((state) => state.session);
-  const { data: builder, isLoading, isError, refetch } = useBuilder(builderId);
+  const { data: builder, isLoading, isError, error, refetch } = useBuilder(builderId);
   const createBooking = useCreateBooking();
 
   const services = builder?.trades.length ? builder.trades : [FALLBACK_SERVICE];
-  const [service, setService] = useState<string | null>(null);
-  const [date, setDate] = useState('');
-  const [location, setLocation] = useState('');
+  const [chosenService, setChosenService] = useState<string | null>(null);
+  // Until the customer picks one, the builder's first trade is selected.
+  const service = chosenService ?? services[0];
+  const [date, setDate] = useState<string | null>(null);
+  const [district, setDistrict] = useState<string | null>(null);
+  const [landmark, setLandmark] = useState('');
   const [description, setDescription] = useState('');
+  // Field errors stay hidden until the first attempt to send.
+  const [attempted, setAttempted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Default to the builder's first trade once their profile has loaded.
-  useEffect(() => {
-    if (builder && service === null) setService(builder.trades[0] ?? FALLBACK_SERVICE);
-  }, [builder, service]);
+  const isOwnProfile = Boolean(builder && builder.id === session?.userId);
+  const errors = {
+    date: date ? null : 'Choose your preferred date.',
+    location: !district
+      ? 'Choose the district where the work is.'
+      : landmark.trim().length < 3
+        ? 'Add the area or nearest landmark.'
+        : null,
+    description:
+      description.trim().length < MIN_DESCRIPTION_LENGTH
+        ? `Describe the work in at least ${MIN_DESCRIPTION_LENGTH} characters.`
+        : null,
+  };
+  const shown = attempted ? errors : { date: null, location: null, description: null };
 
   const submit = async () => {
-    if (!session || !builder) return;
-    if (builder.id === session.userId) {
-      return Alert.alert('Not available', 'You can’t send a booking request to yourself.');
-    }
-    const preferredDate = parseBookingDate(date);
-    if (!preferredDate) {
-      return Alert.alert('Check the date', 'Enter your preferred date as DD/MM/YYYY, for example 04/12/2026.');
-    }
-    if (isPastDate(preferredDate)) {
-      return Alert.alert('Check the date', 'Your preferred date can’t be in the past.');
-    }
-    if (location.trim().length < 3 || description.trim().length < 10) {
-      return Alert.alert('Complete your request', 'Add a job location and a short description of the work (at least 10 characters).');
-    }
-
+    setAttempted(true);
+    setSubmitError(null);
+    if (!session || !builder || !date || !district || errors.location || errors.description) return;
     try {
       await createBooking.mutateAsync({
         customerId: session.userId,
         builderId: builder.id,
         builderName: builder.name,
-        service: service ?? services[0],
-        preferredDate,
-        location,
+        service,
+        preferredDate: date,
+        location: `${landmark.trim()}, ${district}`,
         description,
       });
-      Alert.alert('Request sent', `${builder.name} can now accept or decline your booking.`, [
-        { text: 'View my bookings', onPress: () => router.replace('/bookings' as Href) },
-      ]);
-    } catch (error) {
-      console.warn('Booking request failed:', error);
-      Alert.alert('Could not send request', 'We couldn’t send your booking request. Check your connection and try again.');
+      router.replace('/(tabs)/bookings' as never);
+    } catch (failure) {
+      console.warn('Booking request failed:', failure);
+      setSubmitError(
+        isOfflineError(failure)
+          ? 'You’re offline. Reconnect and send your request again.'
+          : 'We couldn’t send your request. Please try again.',
+      );
     }
   };
 
+  const canShowForm = Boolean(builder) && !isOwnProfile;
+
   return (
     <Protected>
-      <Screen>
-        <Pressable onPress={() => router.back()} className="h-11 w-11 items-center justify-center rounded-xl border border-line bg-surface">
-          <ChevronLeft color={colors.ink} />
-        </Pressable>
-        <Text className="mt-6 text-3xl font-bold text-ink">Request a booking</Text>
-
+      <Screen
+        header={<ScreenHeader title="Request a booking" />}
+        footer={
+          canShowForm ? (
+            <View>
+              <ErrorText>{submitError}</ErrorText>
+              <View className={submitError ? 'mt-3' : ''}>
+                <AppButton label="Send booking request" loading={createBooking.isPending} onPress={submit} />
+              </View>
+            </View>
+          ) : undefined
+        }
+      >
         {!builderId ? (
-          <View className="mt-10 items-center gap-4 rounded-2xl border border-line bg-surface p-6">
-            <Text className="text-center text-base text-muted">Choose a professional first, then request a booking from their profile.</Text>
-            <Pressable onPress={() => router.replace('/(tabs)/search')} className="rounded-xl bg-ink px-6 py-3">
-              <Text className="font-bold text-canvas">Find a professional</Text>
-            </Pressable>
-          </View>
+          <EmptyState
+            message="Choose a professional first, then request a booking from their profile."
+            actionLabel="Find a professional"
+            onAction={() => router.replace('/(tabs)/search')}
+          />
         ) : isLoading ? (
-          <View className="mt-16 items-center gap-3">
-            <ActivityIndicator size="large" color={colors.ink} />
-            <Text className="text-muted">Loading…</Text>
+          <View accessibilityLabel="Loading" className="gap-4">
+            <Skeleton className="h-5 w-2/3" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-28 w-full" />
           </View>
-        ) : isError || !builder ? (
-          <View className="mt-10 items-center gap-4 rounded-2xl border border-line bg-surface p-6">
-            <Text className="text-base text-muted">We couldn’t load this professional.</Text>
-            <Pressable onPress={() => refetch()} className="rounded-xl bg-ink px-6 py-3">
-              <Text className="font-bold text-canvas">Try again</Text>
-            </Pressable>
-          </View>
+        ) : isError ? (
+          <ErrorState error={error} what="this professional" onRetry={() => refetch()} />
+        ) : !builder ? (
+          <EmptyState message="This professional isn’t available for bookings." />
+        ) : isOwnProfile ? (
+          <EmptyState message="You can’t send a booking request to yourself." />
         ) : (
           <>
-            <Text className="mt-2 text-muted">Send the details to {builder.name}.</Text>
+            <Text className="font-body text-base text-muted">
+              {builder.name} will accept or decline. You can follow the request under Bookings.
+            </Text>
 
-            <Section icon={<Wrench size={19} color={colors.brand} />} title="Service">
-              <View className="mt-3 flex-row flex-wrap gap-2">
-                {services.map((item) => {
-                  const selected = (service ?? services[0]) === item;
-                  return (
-                    <Pressable key={item} onPress={() => setService(item)} className={`rounded-xl border px-3 py-2 ${selected ? 'border-ink bg-ink' : 'border-line bg-surface'}`}>
-                      <Text className={`font-semibold ${selected ? 'text-canvas' : 'text-ink'}`}>{item}</Text>
-                    </Pressable>
-                  );
-                })}
+            <Step number={1} title="Service">
+              <View className="flex-row flex-wrap gap-2">
+                {services.map((item) => (
+                  <Chip key={item} label={item} selected={service === item} onPress={() => setChosenService(item)} />
+                ))}
               </View>
-            </Section>
+            </Step>
 
-            <Section icon={<CalendarDays size={19} color={colors.brand} />} title="Preferred date">
-              <TextInput placeholderTextColor={colors.faint} value={date} onChangeText={setDate} className="mt-3 h-14 rounded-xl border border-line bg-surface px-4 text-base text-ink" placeholder="DD/MM/YYYY" keyboardType="numbers-and-punctuation" maxLength={10} />
-            </Section>
+            <Step number={2} title="Preferred date">
+              <DateField value={date} onChange={setDate} />
+              <ErrorText>{shown.date}</ErrorText>
+            </Step>
 
-            <Section icon={<MapPin size={19} color={colors.brand} />} title="Job location">
-              <TextInput placeholderTextColor={colors.faint} value={location} onChangeText={setLocation} className="mt-3 h-14 rounded-xl border border-line bg-surface px-4 text-base text-ink" placeholder="Area, district and nearest landmark" maxLength={200} />
-            </Section>
+            <Step number={3} title="Location">
+              <View className="flex-row flex-wrap gap-2">
+                {MALAWI_DISTRICTS.map((item) => (
+                  <Chip key={item} label={item} selected={district === item} onPress={() => setDistrict(item)} />
+                ))}
+              </View>
+              <View className="mt-4">
+                <FormField
+                  label="Area or nearest landmark"
+                  value={landmark}
+                  onChangeText={setLandmark}
+                  placeholder="e.g. Area 25, near the market"
+                  maxLength={150}
+                />
+              </View>
+              <ErrorText>{shown.location}</ErrorText>
+            </Step>
 
-            <Section title="Describe the work">
-              <TextInput placeholderTextColor={colors.faint} value={description} onChangeText={setDescription} multiline textAlignVertical="top" className="mt-3 h-32 rounded-xl border border-line bg-surface px-4 pt-4 text-base text-ink" placeholder="What needs to be done? Include dimensions or materials if you know them." maxLength={1000} />
-            </Section>
-
-            <View className="mt-8 rounded-xl bg-subtle p-4">
-              <Text className="font-bold text-ink">What happens next</Text>
-              <Text className="mt-1 leading-5 text-muted">The builder reviews your request and accepts or declines it. You can follow its status under My bookings.</Text>
-            </View>
-
-            <View className="my-7">
-              <AppButton label="Send booking request" loading={createBooking.isPending} onPress={submit} />
-            </View>
+            <Step number={4} title="Describe the work">
+              <FormField
+                label="What needs to be done?"
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                placeholder="Include dimensions or materials if you know them."
+                maxLength={1000}
+                error={shown.description}
+              />
+            </Step>
           </>
         )}
       </Screen>
@@ -137,12 +167,14 @@ export default function Booking() {
   );
 }
 
-function Section({ title, icon, children }: { title: string; icon?: React.ReactNode; children: React.ReactNode }) {
+function Step({ number, title, children }: { number: number; title: string; children: React.ReactNode }) {
   return (
-    <View className="mt-7">
-      <View className="flex-row items-center gap-2">
-        {icon}
-        <Text className="text-lg font-bold text-ink">{title}</Text>
+    <View className="mt-8">
+      <View className="mb-3 flex-row items-center gap-3">
+        <View className="h-6 w-6 items-center justify-center rounded-full bg-subtle">
+          <Text className="font-semibold text-xs text-muted">{number}</Text>
+        </View>
+        <Text className="font-heading-semibold text-lg text-ink">{title}</Text>
       </View>
       {children}
     </View>

@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, orderBy, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, orderBy, query, setDoc, updateDoc, where } from 'firebase/firestore';
 import { firebaseDb } from '@/shared/services/firebase';
 
 /**
@@ -68,7 +68,83 @@ export async function fetchBuilder(profileId: string): Promise<BuilderSummary | 
   return builder.verification_status === 'verified' ? toSummary(builder) : null;
 }
 
-/** A single candidate district, pulled from the browsable profile rows. */
+export type VerificationStatus = 'pending' | 'verified' | 'rejected';
+
+/** The signed-in builder's own listing, as edited in the builder workspace. */
+export type OwnBuilder = {
+  businessName: string;
+  bio: string;
+  yearsExperience: number;
+  trades: string[];
+  district: string | null;
+  verificationStatus: VerificationStatus;
+};
+
+export type OwnBuilderInput = Omit<OwnBuilder, 'verificationStatus'>;
+
+/** The builder's own listing whatever its verification status, or null if not created yet. */
+export async function fetchOwnBuilder(profileId: string): Promise<OwnBuilder | null> {
+  if (!firebaseDb) throw new Error('Firestore is not configured.');
+  const result = await getDoc(doc(firebaseDb, 'builders', profileId));
+  if (!result.exists()) return null;
+  const raw = result.data() as BuilderDocument & { bio?: string | null };
+  return {
+    businessName: raw.business_name ?? '',
+    bio: raw.bio ?? '',
+    yearsExperience: raw.years_experience,
+    trades: raw.trades ?? [],
+    district: raw.district ?? null,
+    verificationStatus: raw.verification_status,
+  };
+}
+
+/**
+ * Create or update the builder's own listing. New listings start as `pending`
+ * and stay hidden from customers until an administrator verifies them.
+ */
+export async function saveOwnBuilder(profileId: string, displayName: string, input: OwnBuilderInput): Promise<void> {
+  if (!firebaseDb) throw new Error('Firestore is not configured.');
+  const ref = doc(firebaseDb, 'builders', profileId);
+  const editable = {
+    business_name: input.businessName.trim() || null,
+    bio: input.bio.trim() || null,
+    years_experience: input.yearsExperience,
+    trades: input.trades,
+    district: input.district,
+  };
+  const existing = await getDoc(ref);
+  if (existing.exists()) {
+    // Older listings may lack this field, which the security rules require to be present.
+    const backfill = 'response_time_minutes' in existing.data() ? {} : { response_time_minutes: null };
+    await updateDoc(ref, { ...editable, ...backfill });
+    return;
+  }
+  await setDoc(ref, {
+    profile_id: profileId,
+    display_name: displayName,
+    ...editable,
+    verification_status: 'pending',
+    average_rating: 0,
+    completed_jobs: 0,
+    response_time_minutes: null,
+  });
+}
+
+/** Trades a builder can list, and customers can browse by. */
+export const TRADES = [
+  'Bricklayer',
+  'Plumber',
+  'Carpenter',
+  'Electrician',
+  'Painter',
+  'Roofer',
+  'Tiler',
+  'Welder',
+  'Plasterer',
+  'General builder',
+] as const;
+
+/** Districts offered in pickers and filters. */
 export const MALAWI_DISTRICTS = [
   'Lilongwe',
   'Blantyre',
