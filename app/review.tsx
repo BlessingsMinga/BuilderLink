@@ -180,7 +180,7 @@ function Stars({ value, onChange, size, label }: { value: number; onChange: (val
           accessibilityState={{ selected: star === value }}
           onPress={() => onChange(star)}
         >
-          <Star size={size} color={colors.brand} fill={star <= value ? colors.brand : 'transparent'} />
+          <Star size={size} color={colors.star} fill={star <= value ? colors.star : 'transparent'} />
         </Pressable>
       ))}
     </View>

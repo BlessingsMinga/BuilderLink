@@ -7,6 +7,7 @@ import { useAuthStore } from '@/features/authentication/store/auth-store';
 import { AppButton } from '@/shared/components/app-button';
 import { FormField } from '@/shared/components/form-field';
 import { Screen } from '@/shared/components/screen';
+import { ScreenHeader } from '@/shared/components/screen-header';
 
 export default function PhoneSignIn() {
   const recaptcha = useRef<PhoneRecaptchaHandle>(null);
@@ -48,16 +49,15 @@ export default function PhoneSignIn() {
   };
 
   return (
-    <Screen>
+    <Screen header={<ScreenHeader />}>
       <PhoneRecaptcha ref={recaptcha} />
-      <Text className="text-3xl font-bold text-ink">Sign in with phone</Text>
-      <Text className="mt-2 text-base leading-6 text-muted">We’ll send a one-time SMS verification code to your Malawi number.</Text>
+      <Text className="text-3xl font-heading text-ink">Sign in with phone</Text>
+      <Text className="font-body mt-2 text-base leading-6 text-muted">We’ll send a one-time SMS verification code to your Malawi number.</Text>
       <View className="mt-8 gap-4">
         <FormField label="Malawi phone number" value={phone} onChangeText={setPhone} keyboardType="phone-pad" placeholder="+265 991 234 567" />
         {verificationId ? <FormField label="SMS verification code" value={code} onChangeText={setCode} keyboardType="number-pad" placeholder="123456" /> : null}
         <AppButton label={verificationId ? 'Verify and sign in' : 'Send SMS code'} loading={loading} onPress={verificationId ? confirmCode : sendCode} />
         {verificationId ? <AppButton label="Send a new code" variant="outline" disabled={loading} onPress={sendCode} /> : null}
-        <AppButton label="Back to sign in" variant="outline" disabled={loading} onPress={() => router.back()} />
       </View>
     </Screen>
   );

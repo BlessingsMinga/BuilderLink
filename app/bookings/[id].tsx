@@ -145,7 +145,7 @@ export default function BookingDetail() {
 
             {hasReviewed ? (
               <View className="mt-8 flex-row items-center gap-2">
-                <Star size={16} color={colors.brand} fill={colors.brand} />
+                <Star size={16} color={colors.star} fill={colors.star} />
                 <Text className="font-medium text-sm text-muted">You reviewed this job</Text>
               </View>
             ) : null}

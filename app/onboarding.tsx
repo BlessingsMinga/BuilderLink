@@ -1,9 +1,49 @@
 import { router } from 'expo-router';
-import { ArrowRight, BadgeCheck, MapPin, Star } from 'lucide-react-native';
+import { BadgeCheck, MapPin, Star } from 'lucide-react-native';
+import type { ReactNode } from 'react';
 import { Text, View } from 'react-native';
 import { AppButton } from '@/shared/components/app-button';
 import { BrandMark } from '@/shared/components/brand-mark';
 import { Screen } from '@/shared/components/screen';
 import { useThemeColors } from '@/shared/theme';
-export default function Onboarding() { const colors = useThemeColors(); return <Screen><View className="flex-1 justify-between py-3"><View><BrandMark /><Text className="mt-9 text-4xl font-bold leading-tight text-ink">Build with people{`\n`}you can trust.</Text><Text className="mt-4 text-base leading-6 text-muted">Find verified construction professionals across Malawi — clearly priced, highly rated, ready to work.</Text><View className="mt-10 gap-4"><Feature icon={<BadgeCheck size={20} color={colors.success} />} title="Verified professionals" text="Know who you are hiring." /><Feature icon={<Star size={20} color={colors.brand} />} title="Reviews that matter" text="Choose based on real work." /><Feature icon={<MapPin size={20} color={colors.brand} />} title="Built for Malawi" text="Local districts and MWK pricing." /></View></View><View className="gap-3"><AppButton label="Get started" onPress={() => router.push('/register')} /><AppButton label="I already have an account" variant="outline" onPress={() => router.push('/login')} /><Text className="text-center text-sm text-faint">English · Chichewa</Text></View></View></Screen>; }
-function Feature({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) { return <View className="flex-row items-center gap-3"><View className="h-11 w-11 items-center justify-center rounded-xl border border-line bg-surface">{icon}</View><View><Text className="font-bold text-ink">{title}</Text><Text className="text-sm text-muted">{text}</Text></View></View>; }
+
+export default function Onboarding() {
+  const colors = useThemeColors();
+  return (
+    <Screen
+      hero={
+        <View className="pb-6 pt-6">
+          <BrandMark onHero />
+          <Text className="mt-8 font-heading text-3xl text-white">Build with people you can trust.</Text>
+          <Text className="mt-3 font-body text-base text-white/80">
+            Find verified construction professionals across Malawi.
+          </Text>
+        </View>
+      }
+      footer={
+        <View className="gap-3">
+          <AppButton label="Get started" onPress={() => router.push('/register')} />
+          <AppButton label="I already have an account" variant="outline" onPress={() => router.push('/login')} />
+        </View>
+      }
+    >
+      <View className="mt-3 gap-5">
+        <Benefit icon={<BadgeCheck size={24} color={colors.brand} />} title="Verified professionals" text="Know who you are hiring." />
+        <Benefit icon={<Star size={24} color={colors.brand} />} title="Reviews from real jobs" text="Only customers who booked can review." />
+        <Benefit icon={<MapPin size={24} color={colors.brand} />} title="Built for Malawi" text="Search by trade and district." />
+      </View>
+    </Screen>
+  );
+}
+
+function Benefit({ icon, title, text }: { icon: ReactNode; title: string; text: string }) {
+  return (
+    <View className="flex-row items-center gap-4">
+      <View className="h-14 w-14 items-center justify-center rounded-2xl bg-brand-soft">{icon}</View>
+      <View className="flex-1">
+        <Text className="font-bold text-base text-ink">{title}</Text>
+        <Text className="font-body text-sm text-muted">{text}</Text>
+      </View>
+    </View>
+  );
+}

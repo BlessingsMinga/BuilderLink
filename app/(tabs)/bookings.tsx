@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { CalendarDays, Inbox } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
@@ -9,8 +10,10 @@ import { useReviewedBookingIds } from '@/features/reviews/hooks/use-reviews';
 import { Screen } from '@/shared/components/screen';
 import { ListSkeleton } from '@/shared/components/skeleton';
 import { EmptyState, ErrorState } from '@/shared/components/states';
+import { useThemeColors } from '@/shared/theme';
 
 export default function Bookings() {
+  const colors = useThemeColors();
   const session = useAuthStore((state) => state.session);
   const isBuilder = session?.role === 'builder';
   const [perspective, setPerspective] = useState<BookingPerspective>(isBuilder ? 'builder' : 'customer');
@@ -27,42 +30,44 @@ export default function Bookings() {
         refetch();
         reviewed.refetch();
       }}
-    >
-      <Text className="font-heading text-3xl text-ink">Bookings</Text>
-
-      {isBuilder ? (
-        <View className="mt-5 flex-row rounded-xl bg-subtle p-1">
-          <Segment label="Requests to me" active={perspective === 'builder'} onPress={() => setPerspective('builder')} />
-          <Segment label="Sent by me" active={perspective === 'customer'} onPress={() => setPerspective('customer')} />
-        </View>
-      ) : null}
-
-      {isLoading ? (
-        <View className="mt-8">
-          <ListSkeleton />
-        </View>
-      ) : isError ? (
-        <View className="mt-8">
-          <ErrorState error={error} what="your bookings" onRetry={() => refetch()} />
-        </View>
-      ) : bookings.length === 0 ? (
-        <View className="mt-8">
-          {perspective === 'builder' ? (
-            <EmptyState message="No booking requests yet. New requests from customers appear here." />
-          ) : (
-            <EmptyState
-              message="You haven’t requested any bookings yet."
-              actionLabel="Find a professional"
-              onAction={() => router.push('/(tabs)/search')}
-            />
-          )}
-        </View>
-      ) : (
+      hero={
         <>
+          <Text className="font-heading text-3xl text-white">Bookings</Text>
+          {isBuilder ? (
+            <View className="mt-4 flex-row rounded-2xl bg-white/15 p-1">
+              <Segment label="Requests to me" active={perspective === 'builder'} onPress={() => setPerspective('builder')} />
+              <Segment label="Sent by me" active={perspective === 'customer'} onPress={() => setPerspective('customer')} />
+            </View>
+          ) : (
+            <Text className="mt-1 font-medium text-sm text-white/80">Track your requests and jobs.</Text>
+          )}
+        </>
+      }
+    >
+      {isLoading ? (
+        <ListSkeleton />
+      ) : isError ? (
+        <ErrorState error={error} what="your bookings" onRetry={() => refetch()} />
+      ) : bookings.length === 0 ? (
+        perspective === 'builder' ? (
+          <EmptyState
+            icon={<Inbox size={26} color={colors.brand} />}
+            message="No booking requests yet. New requests from customers appear here."
+          />
+        ) : (
+          <EmptyState
+            icon={<CalendarDays size={26} color={colors.brand} />}
+            message="You haven’t requested any bookings yet."
+            actionLabel="Find a professional"
+            onAction={() => router.push('/(tabs)/search')}
+          />
+        )
+      ) : (
+        <View className="gap-8">
           <Group title="Needs action" bookings={groups.needsAction} perspective={perspective} hint={needsActionHint} />
           <Group title="Upcoming" bookings={groups.upcoming} perspective={perspective} />
           <Group title="Past" bookings={groups.past} perspective={perspective} />
-        </>
+        </View>
       )}
     </Screen>
   );
@@ -71,8 +76,10 @@ export default function Bookings() {
 function Group({ title, bookings, perspective, hint }: { title: string; bookings: Booking[]; perspective: BookingPerspective; hint?: string }) {
   if (bookings.length === 0) return null;
   return (
-    <View className="mt-8">
-      <Text className="mb-3 font-heading-semibold text-lg text-ink">{title}</Text>
+    <View>
+      <Text className="mb-3 font-heading-semibold text-lg text-ink">
+        {title} <Text className="font-medium text-base text-faint">{bookings.length}</Text>
+      </Text>
       <View className="gap-3">
         {bookings.map((booking) => (
           <BookingCard key={booking.id} booking={booking} perspective={perspective} hint={hint} />
@@ -82,15 +89,16 @@ function Group({ title, bookings, perspective, hint }: { title: string; bookings
   );
 }
 
+/** One half of the switch on the hero band. */
 function Segment({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   return (
     <Pressable
       accessibilityRole="tab"
       accessibilityState={{ selected: active }}
       onPress={onPress}
-      className={`h-11 flex-1 items-center justify-center rounded-lg ${active ? 'bg-surface' : ''}`}
+      className={`h-11 flex-1 items-center justify-center rounded-xl ${active ? 'bg-white' : ''}`}
     >
-      <Text className={`text-sm ${active ? 'font-semibold text-ink' : 'font-medium text-muted'}`}>{label}</Text>
+      <Text className={`font-semibold text-sm ${active ? 'text-hero' : 'text-white'}`}>{label}</Text>
     </Pressable>
   );
 }

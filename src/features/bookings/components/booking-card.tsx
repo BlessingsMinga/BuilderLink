@@ -1,11 +1,9 @@
 import { router, type Href } from 'expo-router';
-import { ChevronRight } from 'lucide-react-native';
 import { Pressable, Text, View } from 'react-native';
-import { formatBookingDate, type Booking, type BookingPerspective, type BookingStatus } from '../services/booking-service';
-import { useThemeColors } from '@/shared/theme';
+import { type Booking, type BookingPerspective, type BookingStatus } from '../services/booking-service';
 
 const statusStyles: Record<BookingStatus, { label: string; badge: string; text: string }> = {
-  pending: { label: 'Pending', badge: 'bg-brand-soft', text: 'text-brand' },
+  pending: { label: 'Pending', badge: 'bg-warn-soft', text: 'text-warn' },
   accepted: { label: 'Accepted', badge: 'bg-success-soft', text: 'text-success' },
   completed: { label: 'Completed', badge: 'bg-info-soft', text: 'text-info' },
   declined: { label: 'Declined', badge: 'bg-danger-soft', text: 'text-danger' },
@@ -15,8 +13,20 @@ const statusStyles: Record<BookingStatus, { label: string; badge: string; text: 
 export function StatusBadge({ status }: { status: BookingStatus }) {
   const style = statusStyles[status];
   return (
-    <View className={`rounded-full px-2.5 py-1 ${style.badge}`}>
-      <Text className={`font-medium text-xs ${style.text}`}>{style.label}</Text>
+    <View className={`rounded-full px-3 py-1 ${style.badge}`}>
+      <Text className={`font-semibold text-xs ${style.text}`}>{style.label}</Text>
+    </View>
+  );
+}
+
+/** The booking's date as a small calendar tile: day number over month. */
+function DateTile({ isoDate }: { isoDate: string }) {
+  const [year, month, day] = isoDate.split('-').map(Number);
+  const monthLabel = new Date(year, month - 1, day).toLocaleDateString('en-GB', { month: 'short' });
+  return (
+    <View className="h-14 w-14 items-center justify-center rounded-2xl bg-brand-soft">
+      <Text className="font-heading text-lg text-brand">{day}</Text>
+      <Text className="-mt-1 font-semibold text-xs text-brand">{monthLabel}</Text>
     </View>
   );
 }
@@ -31,25 +41,22 @@ type Props = {
 
 /** Compact booking summary. Tapping opens the booking's detail screen. */
 export function BookingCard({ booking, perspective, hint }: Props) {
-  const colors = useThemeColors();
   return (
     <Pressable
       onPress={() => router.push(`/bookings/${booking.id}` as Href)}
-      className="flex-row items-center gap-3 rounded-2xl border border-line bg-surface p-4 active:bg-subtle"
+      className="flex-row items-center gap-4 rounded-3xl border border-line bg-surface p-4 active:bg-subtle"
     >
-      <View className="flex-1 gap-1">
-        <View className="flex-row items-center justify-between gap-3">
-          <Text numberOfLines={1} className="flex-1 font-semibold text-base text-ink">
-            {perspective === 'builder' ? booking.customerName : booking.builderName}
-          </Text>
-          <StatusBadge status={booking.status} />
-        </View>
-        <Text numberOfLines={1} className="font-body text-sm text-muted">
-          {booking.service} · {formatBookingDate(booking.preferredDate)}
+      <DateTile isoDate={booking.preferredDate} />
+      <View className="flex-1">
+        <Text numberOfLines={1} className="font-bold text-base text-ink">
+          {perspective === 'builder' ? booking.customerName : booking.builderName}
         </Text>
-        {hint ? <Text className="font-medium text-sm text-brand">{hint}</Text> : null}
+        <Text numberOfLines={1} className="font-body text-sm text-muted">
+          {booking.service}
+        </Text>
+        {hint ? <Text className="mt-1 font-semibold text-sm text-brand">{hint}</Text> : null}
       </View>
-      <ChevronRight color={colors.faint} size={20} />
+      <StatusBadge status={booking.status} />
     </Pressable>
   );
 }

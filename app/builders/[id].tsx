@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { BadgeCheck, Heart, Star } from 'lucide-react-native';
+import { BadgeCheck, BriefcaseBusiness, Heart, MapPin, MessageSquareText, Star, Trophy, type LucideIcon } from 'lucide-react-native';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
@@ -12,7 +12,7 @@ import { Avatar } from '@/shared/components/chip';
 import { Protected } from '@/shared/components/protected';
 import { Screen } from '@/shared/components/screen';
 import { HeaderButton, ScreenHeader } from '@/shared/components/screen-header';
-import { ListSkeleton, Skeleton } from '@/shared/components/skeleton';
+import { ListSkeleton } from '@/shared/components/skeleton';
 import { EmptyState, ErrorState, ErrorText } from '@/shared/components/states';
 import { useThemeColors } from '@/shared/theme';
 
@@ -56,14 +56,37 @@ export default function BuilderDetail() {
         }}
         header={
           <ScreenHeader
+            onHero
             right={
               builder && favoriteIds && !isOwnProfile ? (
-                <HeaderButton label={isSaved ? 'Remove from saved professionals' : 'Save this professional'} onPress={onToggleFavorite}>
-                  <Heart color={isSaved ? colors.brand : colors.ink} fill={isSaved ? colors.brand : 'transparent'} size={22} />
+                <HeaderButton onHero label={isSaved ? 'Remove from saved professionals' : 'Save this professional'} onPress={onToggleFavorite}>
+                  <Heart color="#FFFFFF" fill={isSaved ? '#FFFFFF' : 'transparent'} size={22} />
                 </HeaderButton>
               ) : undefined
             }
           />
+        }
+        hero={
+          <View className="items-center pb-10">
+            <Avatar name={builder?.name ?? ''} size="lg" onHero />
+            <View className="mt-4 flex-row items-center gap-2">
+              <Text numberOfLines={2} className="shrink text-center font-heading text-3xl text-white">
+                {builder?.name ?? ' '}
+              </Text>
+              {builder?.verified ? <BadgeCheck accessibilityLabel="Verified professional" size={24} color="#FFFFFF" /> : null}
+            </View>
+            {builder ? (
+              <>
+                <Text className="mt-1 text-center font-medium text-sm text-white/80">
+                  {builder.trades.join(' · ') || 'Construction professional'}
+                </Text>
+                <View className="mt-2 flex-row items-center gap-1">
+                  <MapPin size={16} color="#FFFFFF" />
+                  <Text className="font-medium text-sm text-white">{builder.district ?? 'Malawi'}</Text>
+                </View>
+              </>
+            ) : null}
+          </View>
         }
         footer={
           builder && !isOwnProfile ? (
@@ -75,38 +98,20 @@ export default function BuilderDetail() {
         }
       >
         {isLoading ? (
-          <View accessibilityLabel="Loading" className="items-center gap-4">
-            <Skeleton className="h-24 w-24 rounded-full" />
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-5 w-64" />
-            <Skeleton className="mt-4 h-20 w-80" />
-          </View>
+          <ListSkeleton count={2} />
         ) : isError ? (
           <ErrorState error={error} what="this professional" onRetry={() => refetch()} />
         ) : !builder ? (
           <EmptyState message="This professional isn’t listed any more." actionLabel="Find a professional" onAction={() => router.replace('/(tabs)/search')} />
         ) : (
           <>
+            {/* Pulled up to overlap the hero band. */}
+            <View className="-mt-14 flex-row gap-3">
+              <StatTile icon={Star} value={rating.toFixed(1)} label={reviewCount === 1 ? '1 review' : `${reviewCount} reviews`} iconColor={colors.star} filled />
+              <StatTile icon={BriefcaseBusiness} value={`${builder.experience} yrs`} label="Experience" iconColor={colors.brand} />
+              <StatTile icon={Trophy} value={String(builder.completedJobs)} label="Jobs done" iconColor={colors.brand} />
+            </View>
             <ErrorText>{favoriteError}</ErrorText>
-            <View className="items-center">
-              <Avatar name={builder.name} size="lg" />
-              <Text className="mt-4 text-center font-heading text-3xl text-ink">{builder.name}</Text>
-              {builder.verified ? (
-                <View className="mt-2 flex-row items-center gap-1.5">
-                  <BadgeCheck size={18} color={colors.success} />
-                  <Text className="font-medium text-sm text-success">Verified professional</Text>
-                </View>
-              ) : null}
-              <Text className="mt-2 text-center font-body text-base text-muted">
-                {builder.trades.join(' · ') || 'Construction professional'} · {builder.district ?? 'Malawi'}
-              </Text>
-            </View>
-
-            <View className="mt-8 flex-row rounded-2xl border border-line py-4">
-              <Stat value={rating.toFixed(1)} label={reviewCount === 1 ? '1 review' : `${reviewCount} reviews`} star />
-              <Stat value={`${builder.experience} yrs`} label="Experience" divider />
-              <Stat value={String(builder.completedJobs)} label="Jobs done" divider />
-            </View>
 
             <Text className="mb-3 mt-8 font-heading-semibold text-lg text-ink">Reviews</Text>
             {reviews.isLoading ? (
@@ -114,22 +119,26 @@ export default function BuilderDetail() {
             ) : reviews.isError ? (
               <ErrorState error={reviews.error} what="reviews" onRetry={() => reviews.refetch()} />
             ) : reviewCount === 0 ? (
-              <EmptyState message="No reviews yet. Customers can review after a completed job." />
+              <EmptyState
+                icon={<MessageSquareText size={26} color={colors.brand} />}
+                message="No reviews yet. Customers can review after a completed job."
+              />
             ) : (
               <View className="gap-3">
                 {reviews.data?.map((review) => (
-                  <View key={review.id} className="rounded-2xl border border-line p-4">
+                  <View key={review.id} className="rounded-3xl border border-line bg-surface p-4">
                     <View className="flex-row items-center justify-between gap-3">
-                      <Text numberOfLines={1} className="flex-1 font-semibold text-base text-ink">
+                      <Text numberOfLines={1} className="flex-1 font-bold text-base text-ink">
                         {review.customerName}
                       </Text>
-                      <View className="flex-row items-center gap-1">
-                        <Star size={15} color={colors.brand} fill={colors.brand} />
-                        <Text className="font-semibold text-sm text-ink">{review.rating}</Text>
+                      <View className="flex-row gap-0.5">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star key={star} size={15} color={colors.star} fill={star <= review.rating ? colors.star : 'transparent'} />
+                        ))}
                       </View>
                     </View>
                     {review.createdAt ? (
-                      <Text className="mt-0.5 font-medium text-xs text-faint">
+                      <Text className="font-medium text-xs text-faint">
                         {review.createdAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </Text>
                     ) : null}
@@ -145,15 +154,16 @@ export default function BuilderDetail() {
   );
 }
 
-function Stat({ value, label, star = false, divider = false }: { value: string; label: string; star?: boolean; divider?: boolean }) {
-  const colors = useThemeColors();
+type StatTileProps = { icon: LucideIcon; value: string; label: string; iconColor: string; filled?: boolean };
+
+function StatTile({ icon: Icon, value, label, iconColor, filled = false }: StatTileProps) {
   return (
-    <View className={`flex-1 items-center ${divider ? 'border-l border-line' : ''}`}>
-      <View className="flex-row items-center gap-1">
-        {star ? <Star size={15} color={colors.brand} fill={colors.brand} /> : null}
-        <Text className="font-heading-semibold text-lg text-ink">{value}</Text>
-      </View>
-      <Text className="mt-0.5 font-body text-sm text-muted">{label}</Text>
+    <View className="flex-1 items-center rounded-3xl border border-line bg-surface px-2 py-4">
+      <Icon size={20} color={iconColor} fill={filled ? iconColor : 'transparent'} />
+      <Text className="mt-2 font-heading-semibold text-lg text-ink">{value}</Text>
+      <Text numberOfLines={1} className="font-body text-xs text-muted">
+        {label}
+      </Text>
     </View>
   );
 }

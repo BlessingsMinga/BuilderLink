@@ -41,8 +41,8 @@ export default function VerifyEmail() {
         <View className="h-20 w-20 items-center justify-center rounded-2xl bg-brand-soft">
           <MailCheck size={38} color={colors.brand} />
         </View>
-        <Text className="mt-7 text-center text-3xl font-bold text-ink">Verify your email</Text>
-        <Text className="mt-3 text-center text-base leading-6 text-muted">
+        <Text className="mt-7 text-center text-3xl font-heading text-ink">Verify your email</Text>
+        <Text className="font-body mt-3 text-center text-base leading-6 text-muted">
           We sent a verification link to {email}. Open it to secure your BuilderLink account.
         </Text>
         <View className="mt-9 w-full gap-3">

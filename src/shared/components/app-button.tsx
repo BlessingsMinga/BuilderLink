@@ -3,7 +3,7 @@ import { useThemeColors } from '@/shared/theme';
 
 type Props = { label: string; onPress?: () => void; variant?: 'primary' | 'outline'; loading?: boolean; disabled?: boolean };
 
-/** Full-width button. `primary` is a solid ink fill; `outline` is a hairline border. */
+/** Full-width button. `primary` is filled with the brand colour; `outline` is a bordered surface. */
 export function AppButton({ label, onPress, variant = 'primary', loading = false, disabled = false }: Props) {
   const colors = useThemeColors();
   const isPrimary = variant === 'primary';
@@ -14,12 +14,12 @@ export function AppButton({ label, onPress, variant = 'primary', loading = false
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       disabled={isDisabled}
       onPress={onPress}
-      className={`h-14 items-center justify-center rounded-xl border px-5 active:opacity-80 ${isPrimary ? 'border-ink bg-ink' : 'border-line bg-surface'} ${isDisabled ? 'opacity-50' : ''}`}
+      className={`h-14 items-center justify-center rounded-2xl border px-5 active:opacity-80 ${isPrimary ? 'border-primary bg-primary' : 'border-line bg-surface'} ${isDisabled ? 'opacity-50' : ''}`}
     >
       {loading ? (
-        <ActivityIndicator color={isPrimary ? colors.canvas : colors.ink} />
+        <ActivityIndicator color={isPrimary ? colors.onPrimary : colors.brand} />
       ) : (
-        <Text className={`text-base font-semibold ${isPrimary ? 'text-canvas' : 'text-ink'}`}>{label}</Text>
+        <Text className={`font-bold text-base ${isPrimary ? 'text-on-primary' : 'text-ink'}`}>{label}</Text>
       )}
     </Pressable>
   );

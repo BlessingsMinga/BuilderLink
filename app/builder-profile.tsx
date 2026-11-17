@@ -26,7 +26,7 @@ const statusBanners: Record<VerificationStatus | 'new', { title: string; text: s
   pending: {
     title: 'Under review',
     text: 'Customers will be able to find and book you once your profile is verified.',
-    tone: 'bg-brand-soft',
+    tone: 'bg-warn-soft',
   },
   verified: {
     title: 'Verified',

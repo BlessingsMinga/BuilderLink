@@ -88,7 +88,7 @@ export function GoogleSignInButton({ role = 'customer', onSuccess }: Props) {
         {loading ? (
           <ActivityIndicator color={colors.ink} />
         ) : (
-          <Text className="text-lg font-bold text-brand">G</Text>
+          <Text className="text-lg font-heading-semibold text-brand">G</Text>
         )}
         <Text className="text-base font-bold text-ink">Continue with Google</Text>
       </Pressable>

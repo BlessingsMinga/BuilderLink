@@ -12,10 +12,10 @@ export default function TabLayout() {
       <Tabs
         screenOptions={({ route }) => ({
           headerShown: false,
-          tabBarActiveTintColor: colors.ink,
+          tabBarActiveTintColor: colors.brand,
           tabBarInactiveTintColor: colors.faint,
-          tabBarStyle: { backgroundColor: colors.canvas, borderTopColor: colors.line, elevation: 0 },
-          tabBarLabelStyle: { fontSize: 11, fontFamily: 'Inter_600SemiBold' },
+          tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.line, elevation: 0 },
+          tabBarLabelStyle: { fontSize: 12, fontFamily: 'PlusJakartaSans_600SemiBold' },
           sceneStyle: { backgroundColor: colors.canvas },
           tabBarIcon: ({ color, size, focused }) => {
             const Icon = icons[route.name as keyof typeof icons];

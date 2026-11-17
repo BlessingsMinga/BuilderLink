@@ -118,8 +118,8 @@ export function DateField({ value, onChange }: Props) {
                   }}
                   className="h-11 w-[14.28%] items-center justify-center"
                 >
-                  <View className={`h-9 w-9 items-center justify-center rounded-full ${selected ? 'bg-ink' : iso === todayIso ? 'border border-line' : ''}`}>
-                    <Text className={`text-sm ${selected ? 'font-semibold text-canvas' : isPast ? 'font-body text-faint' : 'font-body text-ink'}`}>
+                  <View className={`h-9 w-9 items-center justify-center rounded-full ${selected ? 'bg-primary' : iso === todayIso ? 'border border-line' : ''}`}>
+                    <Text className={`text-sm ${selected ? 'font-semibold text-on-primary' : isPast ? 'font-body text-faint' : 'font-body text-ink'}`}>
                       {day}
                     </Text>
                   </View>

@@ -5,47 +5,67 @@ import { useColorScheme } from 'nativewind';
  * navigation bars, spinners). Keep in sync with the CSS variables in
  * `global.css`, which drive the matching Tailwind classes (`bg-canvas`,
  * `text-ink`, `border-line`, ...).
+ *
+ * To rebrand, change `brand`, `brandSoft`, `primary` and `hero` here and in
+ * `global.css`.
  */
 const light = {
-  /** Screen background. */
-  canvas: '#FFFFFF',
-  /** Cards and inputs; separated from the canvas by a `line` border. */
+  /** Screen background: a faint tint so white cards stand out. */
+  canvas: '#F4F7F6',
+  /** Cards and inputs. */
   surface: '#FFFFFF',
-  /** Quiet fills: chips, avatars, neutral badges. */
-  subtle: '#F4F4F5',
+  /** Quiet fills: unselected segments, skeletons, neutral badges. */
+  subtle: '#E9EFED',
   /** Hairline borders and dividers. */
-  line: '#E4E4E7',
-  /** Primary text, and the fill of primary buttons. */
-  ink: '#18181B',
+  line: '#DDE5E2',
+  /** Primary text. */
+  ink: '#12201C',
   /** Secondary text and icons. */
-  muted: '#71717A',
+  muted: '#566660',
   /** Placeholders and tertiary text. */
-  faint: '#A1A1AA',
-  /** Accent: links, ratings, the logo. Used sparingly. */
-  brand: '#EA580C',
-  brandSoft: '#FFF7ED',
-  success: '#16A34A',
-  successSoft: '#F0FDF4',
+  faint: '#8FA09A',
+  /** Brand colour for links, icons and highlights. */
+  brand: '#0F766E',
+  /** Tinted background for icon tiles, avatars and selected states. */
+  brandSoft: '#DFF1EE',
+  /** Fill of primary buttons and selected chips. */
+  primary: '#0F766E',
+  /** Text and icons on `primary`. */
+  onPrimary: '#FFFFFF',
+  /** The coloured band at the top of main screens. Text on it is always white. */
+  hero: '#0F766E',
+  /** Star ratings. */
+  star: '#F59E0B',
+  success: '#15803D',
+  successSoft: '#E3F5E8',
+  warn: '#B45309',
+  warnSoft: '#FDF0D5',
   danger: '#DC2626',
-  dangerSoft: '#FEF2F2',
+  dangerSoft: '#FDECEC',
   info: '#2563EB',
-  infoSoft: '#EFF6FF',
+  infoSoft: '#E6EEFE',
 };
 
 export type ThemeColors = Record<keyof typeof light, string>;
 
 const dark: ThemeColors = {
-  canvas: '#0B0B0C',
-  surface: '#131315',
-  subtle: '#1F1F23',
-  line: '#2A2A2F',
-  ink: '#FAFAFA',
-  muted: '#A1A1AA',
-  faint: '#71717A',
-  brand: '#FB923C',
-  brandSoft: '#2B1A0E',
+  canvas: '#0A1210',
+  surface: '#121C19',
+  subtle: '#1A2623',
+  line: '#25332F',
+  ink: '#F1F6F4',
+  muted: '#9DB0AA',
+  faint: '#6A7C76',
+  brand: '#2DD4BF',
+  brandSoft: '#0F2F2A',
+  primary: '#14B8A6',
+  onPrimary: '#03201C',
+  hero: '#0E4F48',
+  star: '#F59E0B',
   success: '#4ADE80',
   successSoft: '#10261A',
+  warn: '#FBBF24',
+  warnSoft: '#33260A',
   danger: '#F87171',
   dangerSoft: '#2D1414',
   info: '#60A5FA',

@@ -16,24 +16,33 @@ module.exports = {
         muted: token('muted'),
         faint: token('faint'),
         brand: { DEFAULT: token('brand'), soft: token('brand-soft') },
+        primary: token('primary'),
+        'on-primary': token('on-primary'),
+        hero: token('hero'),
+        star: token('star'),
         success: { DEFAULT: token('success'), soft: token('success-soft') },
+        warn: { DEFAULT: token('warn'), soft: token('warn-soft') },
         danger: { DEFAULT: token('danger'), soft: token('danger-soft') },
         info: { DEFAULT: token('info'), soft: token('info-soft') },
       },
-      // One family per weight: custom fonts on Android ignore `fontWeight`, so
-      // `font-bold` etc. select a font file instead (see corePlugins below).
+      // One typeface, one font file per weight: custom fonts on Android ignore
+      // `fontWeight`, so `font-bold` etc. select a file instead (see corePlugins).
       fontFamily: {
-        body: ['Inter_400Regular'],
-        medium: ['Inter_500Medium'],
-        semibold: ['Inter_600SemiBold'],
-        bold: ['Inter_700Bold'],
+        body: ['PlusJakartaSans_400Regular'],
+        medium: ['PlusJakartaSans_500Medium'],
+        semibold: ['PlusJakartaSans_600SemiBold'],
+        bold: ['PlusJakartaSans_700Bold'],
         heading: ['PlusJakartaSans_700Bold'],
         'heading-semibold': ['PlusJakartaSans_600SemiBold'],
       },
-      // Type scale: title 28/34, section 18/24, body 16/24, secondary 14/20, caption 12/16.
+      // Type scale (size/line height): caption 13/18, secondary 15/22,
+      // body 17/26, section 20/26, title 30/36.
       fontSize: {
-        lg: ['18px', { lineHeight: '24px' }],
-        '3xl': ['28px', { lineHeight: '34px' }],
+        xs: ['13px', { lineHeight: '18px' }],
+        sm: ['15px', { lineHeight: '22px' }],
+        base: ['17px', { lineHeight: '26px' }],
+        lg: ['20px', { lineHeight: '26px' }],
+        '3xl': ['30px', { lineHeight: '36px' }],
       },
     },
   },
