@@ -14,6 +14,7 @@ import { Screen } from '@/shared/components/screen';
 import { ScreenHeader } from '@/shared/components/screen-header';
 import { Skeleton } from '@/shared/components/skeleton';
 import { EmptyState, ErrorState, ErrorText, isOfflineError } from '@/shared/components/states';
+import { toast } from '@/shared/components/toast';
 
 const FALLBACK_SERVICE = 'General construction';
 const MIN_DESCRIPTION_LENGTH = 10;
@@ -65,6 +66,7 @@ export default function Booking() {
         location: `${landmark.trim()}, ${district}`,
         description,
       });
+      toast.success(`Request sent to ${builder.name}. We’ll notify you when they reply.`);
       router.replace('/(tabs)/bookings' as never);
     } catch (failure) {
       console.warn('Booking request failed:', failure);
@@ -76,7 +78,7 @@ export default function Booking() {
     }
   };
 
-  const canShowForm = Boolean(builder) && !isOwnProfile;
+  const canShowForm = Boolean(builder) && !isOwnProfile && builder?.available !== false;
 
   return (
     <Protected>
@@ -112,6 +114,12 @@ export default function Booking() {
           <EmptyState message="This professional isn’t available for bookings." />
         ) : isOwnProfile ? (
           <EmptyState message="You can’t send a booking request to yourself." />
+        ) : !builder.available ? (
+          <EmptyState
+            message={`${builder.name} isn’t taking new jobs right now. Try another professional or check back later.`}
+            actionLabel="Find a professional"
+            onAction={() => router.replace('/(tabs)/search')}
+          />
         ) : (
           <>
             <Text className="font-body text-base text-muted">

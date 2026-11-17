@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(timeout 500 npx -y firebase-tools@15.35.0 deploy --only functions --project builderlink-cd7d0 --non-interactive)",
+      "Bash(cd /d/CODE/BuilderLink/functions && npm install --no-audit --no-fund 2>&1 | tail -2 && cd .. && timeout 500 npx -y firebase-tools@15.35.0 deploy --only functions --project builderlink-cd7d0 --non-interactive 2>&1 | grep -v \"npm notice\" | tail -15)",
+      "Read(//d/CODE/**)"
+    ]
+  }
+}

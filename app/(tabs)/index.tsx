@@ -11,19 +11,25 @@ import {
   Layers,
   PaintRoller,
   Search,
+  Star,
+  Timer,
+  Trophy,
   Wrench,
   Zap,
   type LucideIcon,
 } from 'lucide-react-native';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Switch, Text, View } from 'react-native';
 import { useProfile } from '@/features/authentication/hooks/use-profile';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
 import { BookingCard } from '@/features/bookings/components/booking-card';
 import { useBookings } from '@/features/bookings/hooks/use-bookings';
 import { groupBookings } from '@/features/bookings/services/booking-service';
 import { BuilderCard } from '@/features/builders/components/builder-card';
-import { useBuilders, useOwnBuilder } from '@/features/builders/hooks/use-builders';
-import { TRADES } from '@/features/builders/services/builder-service';
+import { useBuilders, useOwnBuilder, useSetAvailability } from '@/features/builders/hooks/use-builders';
+import { TRADES, formatResponseTime, type OwnBuilder } from '@/features/builders/services/builder-service';
+import { useBuilderReviews } from '@/features/reviews/hooks/use-reviews';
+import { averageRating } from '@/features/reviews/services/review-service';
+import { failureMessage, toast } from '@/shared/components/toast';
 import { Screen } from '@/shared/components/screen';
 import { ListSkeleton } from '@/shared/components/skeleton';
 import { EmptyState, ErrorState } from '@/shared/components/states';
@@ -195,9 +201,14 @@ function BuilderHome() {
         <Pressable onPress={() => router.push('/builder-profile')} className="mb-8 rounded-3xl bg-warn-soft p-4 active:opacity-80">
           <Text className="font-bold text-base text-ink">{listingNotice.title}</Text>
           <Text className="mt-1 font-body text-sm text-muted">{listingNotice.text}</Text>
+          {listing.data?.verificationStatus === 'rejected' && listing.data.rejectionReason ? (
+            <Text className="mt-2 font-medium text-sm text-ink">Reviewer’s note: “{listing.data.rejectionReason}”</Text>
+          ) : null}
           <Text className="mt-3 font-semibold text-sm text-brand">Open builder workspace</Text>
         </Pressable>
       ) : null}
+
+      {listing.data && session ? <BuilderOverview builderId={session.userId} listing={listing.data} /> : null}
 
       <Text className="mb-3 font-heading-semibold text-lg text-ink">New requests</Text>
       {bookings.isLoading ? (
@@ -235,6 +246,89 @@ function BuilderHome() {
         </>
       ) : null}
     </Screen>
+  );
+}
+
+/** Availability switch, the builder's own numbers, and their latest reviews. */
+function BuilderOverview({ builderId, listing }: { builderId: string; listing: OwnBuilder }) {
+  const colors = useThemeColors();
+  const setAvailability = useSetAvailability(builderId);
+  const reviews = useBuilderReviews(builderId);
+  const reviewCount = reviews.data?.length ?? 0;
+  const rating = averageRating(reviews.data ?? []) ?? listing.rating;
+  const responseTime = formatResponseTime(listing.responseTimeMinutes);
+
+  const toggle = (available: boolean) =>
+    setAvailability.mutate(available, {
+      onSuccess: () =>
+        toast.success(available ? 'You’re taking new jobs. Customers can book you again.' : 'New requests paused. Existing jobs aren’t affected.'),
+      onError: (error) => toast.error(failureMessage(error, 'change your availability')),
+    });
+
+  return (
+    <View className="mb-8">
+      <View className="flex-row items-center gap-4 rounded-3xl border border-line bg-surface p-4">
+        <View className="flex-1">
+          <Text className="font-bold text-base text-ink">Taking new jobs</Text>
+          <Text className="mt-0.5 font-body text-sm text-muted">
+            {listing.available ? 'Customers can send you booking requests.' : 'Paused. Customers can see you but can’t book.'}
+          </Text>
+        </View>
+        <Switch
+          accessibilityLabel="Taking new jobs"
+          value={listing.available}
+          disabled={setAvailability.isPending}
+          onValueChange={toggle}
+          trackColor={{ true: colors.primary, false: colors.line }}
+          thumbColor={colors.surface}
+        />
+      </View>
+
+      <View className="mt-3 flex-row gap-3">
+        <MiniStat icon={<Star size={18} color={colors.star} fill={colors.star} />} value={reviewCount ? rating.toFixed(1) : '–'} label={reviewCount === 1 ? '1 review' : `${reviewCount} reviews`} />
+        <MiniStat icon={<Trophy size={18} color={colors.brand} />} value={String(listing.completedJobs)} label="Jobs done" />
+        <MiniStat icon={<Timer size={18} color={colors.brand} />} value={responseTime ? responseTime.replace('Usually replies within ', '< ') : '–'} label="Reply time" />
+      </View>
+
+      {reviews.data && reviews.data.length > 0 ? (
+        <>
+          <SectionTitle title="Latest reviews" />
+          <View className="gap-3">
+            {reviews.data.slice(0, 3).map((review) => (
+              <View key={review.id} className="rounded-3xl border border-line bg-surface p-4">
+                <View className="flex-row items-center justify-between gap-3">
+                  <Text numberOfLines={1} className="flex-1 font-bold text-base text-ink">
+                    {review.customerName}
+                  </Text>
+                  <View className="flex-row gap-0.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star key={star} size={14} color={colors.star} fill={star <= review.rating ? colors.star : 'transparent'} />
+                    ))}
+                  </View>
+                </View>
+                <Text numberOfLines={3} className="mt-2 font-body text-sm text-muted">
+                  {review.comment}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </>
+      ) : null}
+    </View>
+  );
+}
+
+function MiniStat({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
+  return (
+    <View className="flex-1 items-center rounded-3xl border border-line bg-surface px-2 py-3">
+      {icon}
+      <Text numberOfLines={1} className="mt-1 font-heading-semibold text-base text-ink">
+        {value}
+      </Text>
+      <Text numberOfLines={1} className="font-body text-xs text-muted">
+        {label}
+      </Text>
+    </View>
   );
 }
 

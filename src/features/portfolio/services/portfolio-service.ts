@@ -10,8 +10,7 @@ import {
   where,
   type Timestamp,
 } from 'firebase/firestore';
-import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { firebaseDb, firebaseStorage } from '@/shared/services/firebase';
+import { firebaseDb } from '@/shared/services/firebase';
 
 export const MAX_PORTFOLIO_PHOTOS = 12;
 
@@ -27,33 +26,51 @@ export const DOCUMENT_LABELS: Record<DocumentType, string> = {
   license: 'Business licence',
 };
 
-const services = () => {
-  if (!firebaseDb || !firebaseStorage) throw new Error('Firebase is not configured.');
-  return { db: firebaseDb, storage: firebaseStorage };
+const requireDb = () => {
+  if (!firebaseDb) throw new Error('Firebase is not configured.');
+  return firebaseDb;
 };
+
+// Photos are stored on Cloudinary's free plan (no card needed) instead of
+// Firebase Storage, which requires the paid Blaze plan. Firestore keeps the
+// returned URL in `storage_path`.
+const CLOUD_NAME = process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME;
+/** Unsigned preset for public work photos. */
+const PORTFOLIO_PRESET = process.env.EXPO_PUBLIC_CLOUDINARY_PORTFOLIO_PRESET;
+/** Unsigned preset with delivery type "authenticated", so ID photos aren't publicly viewable. */
+const DOCUMENTS_PRESET = process.env.EXPO_PUBLIC_CLOUDINARY_DOCUMENTS_PRESET;
+
+/** A smaller, auto-compressed version of a Cloudinary photo. */
+export function thumbnailUrl(url: string, width: number): string {
+  return url.replace('/image/upload/', `/image/upload/c_fill,w_${width},q_auto,f_auto/`);
+}
 
 /** Raised when the person closes the picker or refuses photo access; not a failure to report. */
 export class PickCancelled extends Error {}
 export class PhotoPermissionDenied extends Error {}
 
-/** Let the user choose one photo, resized and compressed for upload. */
+/** Let the user choose one photo, compressed for upload. */
 export async function pickPhoto(): Promise<ImagePicker.ImagePickerAsset> {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!permission.granted) throw new PhotoPermissionDenied('Photo access was not allowed.');
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ['images'],
-    allowsEditing: true,
-    quality: 0.7,
-  });
+  const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.7 });
   if (result.canceled || !result.assets[0]) throw new PickCancelled();
   return result.assets[0];
 }
 
-async function upload(path: string, asset: ImagePicker.ImagePickerAsset): Promise<void> {
-  const { storage } = services();
-  const blob = await (await fetch(asset.uri)).blob();
-  if (blob.size > 5 * 1024 * 1024) throw new Error('This photo is larger than 5 MB. Choose a smaller one.');
-  await uploadBytes(ref(storage, path), blob, { contentType: asset.mimeType ?? 'image/jpeg' });
+/** Upload a photo to Cloudinary and return its HTTPS URL. */
+async function upload(folder: string, preset: string | undefined, asset: ImagePicker.ImagePickerAsset): Promise<string> {
+  if (!CLOUD_NAME || !preset) throw new Error('Photo uploads are not configured yet.');
+  if (asset.fileSize && asset.fileSize > 5 * 1024 * 1024) throw new Error('This photo is larger than 5 MB. Choose a smaller one.');
+  const form = new FormData();
+  // React Native's FormData takes a { uri, name, type } file description.
+  form.append('file', { uri: asset.uri, name: asset.fileName ?? 'photo.jpg', type: asset.mimeType ?? 'image/jpeg' } as unknown as Blob);
+  form.append('upload_preset', preset);
+  form.append('folder', folder);
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: form });
+  const result = (await response.json()) as { secure_url?: string; error?: { message: string } };
+  if (!response.ok || !result.secure_url) throw new Error(result.error?.message ?? 'Upload failed (network).');
+  return result.secure_url;
 }
 
 // ---------------------------------------------------------------
@@ -61,42 +78,34 @@ async function upload(path: string, asset: ImagePicker.ImagePickerAsset): Promis
 // ---------------------------------------------------------------
 
 export async function fetchPortfolio(builderId: string): Promise<PortfolioPhoto[]> {
-  const { db, storage } = services();
-  const results = await getDocs(query(collection(db, 'portfolio_items'), where('builder_id', '==', builderId)));
-  const photos = await Promise.all(
-    results.docs.map(async (item) => {
+  const results = await getDocs(query(collection(requireDb(), 'portfolio_items'), where('builder_id', '==', builderId)));
+  return results.docs
+    .map((item) => {
       const raw = item.data() as { storage_path: string; caption?: string | null; created_at?: Timestamp | null };
-      try {
-        return {
-          id: item.id,
-          storagePath: raw.storage_path,
-          url: await getDownloadURL(ref(storage, raw.storage_path)),
-          caption: raw.caption ?? null,
-          createdAt: raw.created_at?.toDate() ?? null,
-        };
-      } catch {
-        // The file is missing (e.g. a half-finished upload); skip it.
-        return null;
-      }
-    }),
-  );
-  return photos
-    .filter((photo): photo is PortfolioPhoto => photo !== null)
+      return {
+        id: item.id,
+        storagePath: raw.storage_path,
+        url: raw.storage_path,
+        caption: raw.caption ?? null,
+        createdAt: raw.created_at?.toDate() ?? null,
+      };
+    })
+    .filter((photo) => photo.url.startsWith('https://'))
     .sort((a, b) => (b.createdAt?.getTime() ?? Date.now()) - (a.createdAt?.getTime() ?? Date.now()));
 }
 
 export async function addPortfolioPhoto(builderId: string, asset: ImagePicker.ImagePickerAsset): Promise<void> {
-  const { db } = services();
-  const record = doc(collection(db, 'portfolio_items'));
-  const storagePath = `builders/${builderId}/portfolio/${record.id}.jpg`;
-  await upload(storagePath, asset);
-  await setDoc(record, { id: record.id, builder_id: builderId, storage_path: storagePath, caption: null, created_at: serverTimestamp() });
+  const record = doc(collection(requireDb(), 'portfolio_items'));
+  const url = await upload(`builders/${builderId}/portfolio`, PORTFOLIO_PRESET, asset);
+  await setDoc(record, { id: record.id, builder_id: builderId, storage_path: url, caption: null, created_at: serverTimestamp() });
 }
 
+/**
+ * Deleting the Cloudinary file itself needs the account's secret key, which
+ * can't be shipped in the app. Removing the record hides the photo everywhere.
+ */
 export async function removePortfolioPhoto(photo: PortfolioPhoto): Promise<void> {
-  const { db, storage } = services();
-  await deleteDoc(doc(db, 'portfolio_items', photo.id));
-  await deleteObject(ref(storage, photo.storagePath)).catch(() => undefined);
+  await deleteDoc(doc(requireDb(), 'portfolio_items', photo.id));
 }
 
 // ---------------------------------------------------------------
@@ -104,8 +113,7 @@ export async function removePortfolioPhoto(photo: PortfolioPhoto): Promise<void>
 // ---------------------------------------------------------------
 
 export async function fetchBuilderDocuments(builderId: string): Promise<BuilderDocument[]> {
-  const { db } = services();
-  const results = await getDocs(query(collection(db, 'builder_documents'), where('builder_id', '==', builderId)));
+  const results = await getDocs(query(collection(requireDb(), 'builder_documents'), where('builder_id', '==', builderId)));
   return results.docs.map((item) => {
     const raw = item.data() as { type: DocumentType; storage_path: string; review_status: DocumentReviewStatus; created_at?: Timestamp | null };
     return { id: item.id, type: raw.type, storagePath: raw.storage_path, reviewStatus: raw.review_status, createdAt: raw.created_at?.toDate() ?? null };
@@ -113,15 +121,11 @@ export async function fetchBuilderDocuments(builderId: string): Promise<BuilderD
 }
 
 export async function uploadBuilderDocument(builderId: string, type: DocumentType, asset: ImagePicker.ImagePickerAsset): Promise<void> {
-  const { db } = services();
-  const record = doc(collection(db, 'builder_documents'));
-  const storagePath = `builders/${builderId}/documents/${record.id}.jpg`;
-  await upload(storagePath, asset);
-  await setDoc(record, { id: record.id, builder_id: builderId, type, storage_path: storagePath, review_status: 'pending', created_at: serverTimestamp() });
+  const record = doc(collection(requireDb(), 'builder_documents'));
+  const url = await upload(`builders/${builderId}/documents`, DOCUMENTS_PRESET, asset);
+  await setDoc(record, { id: record.id, builder_id: builderId, type, storage_path: url, review_status: 'pending', created_at: serverTimestamp() });
 }
 
 export async function removeBuilderDocument(document: BuilderDocument): Promise<void> {
-  const { db, storage } = services();
-  await deleteDoc(doc(db, 'builder_documents', document.id));
-  await deleteObject(ref(storage, document.storagePath)).catch(() => undefined);
+  await deleteDoc(doc(requireDb(), 'builder_documents', document.id));
 }

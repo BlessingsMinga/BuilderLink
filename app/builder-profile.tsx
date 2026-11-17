@@ -14,6 +14,8 @@ import { ScreenHeader } from '@/shared/components/screen-header';
 import { Skeleton } from '@/shared/components/skeleton';
 import { ErrorState, ErrorText, isOfflineError } from '@/shared/components/states';
 import { useThemeColors } from '@/shared/theme';
+import { DocumentsManager, PortfolioManager } from '@/features/portfolio/components/portfolio-manager';
+import { toast } from '@/shared/components/toast';
 
 const MAX_TRADES = 12;
 
@@ -104,6 +106,7 @@ export default function BuilderProfile() {
         input: { businessName, bio, yearsExperience: yearsNumber, trades, district },
       });
       setSaved(true);
+      toast.success(listing.data ? 'Profile saved.' : 'Profile submitted. We’ll review it shortly.');
     } catch (failure) {
       console.warn('Saving builder profile failed:', failure);
       setSaveError(
@@ -145,6 +148,9 @@ export default function BuilderProfile() {
             <View className={`rounded-2xl p-4 ${banner.tone}`}>
               <Text className="font-semibold text-base text-ink">{banner.title}</Text>
               <Text className="mt-1 font-body text-sm text-muted">{banner.text}</Text>
+              {listing.data?.verificationStatus === 'rejected' && listing.data.rejectionReason ? (
+                <Text className="mt-2 font-medium text-sm text-ink">Reviewer’s note: “{listing.data.rejectionReason}”</Text>
+              ) : null}
             </View>
 
             <Step title="Your details" done={detailsDone}>
@@ -195,9 +201,20 @@ export default function BuilderProfile() {
               <ErrorText>{shown.trades}</ErrorText>
             </Step>
 
-            <Text className="mt-8 font-body text-sm text-muted">
-              Work photos and ID documents can’t be uploaded in the app yet.
-            </Text>
+            {listing.data && session ? (
+              <>
+                <Step title="Work photos" done={false} optional>
+                  <PortfolioManager builderId={session.userId} />
+                </Step>
+                <Step title="ID and certificates" done={false} optional>
+                  <DocumentsManager builderId={session.userId} />
+                </Step>
+              </>
+            ) : (
+              <Text className="mt-8 font-body text-sm text-muted">
+                After you submit, you can add work photos and upload your ID here.
+              </Text>
+            )}
           </>
         )}
       </Screen>
@@ -206,12 +223,12 @@ export default function BuilderProfile() {
 }
 
 /** One checklist step: a tick once its fields are complete. */
-function Step({ title, done, children }: { title: string; done: boolean; children: React.ReactNode }) {
+function Step({ title, done, optional = false, children }: { title: string; done: boolean; optional?: boolean; children: React.ReactNode }) {
   const colors = useThemeColors();
   return (
     <View className="mt-8">
       <View className="mb-3 flex-row items-center gap-2">
-        {done ? <CheckCircle2 size={20} color={colors.success} /> : <Circle size={20} color={colors.faint} />}
+        {optional ? null : done ? <CheckCircle2 size={20} color={colors.success} /> : <Circle size={20} color={colors.faint} />}
         <Text className="font-heading-semibold text-lg text-ink">{title}</Text>
       </View>
       {children}

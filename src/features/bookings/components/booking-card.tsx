@@ -40,7 +40,14 @@ type Props = {
 };
 
 /** Compact booking summary. Tapping opens the booking's detail screen. */
-export function BookingCard({ booking, perspective, hint }: Props) {
+export function BookingCard({ booking, perspective, hint: givenHint }: Props) {
+  // A counter-offer needs its own prompt whichever group the card is shown in.
+  const hint =
+    booking.status === 'pending' && booking.proposedDate
+      ? perspective === 'customer'
+        ? 'New date proposed, tap to reply'
+        : 'Waiting for the customer to agree'
+      : givenHint;
   return (
     <Pressable
       onPress={() => router.push(`/bookings/${booking.id}` as Href)}

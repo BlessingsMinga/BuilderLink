@@ -8,7 +8,14 @@
     "userInterfaceStyle": "automatic",
     "plugins": [
       "expo-router",
-      "@react-native-google-signin/google-signin"
+      "@react-native-google-signin/google-signin",
+      "expo-notifications",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "BuilderLink uses your photos so you can show your work and upload your ID for verification."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

@@ -11,6 +11,8 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { authService } from '@/features/authentication/services/auth-service';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
+import { usePushNotifications } from '@/features/notifications/notification-service';
+import { ToastHost } from '@/shared/components/toast';
 import { useThemeColors } from '@/shared/theme';
 import type { AuthSession } from '@/shared/types';
 
@@ -54,7 +56,14 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={client}>
       <StatusBar style="auto" />
+      <PushNotifications />
       <Stack screenOptions={{ headerShown: false, animation: 'fade', contentStyle: { backgroundColor: colors.canvas } }} />
+      <ToastHost />
     </QueryClientProvider>
   );
+}
+
+function PushNotifications() {
+  usePushNotifications(useAuthStore((state) => state.session?.userId));
+  return null;
 }

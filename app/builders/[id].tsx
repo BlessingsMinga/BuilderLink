@@ -1,9 +1,12 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { BadgeCheck, BriefcaseBusiness, Heart, MapPin, MessageSquareText, Star, Trophy, type LucideIcon } from 'lucide-react-native';
+import { BadgeCheck, BriefcaseBusiness, Heart, MapPin, MessageSquareText, Star, Timer, Trophy, type LucideIcon } from 'lucide-react-native';
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { Image, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
 import { useBuilder } from '@/features/builders/hooks/use-builders';
+import { formatResponseTime } from '@/features/builders/services/builder-service';
+import { usePortfolio } from '@/features/portfolio/hooks/use-portfolio';
+import { thumbnailUrl } from '@/features/portfolio/services/portfolio-service';
 import { useFavoriteBuilderIds, useToggleFavorite } from '@/features/favorites/hooks/use-favorites';
 import { useBuilderReviews } from '@/features/reviews/hooks/use-reviews';
 import { averageRating } from '@/features/reviews/services/review-service';
@@ -25,6 +28,8 @@ export default function BuilderDetail() {
   const { data: favoriteIds } = useFavoriteBuilderIds(session?.userId);
   const toggleFavorite = useToggleFavorite(session?.userId);
   const [favoriteError, setFavoriteError] = useState<string | null>(null);
+  const portfolio = usePortfolio(builder?.id);
+  const [openPhoto, setOpenPhoto] = useState<string | null>(null);
 
   const isSaved = Boolean(builder && favoriteIds?.includes(builder.id));
   const isOwnProfile = Boolean(builder && builder.id === session?.userId);
@@ -53,6 +58,7 @@ export default function BuilderDetail() {
         onRefresh={() => {
           refetch();
           reviews.refetch();
+          portfolio.refetch();
         }}
         header={
           <ScreenHeader
@@ -90,10 +96,18 @@ export default function BuilderDetail() {
         }
         footer={
           builder && !isOwnProfile ? (
-            <AppButton
-              label="Request a booking"
-              onPress={() => router.push({ pathname: '/booking', params: { builderId: builder.id } })}
-            />
+            <View>
+              {!builder.available ? (
+                <Text className="mb-3 text-center font-medium text-sm text-muted">
+                  {builder.name} isn’t taking new jobs right now. Save them and check back later.
+                </Text>
+              ) : null}
+              <AppButton
+                label={builder.available ? 'Request a booking' : 'Not taking new jobs'}
+                disabled={!builder.available}
+                onPress={() => router.push({ pathname: '/booking', params: { builderId: builder.id } })}
+              />
+            </View>
           ) : undefined
         }
       >
@@ -112,6 +126,25 @@ export default function BuilderDetail() {
               <StatTile icon={Trophy} value={String(builder.completedJobs)} label="Jobs done" iconColor={colors.brand} />
             </View>
             <ErrorText>{favoriteError}</ErrorText>
+            {formatResponseTime(builder.responseTimeMinutes) ? (
+              <View className="mt-3 flex-row items-center gap-2">
+                <Timer size={16} color={colors.muted} />
+                <Text className="font-medium text-sm text-muted">{formatResponseTime(builder.responseTimeMinutes)}</Text>
+              </View>
+            ) : null}
+
+            {portfolio.data && portfolio.data.length > 0 ? (
+              <>
+                <Text className="mb-3 mt-8 font-heading-semibold text-lg text-ink">Work photos</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-5 flex-grow-0" contentContainerClassName="gap-3 px-5">
+                  {portfolio.data.map((photo) => (
+                    <Pressable key={photo.id} accessibilityRole="imagebutton" accessibilityLabel="Open work photo" onPress={() => setOpenPhoto(photo.url)}>
+                      <Image source={{ uri: thumbnailUrl(photo.url, 480) }} className="h-40 w-40 rounded-2xl bg-subtle" />
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </>
+            ) : null}
 
             <Text className="mb-3 mt-8 font-heading-semibold text-lg text-ink">Reviews</Text>
             {reviews.isLoading ? (
@@ -150,6 +183,11 @@ export default function BuilderDetail() {
           </>
         )}
       </Screen>
+      <Modal visible={openPhoto !== null} transparent animationType="fade" onRequestClose={() => setOpenPhoto(null)}>
+        <Pressable accessibilityLabel="Close photo" onPress={() => setOpenPhoto(null)} className="flex-1 items-center justify-center bg-black/90 p-4">
+          {openPhoto ? <Image source={{ uri: openPhoto }} resizeMode="contain" className="h-full w-full" /> : null}
+        </Pressable>
+      </Modal>
     </Protected>
   );
 }

@@ -1,46 +1,66 @@
-import { router, useLocalSearchParams } from 'expo-router';
-import { CalendarDays, MapPin, Star, Wrench } from 'lucide-react-native';
+import { router, useLocalSearchParams, type Href } from 'expo-router';
+import { Banknote, CalendarDays, CalendarClock, ChevronRight, MapPin, MessageCircle, Star, Wrench } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { Alert, Text, View } from 'react-native';
+import { Alert, Pressable, Text, View } from 'react-native';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
 import { StatusBadge } from '@/features/bookings/components/booking-card';
-import { useBooking, useUpdateBookingStatus } from '@/features/bookings/hooks/use-bookings';
+import { DateField } from '@/features/bookings/components/date-field';
+import { useBooking, useBookingAction } from '@/features/bookings/hooks/use-bookings';
 import {
   formatBookingDate,
+  formatMoney,
   type Booking,
+  type BookingAction,
   type BookingPerspective,
-  type BookingStatus,
 } from '@/features/bookings/services/booking-service';
 import { useReviewedBookingIds } from '@/features/reviews/hooks/use-reviews';
 import { AppButton } from '@/shared/components/app-button';
+import { FormField } from '@/shared/components/form-field';
 import { Protected } from '@/shared/components/protected';
 import { Screen } from '@/shared/components/screen';
 import { ScreenHeader } from '@/shared/components/screen-header';
 import { Skeleton } from '@/shared/components/skeleton';
-import { EmptyState, ErrorState, ErrorText, isOfflineError } from '@/shared/components/states';
+import { EmptyState, ErrorState, ErrorText } from '@/shared/components/states';
+import { failureMessage, toast } from '@/shared/components/toast';
 import { useThemeColors } from '@/shared/theme';
 
-type Action = { label: string; status: BookingStatus; confirm: string; destructive?: boolean };
+/** A reply that needs extra input before it is sent. */
+type Panel = 'accept' | 'decline' | 'propose' | 'cancel';
 
-/** What the viewer may do next, mirroring the Firestore security rules. */
-function actionsFor(booking: Booking, perspective: BookingPerspective): Action[] {
-  if (perspective === 'builder') {
-    if (booking.status === 'pending') {
-      return [
-        { label: 'Accept', status: 'accepted', confirm: `Accept this request from ${booking.customerName}?` },
-        { label: 'Decline', status: 'declined', confirm: `Decline this request from ${booking.customerName}?`, destructive: true },
-      ];
-    }
-    if (booking.status === 'accepted') {
-      return [{ label: 'Mark as completed', status: 'completed', confirm: 'Mark this job as completed?' }];
-    }
-    return [];
+const SUCCESS: Record<BookingAction['type'], string> = {
+  accept: 'Request accepted. The customer has been notified.',
+  decline: 'Request declined. The customer has been notified.',
+  propose: 'New date sent. We’ll let you know when the customer replies.',
+  complete: 'Job marked as completed. Nice work!',
+  cancel: 'Booking cancelled.',
+  acceptProposal: 'New date accepted. Your booking is confirmed.',
+};
+
+/** One plain sentence telling the viewer where the booking stands and what happens next. */
+function statusExplanation(booking: Booking, perspective: BookingPerspective): string {
+  const other = perspective === 'builder' ? booking.customerName : booking.builderName;
+  switch (booking.status) {
+    case 'pending':
+      if (booking.proposedDate) {
+        return perspective === 'builder'
+          ? `You proposed ${formatBookingDate(booking.proposedDate)}. Waiting for ${other} to agree.`
+          : `${other} can’t make ${formatBookingDate(booking.preferredDate)} and proposed ${formatBookingDate(booking.proposedDate)} instead.`;
+      }
+      return perspective === 'builder'
+        ? 'Accept, decline or propose another date. The customer is told straight away.'
+        : `Waiting for ${other} to respond. We’ll notify you when they do.`;
+    case 'accepted':
+      return perspective === 'builder'
+        ? 'You accepted this job. Mark it as completed once the work is done.'
+        : `${other} accepted. Use messages to agree on the details.`;
+    case 'declined':
+      return perspective === 'builder' ? 'You declined this request.' : `${other} declined this request.`;
+    case 'cancelled':
+      return perspective === 'builder' ? `${other} cancelled this booking.` : 'You cancelled this booking.';
+    case 'completed':
+      return perspective === 'builder' ? 'Job completed.' : 'Job completed. Thanks for using BuilderLink.';
   }
-  if (booking.status === 'pending' || booking.status === 'accepted') {
-    return [{ label: 'Cancel booking', status: 'cancelled', confirm: `Cancel your booking with ${booking.builderName}?`, destructive: true }];
-  }
-  return [];
 }
 
 export default function BookingDetail() {
@@ -49,67 +69,126 @@ export default function BookingDetail() {
   const session = useAuthStore((state) => state.session);
   const { data: booking, isLoading, isError, error, refetch, isRefetching } = useBooking(id);
   const reviewed = useReviewedBookingIds(session?.userId);
-  const updateStatus = useUpdateBookingStatus();
+  const bookingAction = useBookingAction();
+
+  const [panel, setPanel] = useState<Panel | null>(null);
+  const [quote, setQuote] = useState('');
+  const [reason, setReason] = useState('');
+  const [proposedDate, setProposedDate] = useState<string | null>(null);
+  const [panelError, setPanelError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   const perspective: BookingPerspective = booking?.builderId === session?.userId ? 'builder' : 'customer';
-  const actions = booking ? actionsFor(booking, perspective) : [];
   const canReview =
     booking && perspective === 'customer' && booking.status === 'completed' && reviewed.data && !reviewed.data.includes(booking.id);
   const hasReviewed = booking && perspective === 'customer' && reviewed.data?.includes(booking.id);
+  const chatOpen = booking?.status === 'pending' || booking?.status === 'accepted';
 
-  const runAction = (action: Action) => {
-    if (!booking) return;
-    // Changing a booking's status can't be undone, so always confirm first.
-    Alert.alert(action.label, action.confirm, [
-      { text: 'Back', style: 'cancel' },
-      {
-        text: action.label,
-        style: action.destructive ? 'destructive' : 'default',
-        onPress: async () => {
-          setActionError(null);
-          try {
-            await updateStatus.mutateAsync({ bookingId: booking.id, status: action.status });
-          } catch (failure) {
-            console.warn('Booking update failed:', failure);
-            setActionError(
-              isOfflineError(failure)
-                ? 'You’re offline. Reconnect and try again.'
-                : 'We couldn’t update this booking. Please try again.',
-            );
-          }
-        },
-      },
-    ]);
+  const openPanel = (next: Panel) => {
+    setPanel(next);
+    setPanelError(null);
+    setActionError(null);
+    setQuote(booking?.quoteAmount != null ? String(booking.quoteAmount) : '');
+    setReason('');
+    setProposedDate(null);
   };
 
-  const footer =
-    actions.length > 0 || canReview ? (
+  const run = async (action: BookingAction) => {
+    if (!booking) return;
+    setActionError(null);
+    try {
+      await bookingAction.mutateAsync({ bookingId: booking.id, action });
+      setPanel(null);
+      toast.success(SUCCESS[action.type]);
+    } catch (failure) {
+      console.warn('Booking update failed:', failure);
+      setActionError(failureMessage(failure, 'update this booking'));
+    }
+  };
+
+  /** Confirm-then-run for actions that need no extra input. */
+  const confirmThen = (title: string, message: string, action: BookingAction) =>
+    Alert.alert(title, message, [
+      { text: 'Back', style: 'cancel' },
+      { text: title, onPress: () => run(action) },
+    ]);
+
+  const submitPanel = () => {
+    if (!booking || !panel) return;
+    setPanelError(null);
+    const quoteText = quote.replace(/[\s,]/g, '');
+    const quoteAmount = quoteText === '' ? null : Number(quoteText);
+    if (quoteAmount !== null && (!Number.isInteger(quoteAmount) || quoteAmount < 0)) {
+      setPanelError('Enter the price as a whole number of kwacha, e.g. 150000.');
+      return;
+    }
+    if (panel === 'accept') run({ type: 'accept', quoteAmount });
+    if (panel === 'decline') run({ type: 'decline', reason });
+    if (panel === 'cancel') run({ type: 'cancel', reason });
+    if (panel === 'propose') {
+      if (!proposedDate) return setPanelError('Choose the date you can do the job.');
+      if (proposedDate === booking.preferredDate) return setPanelError('Pick a different date from the one requested.');
+      run({ type: 'propose', date: proposedDate, quoteAmount });
+    }
+  };
+
+  const busy = bookingAction.isPending;
+  let footer: ReactNode;
+  if (booking && panel) {
+    const confirmLabel = { accept: 'Accept request', decline: 'Decline request', propose: 'Send new date', cancel: 'Cancel booking' }[panel];
+    footer = (
       <View>
-        <View className="flex-row gap-3">
-          {actions.map((action) => (
-            <View key={action.status} className="flex-1">
-              <AppButton
-                label={action.label}
-                variant={action.destructive ? 'outline' : 'primary'}
-                loading={updateStatus.isPending && updateStatus.variables?.status === action.status}
-                disabled={updateStatus.isPending}
-                onPress={() => runAction(action)}
-              />
-            </View>
-          ))}
-          {canReview ? (
-            <View className="flex-1">
-              <AppButton
-                label="Leave a review"
-                onPress={() => router.push({ pathname: '/review', params: { bookingId: booking.id } })}
-              />
-            </View>
-          ) : null}
-        </View>
         <ErrorText>{actionError}</ErrorText>
+        <View className={`flex-row gap-3 ${actionError ? 'mt-3' : ''}`}>
+          <View className="flex-1">
+            <AppButton label="Back" variant="outline" disabled={busy} onPress={() => setPanel(null)} />
+          </View>
+          <View className="flex-[2]">
+            <AppButton label={confirmLabel} loading={busy} onPress={submitPanel} />
+          </View>
+        </View>
       </View>
-    ) : undefined;
+    );
+  } else if (booking) {
+    const buttons: { label: string; onPress: () => void; outline?: boolean }[] = [];
+    if (perspective === 'builder' && booking.status === 'pending') {
+      buttons.push({ label: 'Decline', outline: true, onPress: () => openPanel('decline') });
+      if (!booking.proposedDate) buttons.push({ label: 'Other date', outline: true, onPress: () => openPanel('propose') });
+      buttons.push({ label: 'Accept', onPress: () => openPanel('accept') });
+    }
+    if (perspective === 'builder' && booking.status === 'accepted') {
+      buttons.push({
+        label: 'Mark as completed',
+        onPress: () => confirmThen('Mark as completed', 'Mark this job as completed? The customer will be asked for a review.', { type: 'complete' }),
+      });
+    }
+    if (perspective === 'customer' && (booking.status === 'pending' || booking.status === 'accepted')) {
+      buttons.push({ label: 'Cancel booking', outline: true, onPress: () => openPanel('cancel') });
+      if (booking.status === 'pending' && booking.proposedDate) {
+        const date = booking.proposedDate;
+        buttons.push({
+          label: 'Accept new date',
+          onPress: () => confirmThen('Accept new date', `Confirm your booking for ${formatBookingDate(date)}?`, { type: 'acceptProposal', date }),
+        });
+      }
+    }
+    if (canReview) {
+      buttons.push({ label: 'Leave a review', onPress: () => router.push({ pathname: '/review', params: { bookingId: booking.id } }) });
+    }
+    footer =
+      buttons.length > 0 ? (
+        <View>
+          <ErrorText>{actionError}</ErrorText>
+          <View className={`flex-row gap-3 ${actionError ? 'mt-3' : ''}`}>
+            {buttons.map((button) => (
+              <View key={button.label} className="flex-1">
+                <AppButton label={button.label} variant={button.outline ? 'outline' : 'primary'} disabled={busy} loading={busy && !button.outline} onPress={button.onPress} />
+              </View>
+            ))}
+          </View>
+        </View>
+      ) : undefined;
+  }
 
   return (
     <Protected>
@@ -134,14 +213,100 @@ export default function BookingDetail() {
               <StatusBadge status={booking.status} />
             </View>
 
+            <View className={`mt-4 rounded-2xl p-4 ${booking.proposedDate && booking.status === 'pending' ? 'bg-warn-soft' : 'bg-subtle'}`}>
+              <Text accessibilityLiveRegion="polite" className="font-medium text-sm text-ink">
+                {statusExplanation(booking, perspective)}
+              </Text>
+              {booking.status === 'declined' && booking.declineReason ? (
+                <Text className="mt-2 font-body text-sm text-muted">Reason: “{booking.declineReason}”</Text>
+              ) : null}
+              {booking.status === 'cancelled' && booking.cancelReason ? (
+                <Text className="mt-2 font-body text-sm text-muted">Reason: “{booking.cancelReason}”</Text>
+              ) : null}
+            </View>
+
             <View className="mt-6 gap-4 rounded-2xl border border-line p-4">
               <Detail icon={<Wrench size={18} color={colors.muted} />} label="Service" value={booking.service} />
-              <Detail icon={<CalendarDays size={18} color={colors.muted} />} label="Preferred date" value={formatBookingDate(booking.preferredDate)} />
+              <Detail icon={<CalendarDays size={18} color={colors.muted} />} label={booking.status === 'accepted' ? 'Date' : 'Preferred date'} value={formatBookingDate(booking.preferredDate)} />
+              {booking.proposedDate && booking.status === 'pending' ? (
+                <Detail icon={<CalendarClock size={18} color={colors.warn} />} label="Proposed date" value={formatBookingDate(booking.proposedDate)} />
+              ) : null}
+              {booking.quoteAmount != null ? (
+                <Detail icon={<Banknote size={18} color={colors.muted} />} label="Builder’s quote" value={formatMoney(booking.quoteAmount)} />
+              ) : null}
               <Detail icon={<MapPin size={18} color={colors.muted} />} label="Location" value={booking.location} />
             </View>
 
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push(`/chat/${booking.id}` as Href)}
+              className="mt-4 flex-row items-center gap-4 rounded-2xl border border-line bg-surface p-4 active:bg-subtle"
+            >
+              <View className="h-10 w-10 items-center justify-center rounded-full bg-brand-soft">
+                <MessageCircle size={20} color={colors.brand} />
+              </View>
+              <View className="flex-1">
+                <Text className="font-semibold text-base text-ink">Messages</Text>
+                <Text className="font-body text-sm text-muted">
+                  {chatOpen
+                    ? `Chat with ${perspective === 'builder' ? booking.customerName : booking.builderName}`
+                    : 'This booking is closed. You can read past messages.'}
+                </Text>
+              </View>
+              <ChevronRight size={20} color={colors.faint} />
+            </Pressable>
+
             <Text className="mb-2 mt-8 font-heading-semibold text-lg text-ink">Work description</Text>
             <Text className="font-body text-base text-muted">{booking.description}</Text>
+
+            {panel ? (
+              <View className="mt-8 gap-4 rounded-2xl border border-line bg-surface p-4">
+                {panel === 'accept' ? (
+                  <>
+                    <Text className="font-heading-semibold text-lg text-ink">Accept this request</Text>
+                    <FormField
+                      label="Your price in kwacha (optional)"
+                      value={quote}
+                      onChangeText={setQuote}
+                      keyboardType="number-pad"
+                      placeholder="e.g. 150000"
+                      maxLength={12}
+                    />
+                  </>
+                ) : null}
+                {panel === 'propose' ? (
+                  <>
+                    <Text className="font-heading-semibold text-lg text-ink">Propose another date</Text>
+                    <Text className="font-body text-sm text-muted">
+                      {booking.customerName} asked for {formatBookingDate(booking.preferredDate)}. They can accept your date or cancel.
+                    </Text>
+                    <DateField value={proposedDate} onChange={setProposedDate} />
+                    <FormField
+                      label="Your price in kwacha (optional)"
+                      value={quote}
+                      onChangeText={setQuote}
+                      keyboardType="number-pad"
+                      placeholder="e.g. 150000"
+                      maxLength={12}
+                    />
+                  </>
+                ) : null}
+                {panel === 'decline' || panel === 'cancel' ? (
+                  <>
+                    <Text className="font-heading-semibold text-lg text-ink">{panel === 'decline' ? 'Decline this request' : 'Cancel this booking'}</Text>
+                    <FormField
+                      label={`Reason (optional, shared with ${perspective === 'builder' ? booking.customerName : booking.builderName})`}
+                      value={reason}
+                      onChangeText={setReason}
+                      multiline
+                      placeholder={panel === 'decline' ? 'e.g. Fully booked that week' : 'e.g. Plans changed'}
+                      maxLength={300}
+                    />
+                  </>
+                ) : null}
+                <ErrorText>{panelError}</ErrorText>
+              </View>
+            ) : null}
 
             {hasReviewed ? (
               <View className="mt-8 flex-row items-center gap-2">
