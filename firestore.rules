@@ -166,7 +166,7 @@ function isValidProfile(data) {
 // Validate builder document
 function isValidBuilder(data) {
   return hasRequiredFields(['profile_id', 'years_experience', 'verification_status', 'average_rating', 'completed_jobs']) &&
-    hasOnlyAllowedFields(['profile_id', 'business_name', 'bio', 'display_name', 'district', 'trades', 'years_experience', 'verification_status', 'average_rating', 'completed_jobs', 'response_time_minutes']) &&
+    hasOnlyAllowedFields(['profile_id', 'business_name', 'bio', 'display_name', 'district', 'trades', 'years_experience', 'verification_status', 'average_rating', 'completed_jobs', 'response_time_minutes', 'response_count', 'available', 'rejection_reason']) &&
     data.profile_id is string && data.profile_id.size() > 0 && data.profile_id.size() < 128 &&
     isValidOptionalString('business_name', 2, 100) &&
     isValidOptionalString('bio', 1, 1000) &&
@@ -177,7 +177,10 @@ function isValidBuilder(data) {
     data.verification_status in ['pending', 'verified', 'rejected'] &&
     data.average_rating is number && data.average_rating >= 0 && data.average_rating <= 5 &&
     isPositive('completed_jobs') &&
-    (data.response_time_minutes == null || (data.response_time_minutes is number && data.response_time_minutes >= 0));
+    (data.get('response_time_minutes', null) == null || (data.response_time_minutes is number && data.response_time_minutes >= 0)) &&
+    (data.get('response_count', 0) is int && data.get('response_count', 0) >= 0) &&
+    data.get('available', true) is bool &&
+    isValidOptionalString('rejection_reason', 1, 500);
 }
 
 // Validate category document
@@ -228,7 +231,11 @@ function isValidBuilderDocument(data) {
 // Validate booking document
 function isValidBooking(data) {
   return hasRequiredFields(['customer_id', 'builder_id', 'customer_name', 'builder_name', 'service', 'preferred_date', 'location', 'description', 'status', 'created_at', 'updated_at']) &&
-    hasOnlyAllowedFields(['customer_id', 'builder_id', 'customer_name', 'builder_name', 'service', 'preferred_date', 'location', 'description', 'status', 'created_at', 'updated_at']) &&
+    hasOnlyAllowedFields(['customer_id', 'builder_id', 'customer_name', 'builder_name', 'service', 'preferred_date', 'location', 'description', 'status', 'created_at', 'updated_at', 'proposed_date', 'quote_amount', 'decline_reason', 'cancel_reason']) &&
+    (data.get('proposed_date', null) == null || (data.proposed_date is string && data.proposed_date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))) &&
+    (data.get('quote_amount', null) == null || (data.quote_amount is int && data.quote_amount >= 0 && data.quote_amount <= 1000000000)) &&
+    isValidOptionalString('decline_reason', 1, 300) &&
+    isValidOptionalString('cancel_reason', 1, 300) &&
     data.customer_id is string && data.customer_id.size() > 0 && data.customer_id.size() < 128 &&
     data.builder_id is string && data.builder_id.size() > 0 && data.builder_id.size() < 128 &&
     validStringLength('customer_name', 2, 100) &&
@@ -311,17 +318,21 @@ function isAdmin() {
       allow create: if isOwner(builderId) &&
         isValidBuilder(request.resource.data) &&
         request.resource.data.profile_id == request.auth.uid &&
-        request.resource.data.verification_status == 'pending';
+        request.resource.data.verification_status == 'pending' &&
+        // Stats start at zero and are only ever written by Cloud Functions.
+        request.resource.data.average_rating == 0 &&
+        request.resource.data.completed_jobs == 0 &&
+        !request.resource.data.keys().hasAny(['response_time_minutes', 'response_count', 'rejection_reason']);
       allow update: if isOwner(builderId) &&
         isValidBuilder(request.resource.data) &&
         request.resource.data.profile_id == resource.data.profile_id &&
-        areImmutableFieldsUnchanged(['profile_id', 'average_rating', 'completed_jobs']) &&
+        areImmutableFieldsUnchanged(['profile_id', 'average_rating', 'completed_jobs', 'response_time_minutes', 'response_count', 'rejection_reason']) &&
         (request.resource.data.verification_status == resource.data.verification_status ||
          request.resource.data.verification_status == 'pending');
-      // Administrators may only change a builder's verification status.
+      // Administrators may only change a builder's verification status and the reason shown to the builder.
       allow update: if isAdmin() &&
         isValidBuilder(request.resource.data) &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['verification_status']);
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['verification_status', 'rejection_reason']);
       allow delete: if false;
     }
 
@@ -409,11 +420,15 @@ function isAdmin() {
 
     // ===========================================================
     // Bookings Collection
-    // A customer sends a request to a verified builder. Only the
-    // two parties (and administrators) can read it. After creation
-    // only the status can change, and only along these paths:
-    //   builder:  pending -> accepted | declined, accepted -> completed
-    //   customer: pending | accepted -> cancelled
+    // A customer sends a request to a verified, available builder.
+    // Only the two parties (and administrators) can read it. After
+    // creation only these changes are allowed:
+    //   builder:  pending -> accepted (optional quote)
+    //             pending -> declined (optional reason)
+    //             pending -> pending  (propose another date, optional quote)
+    //             accepted -> completed
+    //   customer: pending | accepted -> cancelled (optional reason)
+    //             pending with a proposed date -> accepted on that date
     // ===========================================================
     match /bookings/{bookingId} {
       allow read: if isAuthenticated() &&
@@ -425,23 +440,74 @@ function isAdmin() {
         request.resource.data.customer_id == request.auth.uid &&
         request.resource.data.builder_id != request.auth.uid &&
         request.resource.data.status == 'pending' &&
+        !request.resource.data.keys().hasAny(['proposed_date', 'quote_amount', 'decline_reason', 'cancel_reason']) &&
         request.resource.data.created_at == request.time &&
         request.resource.data.updated_at == request.time &&
         request.resource.data.customer_name ==
           get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.full_name &&
-        get(/databases/$(database)/documents/builders/$(request.resource.data.builder_id)).data.verification_status == 'verified';
+        get(/databases/$(database)/documents/builders/$(request.resource.data.builder_id)).data.verification_status == 'verified' &&
+        get(/databases/$(database)/documents/builders/$(request.resource.data.builder_id)).data.get('available', true) == true;
       allow update: if isAuthenticated() &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updated_at']) &&
+        isValidBooking(request.resource.data) &&
         request.resource.data.updated_at == request.time &&
-        (
-          (resource.data.builder_id == request.auth.uid &&
-            ((resource.data.status == 'pending' && request.resource.data.status in ['accepted', 'declined']) ||
-             (resource.data.status == 'accepted' && request.resource.data.status == 'completed'))) ||
-          (resource.data.customer_id == request.auth.uid &&
-            resource.data.status in ['pending', 'accepted'] &&
-            request.resource.data.status == 'cancelled')
-        );
+        (bookingBuilderUpdate() || bookingCustomerUpdate());
       allow delete: if false;
+
+      // Chat between the two parties while the job is open.
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && isBookingParty(bookingId);
+        allow create: if isAuthenticated() &&
+          isBookingParty(bookingId) &&
+          get(/databases/$(database)/documents/bookings/$(bookingId)).data.status in ['pending', 'accepted'] &&
+          hasRequiredFields(['sender_id', 'text', 'created_at']) &&
+          hasOnlyAllowedFields(['sender_id', 'text', 'created_at']) &&
+          request.resource.data.sender_id == request.auth.uid &&
+          validStringLength('text', 1, 1000) &&
+          request.resource.data.created_at == request.time;
+        allow update, delete: if false;
+      }
+    }
+
+    function isBookingParty(bookingId) {
+      let booking = get(/databases/$(database)/documents/bookings/$(bookingId)).data;
+      return booking.customer_id == request.auth.uid || booking.builder_id == request.auth.uid;
+    }
+
+    function bookingChanged(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields);
+    }
+
+    function bookingBuilderUpdate() {
+      let before = resource.data;
+      let after = request.resource.data;
+      return before.builder_id == request.auth.uid && (
+        (before.status == 'pending' && after.status == 'accepted' &&
+          bookingChanged(['status', 'updated_at', 'quote_amount', 'proposed_date']) &&
+          after.get('proposed_date', null) == null) ||
+        (before.status == 'pending' && after.status == 'declined' &&
+          bookingChanged(['status', 'updated_at', 'decline_reason', 'proposed_date']) &&
+          after.get('proposed_date', null) == null) ||
+        (before.status == 'pending' && after.status == 'pending' &&
+          bookingChanged(['updated_at', 'proposed_date', 'quote_amount']) &&
+          after.get('proposed_date', null) != null) ||
+        (before.status == 'accepted' && after.status == 'completed' &&
+          bookingChanged(['status', 'updated_at']))
+      );
+    }
+
+    function bookingCustomerUpdate() {
+      let before = resource.data;
+      let after = request.resource.data;
+      return before.customer_id == request.auth.uid && (
+        (before.status in ['pending', 'accepted'] && after.status == 'cancelled' &&
+          bookingChanged(['status', 'updated_at', 'cancel_reason'])) ||
+        // Agreeing to the builder's proposed date accepts the booking on that date.
+        (before.status == 'pending' && before.get('proposed_date', null) != null &&
+          after.status == 'accepted' &&
+          after.preferred_date == before.proposed_date &&
+          after.get('proposed_date', null) == null &&
+          bookingChanged(['status', 'updated_at', 'preferred_date', 'proposed_date']))
+      );
     }
 
     // ===========================================================
@@ -483,6 +549,22 @@ function isAdmin() {
         request.resource.data.created_at == request.time;
       allow update: if false;
       allow delete: if isAuthenticated() && resource.data.user_id == request.auth.uid;
+    }
+
+    // ===========================================================
+    // Push Tokens Collection
+    // Expo push tokens for a user's devices, keyed by user id.
+    // Only Cloud Functions read them to send notifications.
+    // ===========================================================
+    match /push_tokens/{userId} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId) &&
+        hasRequiredFields(['tokens', 'updated_at']) &&
+        hasOnlyAllowedFields(['tokens', 'updated_at']) &&
+        request.resource.data.tokens is list &&
+        request.resource.data.tokens.size() <= 10 &&
+        request.resource.data.updated_at == request.time;
+      allow delete: if isOwner(userId);
     }
   }
 }

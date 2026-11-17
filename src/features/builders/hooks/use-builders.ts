@@ -4,6 +4,7 @@ import {
   fetchBuilders,
   fetchOwnBuilder,
   saveOwnBuilder,
+  setBuilderAvailability,
   type BuilderSummary,
   type OwnBuilder,
   type OwnBuilderInput,
@@ -45,5 +46,22 @@ export function useSaveOwnBuilder(profileId: string | undefined) {
     mutationFn: ({ displayName, input }: { displayName: string; input: OwnBuilderInput }) =>
       saveOwnBuilder(profileId!, displayName, input),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: buildersKey }),
+  });
+}
+
+/** Toggle "taking new jobs". Flips immediately and rolls back if the save fails. */
+export function useSetAvailability(profileId: string | undefined) {
+  const queryClient = useQueryClient();
+  const ownKey = ['builders', 'own', profileId];
+  return useMutation({
+    mutationFn: (available: boolean) => setBuilderAvailability(profileId!, available),
+    onMutate: async (available) => {
+      await queryClient.cancelQueries({ queryKey: ownKey });
+      const previous = queryClient.getQueryData<OwnBuilder | null>(ownKey);
+      if (previous) queryClient.setQueryData<OwnBuilder>(ownKey, { ...previous, available });
+      return { previous };
+    },
+    onError: (_error, _available, context) => queryClient.setQueryData(ownKey, context?.previous),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: buildersKey }),
   });
 }

@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import { getAuth, initializeAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 import { getReactNativePersistence } from '@firebase/auth';
 
 export const firebaseConfig = {
@@ -20,6 +21,8 @@ const app = isFirebaseConfigured ? (getApps().length ? getApp() : initializeApp(
 // This project uses the named Enterprise Firestore Native database, not the
 // default "(default)" database.
 export const firebaseDb = app ? getFirestore(app, 'builderlink') : undefined;
+
+export const firebaseStorage = app ? getStorage(app) : undefined;
 
 export const firebaseAuth = app
   ? (() => {

@@ -1,14 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import {
+  applyBookingAction,
   createBooking,
   fetchBooking,
   fetchBookings,
-  updateBookingStatus,
   type Booking,
+  type BookingAction,
   type BookingPerspective,
-  type BookingStatus,
   type CreateBookingInput,
 } from '../services/booking-service';
+import { sendMessage, subscribeToMessages, type ChatMessage } from '../services/chat-service';
 
 const bookingsKey = ['bookings'] as const;
 
@@ -38,11 +40,26 @@ export function useCreateBooking() {
   });
 }
 
-export function useUpdateBookingStatus() {
+export function useBookingAction() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ bookingId, status }: { bookingId: string; status: BookingStatus }) =>
-      updateBookingStatus(bookingId, status),
+    mutationFn: ({ bookingId, action }: { bookingId: string; action: BookingAction }) => applyBookingAction(bookingId, action),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: bookingsKey }),
   });
+}
+
+/** Live chat for one booking, oldest message first. */
+export function useBookingMessages(bookingId: string | undefined) {
+  const [messages, setMessages] = useState<ChatMessage[] | undefined>(undefined);
+  const [error, setError] = useState<unknown>(null);
+  useEffect(() => {
+    if (!bookingId) return undefined;
+    setError(null);
+    return subscribeToMessages(bookingId, setMessages, setError);
+  }, [bookingId]);
+  return { messages, error, isLoading: messages === undefined && !error };
+}
+
+export function useSendMessage(bookingId: string | undefined, senderId: string | undefined) {
+  return useMutation({ mutationFn: (text: string) => sendMessage(bookingId!, senderId!, text) });
 }

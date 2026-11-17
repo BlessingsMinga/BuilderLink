@@ -14,6 +14,10 @@ export type BuilderSummary = {
   experience: number;
   completedJobs: number;
   verified: boolean;
+  /** False when the builder has paused new requests. */
+  available: boolean;
+  /** Average minutes to reply to a request, once known. */
+  responseTimeMinutes: number | null;
 };
 
 type BuilderDocument = {
@@ -26,6 +30,10 @@ type BuilderDocument = {
   display_name?: string;
   district?: string | null;
   trades?: string[];
+  bio?: string | null;
+  available?: boolean;
+  response_time_minutes?: number | null;
+  rejection_reason?: string | null;
 };
 
 const toSummary = (raw: BuilderDocument): BuilderSummary => {
@@ -38,6 +46,8 @@ const toSummary = (raw: BuilderDocument): BuilderSummary => {
     experience: raw.years_experience,
     completedJobs: raw.completed_jobs,
     verified: raw.verification_status === 'verified',
+    available: raw.available ?? true,
+    responseTimeMinutes: raw.response_time_minutes ?? null,
   };
 };
 
@@ -78,16 +88,22 @@ export type OwnBuilder = {
   trades: string[];
   district: string | null;
   verificationStatus: VerificationStatus;
+  /** Why an administrator didn't approve the listing, if they said. */
+  rejectionReason: string | null;
+  available: boolean;
+  rating: number;
+  completedJobs: number;
+  responseTimeMinutes: number | null;
 };
 
-export type OwnBuilderInput = Omit<OwnBuilder, 'verificationStatus'>;
+export type OwnBuilderInput = Pick<OwnBuilder, 'businessName' | 'bio' | 'yearsExperience' | 'trades' | 'district'>;
 
 /** The builder's own listing whatever its verification status, or null if not created yet. */
 export async function fetchOwnBuilder(profileId: string): Promise<OwnBuilder | null> {
   if (!firebaseDb) throw new Error('Firestore is not configured.');
   const result = await getDoc(doc(firebaseDb, 'builders', profileId));
   if (!result.exists()) return null;
-  const raw = result.data() as BuilderDocument & { bio?: string | null };
+  const raw = result.data() as BuilderDocument;
   return {
     businessName: raw.business_name ?? '',
     bio: raw.bio ?? '',
@@ -95,7 +111,28 @@ export async function fetchOwnBuilder(profileId: string): Promise<OwnBuilder | n
     trades: raw.trades ?? [],
     district: raw.district ?? null,
     verificationStatus: raw.verification_status,
+    rejectionReason: raw.rejection_reason ?? null,
+    available: raw.available ?? true,
+    rating: raw.average_rating,
+    completedJobs: raw.completed_jobs,
+    responseTimeMinutes: raw.response_time_minutes ?? null,
   };
+}
+
+/** Pause or resume new booking requests. */
+export async function setBuilderAvailability(profileId: string, available: boolean): Promise<void> {
+  if (!firebaseDb) throw new Error('Firestore is not configured.');
+  await updateDoc(doc(firebaseDb, 'builders', profileId), { available });
+}
+
+/** "Usually replies within 2 hours" */
+export function formatResponseTime(minutes: number | null): string | null {
+  if (minutes == null) return null;
+  if (minutes < 60) return 'Usually replies within an hour';
+  const hours = Math.ceil(minutes / 60);
+  if (hours < 24) return `Usually replies within ${hours} hour${hours === 1 ? '' : 's'}`;
+  const days = Math.ceil(hours / 24);
+  return `Usually replies within ${days} day${days === 1 ? '' : 's'}`;
 }
 
 /**
@@ -114,9 +151,9 @@ export async function saveOwnBuilder(profileId: string, displayName: string, inp
   };
   const existing = await getDoc(ref);
   if (existing.exists()) {
-    // Older listings may lack this field, which the security rules require to be present.
-    const backfill = 'response_time_minutes' in existing.data() ? {} : { response_time_minutes: null };
-    await updateDoc(ref, { ...editable, ...backfill });
+    // A rejected listing goes back into the review queue when edited.
+    const resubmit = existing.data().verification_status === 'rejected' ? { verification_status: 'pending' } : {};
+    await updateDoc(ref, { ...editable, ...resubmit });
     return;
   }
   await setDoc(ref, {
@@ -126,7 +163,7 @@ export async function saveOwnBuilder(profileId: string, displayName: string, inp
     verification_status: 'pending',
     average_rating: 0,
     completed_jobs: 0,
-    response_time_minutes: null,
+    available: true,
   });
 }
 

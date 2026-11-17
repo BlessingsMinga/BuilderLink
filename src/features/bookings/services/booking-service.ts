@@ -29,7 +29,16 @@ export type Booking = {
   location: string;
   description: string;
   status: BookingStatus;
+  /** A different date the builder offered; the customer can agree to it. */
+  proposedDate: string | null;
+  /** The builder's price in Malawian kwacha, if given. */
+  quoteAmount: number | null;
+  /** Why the builder declined, if they said. */
+  declineReason: string | null;
+  /** Why the customer cancelled, if they said. */
+  cancelReason: string | null;
   createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type CreateBookingInput = {
@@ -53,6 +62,10 @@ type BookingDocument = {
   location: string;
   description: string;
   status: BookingStatus;
+  proposed_date?: string | null;
+  quote_amount?: number | null;
+  decline_reason?: string | null;
+  cancel_reason?: string | null;
   created_at: Timestamp | null;
   updated_at: Timestamp | null;
 };
@@ -73,8 +86,18 @@ const toBooking = (id: string, raw: BookingDocument): Booking => ({
   location: raw.location,
   description: raw.description,
   status: raw.status,
+  proposedDate: raw.proposed_date ?? null,
+  quoteAmount: raw.quote_amount ?? null,
+  declineReason: raw.decline_reason ?? null,
+  cancelReason: raw.cancel_reason ?? null,
   createdAt: raw.created_at?.toDate() ?? null,
+  updatedAt: raw.updated_at?.toDate() ?? null,
 });
+
+/** "MWK 150,000" */
+export function formatMoney(amount: number): string {
+  return `MWK ${amount.toLocaleString('en-GB')}`;
+}
 
 /**
  * Convert a user-typed `DD/MM/YYYY` date into ISO `YYYY-MM-DD`.
@@ -144,9 +167,38 @@ export async function fetchBookings(userId: string, perspective: BookingPerspect
     .sort((a, b) => (b.createdAt?.getTime() ?? Date.now()) - (a.createdAt?.getTime() ?? Date.now()));
 }
 
-/** Move a booking to a new status. Security rules enforce who may do which transition. */
-export async function updateBookingStatus(bookingId: string, status: BookingStatus): Promise<void> {
-  await updateDoc(doc(requireDb(), 'bookings', bookingId), { status, updated_at: serverTimestamp() });
+/**
+ * Every change a party can make to a booking. Each one maps to exactly one
+ * transition allowed by the Firestore security rules.
+ */
+export type BookingAction =
+  | { type: 'accept'; quoteAmount: number | null }
+  | { type: 'decline'; reason: string }
+  | { type: 'propose'; date: string; quoteAmount: number | null }
+  | { type: 'complete' }
+  | { type: 'cancel'; reason: string }
+  /** Customer agrees to the builder's proposed date. */
+  | { type: 'acceptProposal'; date: string };
+
+const optionalText = (text: string) => (text.trim() ? text.trim() : null);
+
+export async function applyBookingAction(bookingId: string, action: BookingAction): Promise<void> {
+  const ref = doc(requireDb(), 'bookings', bookingId);
+  const updated_at = serverTimestamp();
+  switch (action.type) {
+    case 'accept':
+      return updateDoc(ref, { status: 'accepted', quote_amount: action.quoteAmount, proposed_date: null, updated_at });
+    case 'decline':
+      return updateDoc(ref, { status: 'declined', decline_reason: optionalText(action.reason), proposed_date: null, updated_at });
+    case 'propose':
+      return updateDoc(ref, { proposed_date: action.date, quote_amount: action.quoteAmount, updated_at });
+    case 'complete':
+      return updateDoc(ref, { status: 'completed', updated_at });
+    case 'cancel':
+      return updateDoc(ref, { status: 'cancelled', cancel_reason: optionalText(action.reason), updated_at });
+    case 'acceptProposal':
+      return updateDoc(ref, { status: 'accepted', preferred_date: action.date, proposed_date: null, updated_at });
+  }
 }
 
 /** A single booking the signed-in user is a party to, or null if it doesn't exist. */
@@ -176,9 +228,13 @@ export function groupBookings(
   const groups: BookingGroups = { needsAction: [], upcoming: [], past: [] };
   for (const booking of bookings) {
     if (perspective === 'builder') {
-      if (booking.status === 'pending') groups.needsAction.push(booking);
+      // A pending request with a counter-offer is waiting on the customer, not the builder.
+      if (booking.status === 'pending' && !booking.proposedDate) groups.needsAction.push(booking);
+      else if (booking.status === 'pending') groups.upcoming.push(booking);
       else if (booking.status === 'accepted') groups.upcoming.push(booking);
       else groups.past.push(booking);
+    } else if (booking.status === 'pending' && booking.proposedDate) {
+      groups.needsAction.push(booking);
     } else if (booking.status === 'pending' || booking.status === 'accepted') {
       groups.upcoming.push(booking);
     } else if (booking.status === 'completed' && reviewedIds && !reviewedIds.includes(booking.id)) {

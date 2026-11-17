@@ -1,0 +1,27 @@
+rules_version = '2';
+
+// Files are grouped per builder: builders/{uid}/portfolio/* and builders/{uid}/documents/*.
+// The matching Firestore records (portfolio_items, builder_documents) hold the paths.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isImageUpload() {
+      return request.resource.size < 5 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*');
+    }
+
+    // Work photos: any signed-in user can view; only the builder can add or remove.
+    match /builders/{uid}/portfolio/{file} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == uid && isImageUpload();
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ID and certificates: private to the builder. Administrators review
+    // them in the Firebase console or through the Admin SDK.
+    match /builders/{uid}/documents/{file} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid && isImageUpload();
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}

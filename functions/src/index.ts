@@ -1,0 +1,233 @@
+import { initializeApp } from 'firebase-admin/app';
+import { FieldValue, getFirestore } from 'firebase-admin/firestore';
+import { logger } from 'firebase-functions';
+import { setGlobalOptions } from 'firebase-functions/v2';
+import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/firestore';
+
+// Triggers must run in the same region as the named database.
+const DATABASE = 'builderlink';
+setGlobalOptions({ region: 'europe-west1', maxInstances: 10 });
+
+initializeApp();
+const db = getFirestore(DATABASE);
+
+type Booking = {
+  customer_id: string;
+  builder_id: string;
+  customer_name: string;
+  builder_name: string;
+  service: string;
+  preferred_date: string;
+  status: 'pending' | 'accepted' | 'declined' | 'cancelled' | 'completed';
+  proposed_date?: string | null;
+  quote_amount?: number | null;
+  decline_reason?: string | null;
+  cancel_reason?: string | null;
+  created_at?: FirebaseFirestore.Timestamp | null;
+};
+
+// ---------------------------------------------------------------
+// Push notifications (Expo push service)
+// ---------------------------------------------------------------
+
+type Push = { title: string; body: string; data: Record<string, string> };
+
+/** Send a push to every device registered for a user. Never throws. */
+async function notify(userId: string, push: Push): Promise<void> {
+  try {
+    const ref = db.collection('push_tokens').doc(userId);
+    const snapshot = await ref.get();
+    const tokens = (snapshot.data()?.tokens as string[] | undefined) ?? [];
+    if (tokens.length === 0) return;
+
+    const response = await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(tokens.map((to) => ({ to, sound: 'default', ...push }))),
+    });
+    const result = (await response.json()) as { data?: { status: string; details?: { error?: string } }[] };
+
+    // Forget tokens for uninstalled apps so we stop sending to them.
+    const dead = tokens.filter((_, index) => result.data?.[index]?.details?.error === 'DeviceNotRegistered');
+    if (dead.length > 0) await ref.update({ tokens: FieldValue.arrayRemove(...dead) });
+  } catch (error) {
+    logger.warn('Push notification failed', { userId, error });
+  }
+}
+
+const formatDate = (iso: string) => {
+  const [year, month, day] = iso.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  });
+};
+
+const formatMoney = (amount: number) => `MWK ${amount.toLocaleString('en-GB')}`;
+
+// ---------------------------------------------------------------
+// Bookings
+// ---------------------------------------------------------------
+
+export const onBookingCreated = onDocumentCreated({ document: 'bookings/{bookingId}', database: DATABASE }, async (event) => {
+  const booking = event.data?.data() as Booking | undefined;
+  if (!booking) return;
+  await notify(booking.builder_id, {
+    title: 'New booking request',
+    body: `${booking.customer_name} needs a ${booking.service.toLowerCase()} on ${formatDate(booking.preferred_date)}.`,
+    data: { bookingId: event.params.bookingId },
+  });
+});
+
+export const onBookingUpdated = onDocumentUpdated({ document: 'bookings/{bookingId}', database: DATABASE }, async (event) => {
+  const before = event.data?.before.data() as Booking | undefined;
+  const after = event.data?.after.data() as Booking | undefined;
+  if (!before || !after) return;
+  const bookingId = event.params.bookingId;
+  const data = { bookingId };
+  const tasks: Promise<unknown>[] = [];
+
+  const proposedNow = !before.proposed_date && Boolean(after.proposed_date);
+
+  // The builder's first reply to a request: accept, decline, or a counter-offer.
+  const firstReply = before.status === 'pending' && !before.proposed_date && (after.status !== 'pending' || proposedNow);
+  if (firstReply && after.status !== 'cancelled' && before.created_at) {
+    const minutes = Math.max(0, Math.round((Date.now() - before.created_at.toMillis()) / 60_000));
+    tasks.push(recordResponseTime(after.builder_id, minutes));
+  }
+
+  if (before.status !== after.status) {
+    switch (after.status) {
+      case 'accepted':
+        if (before.proposed_date) {
+          tasks.push(
+            notify(after.builder_id, {
+              title: 'New date agreed',
+              body: `${after.customer_name} agreed to ${formatDate(after.preferred_date)}. The job is confirmed.`,
+              data,
+            }),
+          );
+        } else {
+          const quote = after.quote_amount != null ? ` Quote: ${formatMoney(after.quote_amount)}.` : '';
+          tasks.push(
+            notify(after.customer_id, {
+              title: 'Booking accepted',
+              body: `${after.builder_name} accepted your ${after.service.toLowerCase()} request.${quote}`,
+              data,
+            }),
+          );
+        }
+        break;
+      case 'declined':
+        tasks.push(
+          notify(after.customer_id, {
+            title: 'Booking declined',
+            body: after.decline_reason
+              ? `${after.builder_name} declined: “${after.decline_reason}”`
+              : `${after.builder_name} can’t take this job. Try another professional.`,
+            data,
+          }),
+        );
+        break;
+      case 'cancelled':
+        tasks.push(
+          notify(after.builder_id, {
+            title: 'Booking cancelled',
+            body: after.cancel_reason
+              ? `${after.customer_name} cancelled: “${after.cancel_reason}”`
+              : `${after.customer_name} cancelled their booking.`,
+            data,
+          }),
+        );
+        break;
+      case 'completed':
+        tasks.push(
+          db
+            .collection('builders')
+            .doc(after.builder_id)
+            .update({ completed_jobs: FieldValue.increment(1) }),
+          notify(after.customer_id, {
+            title: 'Job completed',
+            body: `${after.builder_name} marked the job as done. Leave a review to help others.`,
+            data,
+          }),
+        );
+        break;
+    }
+  } else if (proposedNow && after.proposed_date) {
+    const quote = after.quote_amount != null ? ` Quote: ${formatMoney(after.quote_amount)}.` : '';
+    tasks.push(
+      notify(after.customer_id, {
+        title: 'New date proposed',
+        body: `${after.builder_name} can do ${formatDate(after.proposed_date)} instead.${quote}`,
+        data,
+      }),
+    );
+  }
+
+  await Promise.all(tasks);
+});
+
+/** Keep a running average of how fast the builder replies to new requests. */
+async function recordResponseTime(builderId: string, minutes: number): Promise<void> {
+  const ref = db.collection('builders').doc(builderId);
+  await db.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    if (!snapshot.exists) return;
+    const count = (snapshot.get('response_count') as number | undefined) ?? 0;
+    const average = (snapshot.get('response_time_minutes') as number | null | undefined) ?? 0;
+    transaction.update(ref, {
+      response_time_minutes: Math.round((average * count + minutes) / (count + 1)),
+      response_count: count + 1,
+    });
+  });
+}
+
+// ---------------------------------------------------------------
+// Chat
+// ---------------------------------------------------------------
+
+export const onMessageCreated = onDocumentCreated(
+  { document: 'bookings/{bookingId}/messages/{messageId}', database: DATABASE },
+  async (event) => {
+    const message = event.data?.data() as { sender_id: string; text: string } | undefined;
+    if (!message) return;
+    const bookingSnapshot = await db.collection('bookings').doc(event.params.bookingId).get();
+    const booking = bookingSnapshot.data() as Booking | undefined;
+    if (!booking) return;
+    const fromCustomer = message.sender_id === booking.customer_id;
+    const preview = message.text.length > 120 ? `${message.text.slice(0, 117)}…` : message.text;
+    await notify(fromCustomer ? booking.builder_id : booking.customer_id, {
+      title: fromCustomer ? booking.customer_name : booking.builder_name,
+      body: preview,
+      data: { bookingId: event.params.bookingId, chat: '1' },
+    });
+  },
+);
+
+// ---------------------------------------------------------------
+// Reviews
+// ---------------------------------------------------------------
+
+export const onReviewCreated = onDocumentCreated({ document: 'reviews/{reviewId}', database: DATABASE }, async (event) => {
+  const review = event.data?.data() as { builder_id: string; customer_name: string; rating: number } | undefined;
+  if (!review) return;
+
+  // Recalculate from every review so the figure can't drift.
+  const reviews = await db.collection('reviews').where('builder_id', '==', review.builder_id).get();
+  const ratings = reviews.docs.map((doc) => doc.get('rating') as number);
+  const average = ratings.length ? ratings.reduce((sum, value) => sum + value, 0) / ratings.length : 0;
+
+  await Promise.all([
+    db
+      .collection('builders')
+      .doc(review.builder_id)
+      .update({ average_rating: Math.round(average * 10) / 10 }),
+    notify(review.builder_id, {
+      title: 'New review',
+      body: `${review.customer_name} rated you ${review.rating} out of 5.`,
+      data: { reviewId: event.params.reviewId },
+    }),
+  ]);
+});
