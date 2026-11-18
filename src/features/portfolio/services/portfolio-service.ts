@@ -36,7 +36,7 @@ const requireDb = () => {
 // returned URL in `storage_path`.
 const CLOUD_NAME = process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME;
 /** Unsigned preset for public work photos. */
-const PORTFOLIO_PRESET = process.env.EXPO_PUBLIC_CLOUDINARY_PORTFOLIO_PRESET;
+export const PORTFOLIO_PRESET = process.env.EXPO_PUBLIC_CLOUDINARY_PORTFOLIO_PRESET;
 /** Unsigned preset with delivery type "authenticated", so ID photos aren't publicly viewable. */
 const DOCUMENTS_PRESET = process.env.EXPO_PUBLIC_CLOUDINARY_DOCUMENTS_PRESET;
 
@@ -49,17 +49,26 @@ export function thumbnailUrl(url: string, width: number): string {
 export class PickCancelled extends Error {}
 export class PhotoPermissionDenied extends Error {}
 
-/** Let the user choose one photo, compressed for upload. */
-export async function pickPhoto(): Promise<ImagePicker.ImagePickerAsset> {
-  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!permission.granted) throw new PhotoPermissionDenied('Photo access was not allowed.');
-  const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.7 });
+type PickOptions = {
+  /** Take a new photo instead of choosing one. Default: 'library'. */
+  source?: 'library' | 'camera';
+  /** Show the square crop step. Default: true. */
+  edit?: boolean;
+};
+
+/** Let the user choose (or take) one photo, compressed for upload. */
+export async function pickPhoto({ source = 'library', edit = true }: PickOptions = {}): Promise<ImagePicker.ImagePickerAsset> {
+  const permission =
+    source === 'camera' ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (!permission.granted) throw new PhotoPermissionDenied(source === 'camera' ? 'Camera access was not allowed.' : 'Photo access was not allowed.');
+  const options: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], allowsEditing: edit, quality: 0.7 };
+  const result = source === 'camera' ? await ImagePicker.launchCameraAsync(options) : await ImagePicker.launchImageLibraryAsync(options);
   if (result.canceled || !result.assets[0]) throw new PickCancelled();
   return result.assets[0];
 }
 
 /** Upload a photo to Cloudinary and return its HTTPS URL. */
-async function upload(folder: string, preset: string | undefined, asset: ImagePicker.ImagePickerAsset): Promise<string> {
+export async function upload(folder: string, preset: string | undefined, asset: ImagePicker.ImagePickerAsset): Promise<string> {
   if (!CLOUD_NAME || !preset) throw new Error('Photo uploads are not configured yet.');
   if (asset.fileSize && asset.fileSize > 5 * 1024 * 1024) throw new Error('This photo is larger than 5 MB. Choose a smaller one.');
   const form = new FormData();

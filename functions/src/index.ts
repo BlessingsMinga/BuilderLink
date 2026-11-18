@@ -88,6 +88,17 @@ export const onBookingUpdated = onDocumentUpdated({ document: 'bookings/{booking
   const data = { bookingId };
   const tasks: Promise<unknown>[] = [];
 
+  // Keep the inbox in step so closed jobs show as read-only there too.
+  if (before.status !== after.status) {
+    tasks.push(
+      db
+        .collection('conversations')
+        .doc(bookingId)
+        .update({ status: after.status })
+        .catch(() => undefined), // No conversation yet: nothing to sync.
+    );
+  }
+
   const proposedNow = !before.proposed_date && Boolean(after.proposed_date);
 
   // The builder's first reply to a request: accept, decline, or a counter-offer.
@@ -191,13 +202,37 @@ async function recordResponseTime(builderId: string, minutes: number): Promise<v
 export const onMessageCreated = onDocumentCreated(
   { document: 'bookings/{bookingId}/messages/{messageId}', database: DATABASE },
   async (event) => {
-    const message = event.data?.data() as { sender_id: string; text: string } | undefined;
+    const message = event.data?.data() as { sender_id: string; text: string; image_url?: string } | undefined;
     if (!message) return;
     const bookingSnapshot = await db.collection('bookings').doc(event.params.bookingId).get();
     const booking = bookingSnapshot.data() as Booking | undefined;
     if (!booking) return;
     const fromCustomer = message.sender_id === booking.customer_id;
-    const preview = message.text.length > 120 ? `${message.text.slice(0, 117)}…` : message.text;
+    const text = message.text.length > 120 ? `${message.text.slice(0, 117)}…` : message.text;
+    const preview = message.image_url ? (text ? `📷 ${text}` : '📷 Photo') : text;
+    const recipientId = fromCustomer ? booking.builder_id : booking.customer_id;
+    // Inbox summary. Only this function writes it; clients may only reset
+    // their own unread count and read marker (see firestore.rules).
+    await db
+      .collection('conversations')
+      .doc(event.params.bookingId)
+      .set(
+        {
+          participants: [booking.customer_id, booking.builder_id],
+          customer_id: booking.customer_id,
+          builder_id: booking.builder_id,
+          customer_name: booking.customer_name,
+          builder_name: booking.builder_name,
+          service: booking.service,
+          status: booking.status,
+          last_message: preview,
+          last_sender_id: message.sender_id,
+          last_message_at: event.data?.get('created_at') ?? FieldValue.serverTimestamp(),
+          unread: { [recipientId]: FieldValue.increment(1), [message.sender_id]: 0 },
+        },
+        { merge: true },
+      )
+      .catch((error) => logger.error('Updating conversation failed', error));
     await notify(fromCustomer ? booking.builder_id : booking.customer_id, {
       title: fromCustomer ? booking.customer_name : booking.builder_name,
       body: preview,

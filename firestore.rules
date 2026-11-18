@@ -460,12 +460,37 @@ function isAdmin() {
           isBookingParty(bookingId) &&
           get(/databases/$(database)/documents/bookings/$(bookingId)).data.status in ['pending', 'accepted'] &&
           hasRequiredFields(['sender_id', 'text', 'created_at']) &&
-          hasOnlyAllowedFields(['sender_id', 'text', 'created_at']) &&
+          hasOnlyAllowedFields(['sender_id', 'text', 'image_url', 'created_at']) &&
           request.resource.data.sender_id == request.auth.uid &&
-          validStringLength('text', 1, 1000) &&
+          validStringLength('text', 0, 1000) &&
+          // A message is text, a photo, or a photo with a caption. Photos
+          // must be Cloudinary uploads, so links can't point elsewhere.
+          (request.resource.data.text.size() > 0 || 'image_url' in request.resource.data) &&
+          (!('image_url' in request.resource.data) ||
+            (request.resource.data.image_url is string &&
+             request.resource.data.image_url.size() <= 500 &&
+             request.resource.data.image_url.matches('^https://res[.]cloudinary[.]com/.+'))) &&
           request.resource.data.created_at == request.time;
         allow update, delete: if false;
       }
+    }
+
+    // ===========================================================
+    // Conversations (inbox summary, one per booking with messages)
+    // Written by Cloud Functions. A participant may only mark the
+    // conversation read for themselves: unread.<uid> -> 0 and
+    // read_at.<uid> -> now. The other party's read_at powers "Seen".
+    // ===========================================================
+    match /conversations/{conversationId} {
+      allow read: if isAuthenticated() && request.auth.uid in resource.data.participants;
+      allow create, delete: if false;
+      allow update: if isAuthenticated() &&
+        request.auth.uid in resource.data.participants &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['unread', 'read_at']) &&
+        request.resource.data.unread.diff(resource.data.unread).affectedKeys().hasOnly([request.auth.uid]) &&
+        request.resource.data.unread[request.auth.uid] == 0 &&
+        request.resource.data.get('read_at', {}).diff(resource.data.get('read_at', {})).affectedKeys().hasOnly([request.auth.uid]) &&
+        request.resource.data.read_at[request.auth.uid] == request.time;
     }
 
     function isBookingParty(bookingId) {

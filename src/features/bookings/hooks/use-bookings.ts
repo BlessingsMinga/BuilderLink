@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { ImagePickerAsset } from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import {
   applyBookingAction,
@@ -10,7 +11,8 @@ import {
   type BookingPerspective,
   type CreateBookingInput,
 } from '../services/booking-service';
-import { sendMessage, subscribeToMessages, type ChatMessage } from '../services/chat-service';
+import { sendMessage, sendPhotoMessage, subscribeToMessages, type ChatMessage } from '../services/chat-service';
+import { subscribeToConversation, subscribeToConversations, type Conversation } from '../services/conversation-service';
 
 const bookingsKey = ['bookings'] as const;
 
@@ -60,6 +62,42 @@ export function useBookingMessages(bookingId: string | undefined) {
   return { messages, error, isLoading: messages === undefined && !error };
 }
 
+/** Live inbox for the signed-in user, most recent first. */
+export function useConversations(userId: string | undefined) {
+  const [conversations, setConversations] = useState<Conversation[] | undefined>(undefined);
+  const [error, setError] = useState<unknown>(null);
+  useEffect(() => {
+    if (!userId) return undefined;
+    setError(null);
+    return subscribeToConversations(userId, setConversations, setError);
+  }, [userId]);
+  return { conversations, error, isLoading: conversations === undefined && !error };
+}
+
+/** Total unread messages across all chats, for the tab badge. */
+export function useUnreadCount(userId: string | undefined): number {
+  const { conversations } = useConversations(userId);
+  if (!userId || !conversations) return 0;
+  return conversations.reduce((total, item) => total + (item.unread[userId] ?? 0), 0);
+}
+
+/** Live summary of one chat; null until the first message exists. */
+export function useConversation(bookingId: string | undefined) {
+  const [conversation, setConversation] = useState<Conversation | null>(null);
+  useEffect(() => {
+    if (!bookingId) return undefined;
+    return subscribeToConversation(bookingId, setConversation, (error) => console.warn('Conversation listener failed:', error));
+  }, [bookingId]);
+  return conversation;
+}
+
 export function useSendMessage(bookingId: string | undefined, senderId: string | undefined) {
   return useMutation({ mutationFn: (text: string) => sendMessage(bookingId!, senderId!, text) });
+}
+
+export function useSendPhoto(bookingId: string | undefined, senderId: string | undefined) {
+  return useMutation({
+    mutationFn: ({ asset, caption }: { asset: ImagePickerAsset; caption?: string }) =>
+      sendPhotoMessage(bookingId!, senderId!, asset, caption),
+  });
 }

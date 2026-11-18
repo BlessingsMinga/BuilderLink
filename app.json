@@ -13,7 +13,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "BuilderLink uses your photos so you can show your work and upload your ID for verification."
+          "photosPermission": "BuilderLink uses your photos so you can show your work, upload your ID for verification and share photos in chat.",
+          "cameraPermission": "BuilderLink uses your camera so you can take photos of a job to share in chat."
         }
       ]
     ],

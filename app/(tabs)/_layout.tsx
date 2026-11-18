@@ -1,12 +1,15 @@
 import { Tabs } from 'expo-router';
-import { CalendarDays, House, Search, UserRound } from 'lucide-react-native';
+import { CalendarDays, House, MessageCircle, Search, UserRound } from 'lucide-react-native';
+import { useAuthStore } from '@/features/authentication/store/auth-store';
+import { useUnreadCount } from '@/features/bookings/hooks/use-bookings';
 import { Protected } from '@/shared/components/protected';
 import { useThemeColors } from '@/shared/theme';
 
-const icons = { index: House, search: Search, bookings: CalendarDays, profile: UserRound };
+const icons = { index: House, search: Search, bookings: CalendarDays, messages: MessageCircle, profile: UserRound };
 
 export default function TabLayout() {
   const colors = useThemeColors();
+  const unread = useUnreadCount(useAuthStore((state) => state.session?.userId));
   return (
     <Protected>
       <Tabs
@@ -26,6 +29,10 @@ export default function TabLayout() {
         <Tabs.Screen name="index" options={{ title: 'Home' }} />
         <Tabs.Screen name="search" options={{ title: 'Search' }} />
         <Tabs.Screen name="bookings" options={{ title: 'Bookings' }} />
+        <Tabs.Screen
+          name="messages"
+          options={{ title: 'Messages', tabBarBadge: unread > 0 ? (unread > 99 ? '99+' : unread) : undefined, tabBarBadgeStyle: { backgroundColor: colors.brand } }}
+        />
         <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
       </Tabs>
     </Protected>
