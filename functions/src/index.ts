@@ -1,3 +1,8 @@
+// NOT DEPLOYED. The project stays on the free Spark plan, so this logic now
+// runs in the app instead (push-service, chat-service, booking-service,
+// review-service), guarded by firestore.rules. Deploying these triggers as
+// they are would double every notification and stat update; remove the
+// app-side copies first if you ever move back to Cloud Functions (Blaze).
 import { initializeApp } from 'firebase-admin/app';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions';

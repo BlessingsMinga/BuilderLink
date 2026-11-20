@@ -91,13 +91,13 @@ export function useConversation(bookingId: string | undefined) {
   return conversation;
 }
 
-export function useSendMessage(bookingId: string | undefined, senderId: string | undefined) {
-  return useMutation({ mutationFn: (text: string) => sendMessage(bookingId!, senderId!, text) });
+export function useSendMessage(booking: Booking | null | undefined, senderId: string | undefined) {
+  return useMutation({ mutationFn: (text: string) => sendMessage(booking!, senderId!, text) });
 }
 
-export function useSendPhoto(bookingId: string | undefined, senderId: string | undefined) {
+export function useSendPhoto(booking: Booking | null | undefined, senderId: string | undefined) {
   return useMutation({
     mutationFn: ({ asset, caption }: { asset: ImagePickerAsset; caption?: string }) =>
-      sendPhotoMessage(bookingId!, senderId!, asset, caption),
+      sendPhotoMessage(booking!, senderId!, asset, caption),
   });
 }

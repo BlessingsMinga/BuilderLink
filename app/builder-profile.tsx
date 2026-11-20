@@ -229,7 +229,7 @@ function Step({ title, done, optional = false, children }: { title: string; done
     <View className="mt-8">
       <View className="mb-3 flex-row items-center gap-2">
         {optional ? null : done ? <CheckCircle2 size={20} color={colors.success} /> : <Circle size={20} color={colors.faint} />}
-        <Text className="font-heading-semibold text-lg text-ink">{title}</Text>
+        <Text className="font-heading text-lg text-ink">{title}</Text>
       </View>
       {children}
     </View>

@@ -166,7 +166,8 @@ function isValidProfile(data) {
 // Validate builder document
 function isValidBuilder(data) {
   return hasRequiredFields(['profile_id', 'years_experience', 'verification_status', 'average_rating', 'completed_jobs']) &&
-    hasOnlyAllowedFields(['profile_id', 'business_name', 'bio', 'display_name', 'district', 'trades', 'years_experience', 'verification_status', 'average_rating', 'completed_jobs', 'response_time_minutes', 'response_count', 'available', 'rejection_reason']) &&
+    hasOnlyAllowedFields(['profile_id', 'business_name', 'bio', 'display_name', 'district', 'trades', 'years_experience', 'verification_status', 'average_rating', 'completed_jobs', 'response_time_minutes', 'response_count', 'available', 'rejection_reason',
+      'rating_sum', 'review_count', 'last_review_id', 'last_completed_booking_id', 'last_response_booking_id']) &&
     data.profile_id is string && data.profile_id.size() > 0 && data.profile_id.size() < 128 &&
     isValidOptionalString('business_name', 2, 100) &&
     isValidOptionalString('bio', 1, 1000) &&
@@ -179,6 +180,8 @@ function isValidBuilder(data) {
     isPositive('completed_jobs') &&
     (data.get('response_time_minutes', null) == null || (data.response_time_minutes is number && data.response_time_minutes >= 0)) &&
     (data.get('response_count', 0) is int && data.get('response_count', 0) >= 0) &&
+    (data.get('review_count', 0) is int && data.get('review_count', 0) >= 0) &&
+    (data.get('rating_sum', 0) is number && data.get('rating_sum', 0) >= 0) &&
     data.get('available', true) is bool &&
     isValidOptionalString('rejection_reason', 1, 500);
 }
@@ -319,21 +322,79 @@ function isAdmin() {
         isValidBuilder(request.resource.data) &&
         request.resource.data.profile_id == request.auth.uid &&
         request.resource.data.verification_status == 'pending' &&
-        // Stats start at zero and are only ever written by Cloud Functions.
+        // Stats start at zero and only change through the stat rules below.
         request.resource.data.average_rating == 0 &&
         request.resource.data.completed_jobs == 0 &&
-        !request.resource.data.keys().hasAny(['response_time_minutes', 'response_count', 'rejection_reason']);
+        !request.resource.data.keys().hasAny(['response_time_minutes', 'response_count', 'rejection_reason',
+          'rating_sum', 'review_count', 'last_review_id', 'last_completed_booking_id', 'last_response_booking_id']);
       allow update: if isOwner(builderId) &&
         isValidBuilder(request.resource.data) &&
         request.resource.data.profile_id == resource.data.profile_id &&
-        areImmutableFieldsUnchanged(['profile_id', 'average_rating', 'completed_jobs', 'response_time_minutes', 'response_count', 'rejection_reason']) &&
+        areImmutableFieldsUnchanged(['profile_id', 'average_rating', 'completed_jobs', 'response_time_minutes', 'response_count', 'rejection_reason',
+          'rating_sum', 'review_count', 'last_review_id', 'last_completed_booking_id', 'last_response_booking_id']) &&
         (request.resource.data.verification_status == resource.data.verification_status ||
          request.resource.data.verification_status == 'pending');
       // Administrators may only change a builder's verification status and the reason shown to the builder.
       allow update: if isAdmin() &&
         isValidBuilder(request.resource.data) &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['verification_status', 'rejection_reason']);
+      // Stats, written by the app in the same batch as the event they count.
+      // Each one names the booking/review it counts, and the rules check that
+      // event happens in this very write, so a stat can't be bumped on its own.
+      allow update: if isOwner(builderId) && isValidBuilder(request.resource.data) &&
+        (builderCompletedJob(builderId) || builderRecordedResponse(builderId));
+      allow update: if isAuthenticated() && isValidBuilder(request.resource.data) && builderReviewed(builderId);
       allow delete: if false;
+    }
+
+    // Builder marks a job done: completed_jobs + 1, with the booking going accepted -> completed.
+    function builderCompletedJob(builderId) {
+      let data = request.resource.data;
+      let id = data.get('last_completed_booking_id', '');
+      let path = /databases/$(database)/documents/bookings/$(id);
+      return data.diff(resource.data).affectedKeys().hasOnly(['completed_jobs', 'last_completed_booking_id']) &&
+        id is string && id.size() > 0 &&
+        data.completed_jobs == resource.data.completed_jobs + 1 &&
+        get(path).data.builder_id == builderId &&
+        get(path).data.status == 'accepted' &&
+        getAfter(path).data.status == 'completed';
+    }
+
+    // Builder's first reply to a request (accept, decline or counter-offer):
+    // update the running average reply time. Minutes are measured on the
+    // device, so allow 15 minutes of clock difference.
+    function builderRecordedResponse(builderId) {
+      let data = request.resource.data;
+      let id = data.get('last_response_booking_id', '');
+      let path = /databases/$(database)/documents/bookings/$(id);
+      let before = get(path).data;
+      let after = getAfter(path).data;
+      let count = resource.data.get('response_count', 0);
+      let average = resource.data.get('response_time_minutes', null) == null ? 0 : resource.data.response_time_minutes;
+      let minutes = (request.time.toMillis() - before.created_at.toMillis()) / 60000;
+      return data.diff(resource.data).affectedKeys().hasOnly(['response_time_minutes', 'response_count', 'last_response_booking_id']) &&
+        id is string && id.size() > 0 &&
+        before.builder_id == builderId &&
+        before.status == 'pending' && before.get('proposed_date', null) == null &&
+        (after.status in ['accepted', 'declined'] || after.get('proposed_date', null) != null) &&
+        data.response_count == count + 1 &&
+        math.abs(data.response_time_minutes * (count + 1) - (average * count + minutes)) <= 15 + count + 1;
+    }
+
+    // Customer publishes a review: add its rating to the builder's totals.
+    function builderReviewed(builderId) {
+      let data = request.resource.data;
+      let id = data.get('last_review_id', '');
+      let path = /databases/$(database)/documents/reviews/$(id);
+      let review = getAfter(path).data;
+      return data.diff(resource.data).affectedKeys().hasOnly(['average_rating', 'rating_sum', 'review_count', 'last_review_id']) &&
+        id is string && id.size() > 0 &&
+        !exists(path) &&
+        review.builder_id == builderId &&
+        review.customer_id == request.auth.uid &&
+        data.review_count == resource.data.get('review_count', 0) + 1 &&
+        data.rating_sum == resource.data.get('rating_sum', 0) + review.rating &&
+        math.abs(data.average_rating - data.rating_sum / data.review_count) <= 0.05;
     }
 
     // ===========================================================
@@ -477,20 +538,97 @@ function isAdmin() {
 
     // ===========================================================
     // Conversations (inbox summary, one per booking with messages)
-    // Written by Cloud Functions. A participant may only mark the
-    // conversation read for themselves: unread.<uid> -> 0 and
-    // read_at.<uid> -> now. The other party's read_at powers "Seen".
+    // Written by the app in the same batch as each message. The rules
+    // check the summary matches the booking, the sender, and that the
+    // other party's unread count goes up by exactly one. Either party
+    // may also mark it read for themselves, or copy the booking's
+    // current status onto it after changing the booking.
     // ===========================================================
-    match /conversations/{conversationId} {
+    match /conversations/{bookingId} {
       allow read: if isAuthenticated() && request.auth.uid in resource.data.participants;
-      allow create, delete: if false;
+      allow create: if isAuthenticated() &&
+        hasOnlyAllowedFields(['participants', 'customer_id', 'builder_id', 'customer_name', 'builder_name', 'service',
+          'status', 'last_message', 'last_sender_id', 'last_message_at', 'unread']) &&
+        conversationMatchesBooking(bookingId) &&
+        isNewMessageSummary(bookingId, 0);
       allow update: if isAuthenticated() &&
-        request.auth.uid in resource.data.participants &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['unread', 'read_at']) &&
-        request.resource.data.unread.diff(resource.data.unread).affectedKeys().hasOnly([request.auth.uid]) &&
-        request.resource.data.unread[request.auth.uid] == 0 &&
-        request.resource.data.get('read_at', {}).diff(resource.data.get('read_at', {})).affectedKeys().hasOnly([request.auth.uid]) &&
-        request.resource.data.read_at[request.auth.uid] == request.time;
+        request.auth.uid in resource.data.participants && (
+          // A new message.
+          (request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status', 'last_message', 'last_sender_id', 'last_message_at', 'unread']) &&
+            conversationMatchesBooking(bookingId) &&
+            isNewMessageSummary(bookingId, resource.data.unread.get(otherPartyOf(bookingOf(bookingId)), 0))) ||
+          // Marking it read.
+          (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['unread', 'read_at']) &&
+            request.resource.data.unread.diff(resource.data.unread).affectedKeys().hasOnly([request.auth.uid]) &&
+            request.resource.data.unread[request.auth.uid] == 0 &&
+            request.resource.data.get('read_at', {}).diff(resource.data.get('read_at', {})).affectedKeys().hasOnly([request.auth.uid]) &&
+            request.resource.data.read_at[request.auth.uid] == request.time) ||
+          // Booking status changed.
+          (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
+            request.resource.data.status == bookingOf(bookingId).status)
+        );
+      allow delete: if false;
+    }
+
+    function bookingOf(bookingId) {
+      return get(/databases/$(database)/documents/bookings/$(bookingId)).data;
+    }
+
+    function otherPartyOf(booking) {
+      return booking.customer_id == request.auth.uid ? booking.builder_id : booking.customer_id;
+    }
+
+    function conversationMatchesBooking(bookingId) {
+      let booking = bookingOf(bookingId);
+      let data = request.resource.data;
+      return (booking.customer_id == request.auth.uid || booking.builder_id == request.auth.uid) &&
+        data.participants == [booking.customer_id, booking.builder_id] &&
+        data.customer_id == booking.customer_id &&
+        data.builder_id == booking.builder_id &&
+        data.customer_name == booking.customer_name &&
+        data.builder_name == booking.builder_name &&
+        data['service'] == booking['service'] && // `service` is a reserved word in rules
+
+        data.status == booking.status;
+    }
+
+    function isNewMessageSummary(bookingId, previousUnread) {
+      let booking = bookingOf(bookingId);
+      let data = request.resource.data;
+      let other = otherPartyOf(booking);
+      return booking.status in ['pending', 'accepted'] &&
+        data.last_sender_id == request.auth.uid &&
+        data.last_message is string && data.last_message.size() > 0 && data.last_message.size() <= 140 &&
+        data.last_message_at == request.time &&
+        data.unread is map &&
+        data.unread.keys().hasOnly([booking.customer_id, booking.builder_id]) &&
+        data.unread[other] == previousUnread + 1 &&
+        data.unread[request.auth.uid] == 0;
+    }
+
+    // ===========================================================
+    // Contacts: "<me>_<other>" exists once two people share a
+    // booking. It lets the app read the other person's push tokens
+    // to notify them, and nobody else's.
+    // ===========================================================
+    match /contacts/{contactId} {
+      allow read: if isAuthenticated() && resource.data.owner_id == request.auth.uid;
+      allow create, update: if isAuthenticated() &&
+        hasOnlyAllowedFields(['owner_id', 'contact_id', 'booking_id', 'updated_at']) &&
+        request.resource.data.owner_id == request.auth.uid &&
+        request.resource.data.contact_id is string &&
+        contactId == request.auth.uid + '_' + request.resource.data.contact_id &&
+        request.resource.data.booking_id is string &&
+        request.resource.data.updated_at == request.time &&
+        sharesBooking(request.resource.data.booking_id, request.auth.uid, request.resource.data.contact_id);
+      allow delete: if false;
+    }
+
+    function sharesBooking(bookingId, first, second) {
+      let booking = bookingOf(bookingId);
+      return (booking.customer_id == first && booking.builder_id == second) ||
+        (booking.customer_id == second && booking.builder_id == first);
     }
 
     function isBookingParty(bookingId) {
@@ -579,10 +717,13 @@ function isAdmin() {
     // ===========================================================
     // Push Tokens Collection
     // Expo push tokens for a user's devices, keyed by user id.
-    // Only Cloud Functions read them to send notifications.
+    // Read by the owner, and by people they share a booking with
+    // (see contacts) so the app can send them a notification.
     // ===========================================================
     match /push_tokens/{userId} {
       allow read: if isOwner(userId);
+      allow get: if isAuthenticated() &&
+        exists(/databases/$(database)/documents/contacts/$(request.auth.uid + '_' + userId));
       allow create, update: if isOwner(userId) &&
         hasRequiredFields(['tokens', 'updated_at']) &&
         hasOnlyAllowedFields(['tokens', 'updated_at']) &&

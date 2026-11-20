@@ -24,7 +24,7 @@ function DateTile({ isoDate }: { isoDate: string }) {
   const [year, month, day] = isoDate.split('-').map(Number);
   const monthLabel = new Date(year, month - 1, day).toLocaleDateString('en-GB', { month: 'short' });
   return (
-    <View className="h-14 w-14 items-center justify-center rounded-2xl bg-brand-soft">
+    <View className="h-16 w-16 items-center justify-center rounded-[18px] bg-brand-soft">
       <Text className="font-heading text-lg text-brand">{day}</Text>
       <Text className="-mt-1 font-semibold text-xs text-brand">{monthLabel}</Text>
     </View>
@@ -55,7 +55,7 @@ export function BookingCard({ booking, perspective, hint: givenHint }: Props) {
     >
       <DateTile isoDate={booking.preferredDate} />
       <View className="flex-1">
-        <Text numberOfLines={1} className="font-bold text-base text-ink">
+        <Text numberOfLines={1} className="font-heading text-base text-ink">
           {perspective === 'builder' ? booking.customerName : booking.builderName}
         </Text>
         <Text numberOfLines={1} className="font-body text-sm text-muted">

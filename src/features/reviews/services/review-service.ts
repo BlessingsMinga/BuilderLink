@@ -1,13 +1,16 @@
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   query,
+  runTransaction,
   serverTimestamp,
   setDoc,
   where,
   type Timestamp,
 } from 'firebase/firestore';
+import { notifyUser } from '@/features/notifications/push-service';
 import { firebaseDb } from '@/shared/services/firebase';
 
 /** Detail ratings a customer gives alongside the overall score. Keys match the Firestore rules. */
@@ -82,7 +85,10 @@ const newestFirst = (a: Review, b: Review) =>
  * booking id, so a booking can only ever be reviewed once.
  */
 export async function submitReview(input: ReviewInput): Promise<void> {
-  await setDoc(doc(requireDb(), 'reviews', input.bookingId), {
+  const db = requireDb();
+  const reviewRef = doc(db, 'reviews', input.bookingId);
+  const builderRef = doc(db, 'builders', input.builderId);
+  const review = {
     booking_id: input.bookingId,
     builder_id: input.builderId,
     customer_id: input.customerId,
@@ -91,6 +97,39 @@ export async function submitReview(input: ReviewInput): Promise<void> {
     category_ratings: input.categoryRatings,
     comment: input.comment.trim(),
     created_at: serverTimestamp(),
+  };
+
+  // Publish the review and add it to the builder's rating totals together;
+  // the rules only accept the totals change alongside the new review.
+  try {
+    await runTransaction(db, async (transaction) => {
+      const builder = await transaction.get(builderRef);
+      transaction.set(reviewRef, review);
+      if (!builder.exists()) return;
+      const count = ((builder.get('review_count') as number | undefined) ?? 0) + 1;
+      const sum = ((builder.get('rating_sum') as number | undefined) ?? 0) + input.rating;
+      transaction.update(builderRef, {
+        review_count: count,
+        rating_sum: sum,
+        average_rating: Math.round((sum / count) * 10) / 10,
+        last_review_id: input.bookingId,
+      });
+    });
+  } catch (error) {
+    // Already published (e.g. a retry): nothing more to do. Otherwise publish
+    // the review alone; the review itself matters more than the average.
+    if ((await getDoc(reviewRef).catch(() => null))?.exists()) throw error;
+    console.warn('Updating the builder rating failed; publishing the review alone:', error);
+    await setDoc(reviewRef, review);
+  }
+
+  void notifyUser({
+    senderId: input.customerId,
+    recipientId: input.builderId,
+    bookingId: input.bookingId,
+    title: 'New review',
+    body: `${input.customerName} rated you ${input.rating} out of 5.`,
+    data: { reviewId: input.bookingId },
   });
 }
 

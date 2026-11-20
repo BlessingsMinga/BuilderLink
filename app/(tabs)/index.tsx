@@ -12,8 +12,6 @@ import {
   PaintRoller,
   Search,
   Star,
-  Timer,
-  Trophy,
   Wrench,
   Zap,
   type LucideIcon,
@@ -26,7 +24,7 @@ import { useBookings } from '@/features/bookings/hooks/use-bookings';
 import { groupBookings } from '@/features/bookings/services/booking-service';
 import { BuilderCard } from '@/features/builders/components/builder-card';
 import { useBuilders, useOwnBuilder, useSetAvailability } from '@/features/builders/hooks/use-builders';
-import { TRADES, formatResponseTime, type OwnBuilder } from '@/features/builders/services/builder-service';
+import { TRADES, type OwnBuilder } from '@/features/builders/services/builder-service';
 import { useBuilderReviews } from '@/features/reviews/hooks/use-reviews';
 import { averageRating } from '@/features/reviews/services/review-service';
 import { failureMessage, toast } from '@/shared/components/toast';
@@ -65,7 +63,9 @@ function useGreeting() {
 function SectionTitle({ title, action, onAction }: { title: string; action?: string; onAction?: () => void }) {
   return (
     <View className="mb-3 mt-8 flex-row items-center justify-between">
-      <Text className="font-heading-semibold text-lg text-ink">{title}</Text>
+      <Text accessibilityRole="header" className="font-heading text-lg text-ink">
+        {title}
+      </Text>
       {action && onAction ? (
         <Pressable hitSlop={12} onPress={onAction}>
           <Text className="font-semibold text-sm text-brand">{action}</Text>
@@ -98,7 +98,10 @@ function CustomerHome() {
       hero={
         <>
           <Text className="font-medium text-sm text-white/80">{greeting}</Text>
-          <Text className="mt-1 font-heading text-3xl text-white">Find a trusted builder</Text>
+          <Text accessibilityRole="header" className="mt-1 font-heading text-3xl text-white">
+            Find a trusted builder
+          </Text>
+          <Text className="mt-1 font-medium text-sm text-white/85">Verified professionals across Malawi.</Text>
           <Pressable
             accessibilityRole="search"
             onPress={() => router.push('/(tabs)/search')}
@@ -112,12 +115,12 @@ function CustomerHome() {
     >
       {activeBooking ? (
         <View className="mb-8">
-          <Text className="mb-3 font-heading-semibold text-lg text-ink">Your booking</Text>
+          <Text accessibilityRole="header" className="mb-3 font-heading text-lg text-ink">Your booking</Text>
           <BookingCard booking={activeBooking} perspective="customer" />
         </View>
       ) : null}
 
-      <Text className="mb-3 font-heading-semibold text-lg text-ink">Browse by trade</Text>
+      <Text accessibilityRole="header" className="mb-3 font-heading text-lg text-ink">Browse by trade</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-5 flex-grow-0" contentContainerClassName="gap-3 px-5">
         {TRADES.map((trade) => {
           const Icon = tradeIcons[trade];
@@ -128,7 +131,7 @@ function CustomerHome() {
               onPress={() => router.push({ pathname: '/(tabs)/search', params: { q: trade } })}
               className="w-20 items-center gap-2 active:opacity-70"
             >
-              <View className="h-16 w-16 items-center justify-center rounded-2xl bg-brand-soft">
+              <View className="h-16 w-16 items-center justify-center rounded-[20px] border border-line bg-surface">
                 <Icon size={26} color={colors.brand} />
               </View>
               <Text numberOfLines={2} className="text-center font-medium text-xs text-ink">
@@ -189,7 +192,9 @@ function BuilderHome() {
       hero={
         <>
           <Text className="font-medium text-sm text-white/80">{greeting}</Text>
-          <Text className="mt-1 font-heading text-3xl text-white">Your work</Text>
+          <Text accessibilityRole="header" className="mt-1 font-heading text-3xl text-white">
+            Your work
+          </Text>
           <View className="mt-5 flex-row gap-3">
             <HeroStat value={counted ? String(needsAction.length) : '–'} label="New requests" />
             <HeroStat value={counted ? String(upcoming.length) : '–'} label="Upcoming jobs" />
@@ -210,7 +215,7 @@ function BuilderHome() {
 
       {listing.data && session ? <BuilderOverview builderId={session.userId} listing={listing.data} /> : null}
 
-      <Text className="mb-3 font-heading-semibold text-lg text-ink">New requests</Text>
+      <Text accessibilityRole="header" className="mb-3 font-heading text-lg text-ink">New requests</Text>
       {bookings.isLoading ? (
         <ListSkeleton count={2} />
       ) : bookings.isError ? (
@@ -256,7 +261,6 @@ function BuilderOverview({ builderId, listing }: { builderId: string; listing: O
   const reviews = useBuilderReviews(builderId);
   const reviewCount = reviews.data?.length ?? 0;
   const rating = averageRating(reviews.data ?? []) ?? listing.rating;
-  const responseTime = formatResponseTime(listing.responseTimeMinutes);
 
   const toggle = (available: boolean) =>
     setAvailability.mutate(available, {
@@ -267,27 +271,34 @@ function BuilderOverview({ builderId, listing }: { builderId: string; listing: O
 
   return (
     <View className="mb-8">
-      <View className="flex-row items-center gap-4 rounded-3xl border border-line bg-surface p-4">
-        <View className="flex-1">
-          <Text className="font-bold text-base text-ink">Taking new jobs</Text>
-          <Text className="mt-0.5 font-body text-sm text-muted">
-            {listing.available ? 'Customers can send you booking requests.' : 'Paused. Customers can see you but can’t book.'}
-          </Text>
+      <View className="rounded-3xl border border-line bg-surface p-5" style={CARD_SHADOW}>
+        <View className="flex-row items-center gap-4">
+          <View className="flex-1">
+            <View className={`flex-row items-center gap-1.5 self-start rounded-full px-2.5 py-1 ${listing.available ? 'bg-brand-soft' : 'bg-subtle'}`}>
+              <View className={`h-2 w-2 rounded-full ${listing.available ? 'bg-primary' : 'bg-faint'}`} />
+              <Text className={`font-bold text-xs ${listing.available ? 'text-brand' : 'text-muted'}`}>
+                {listing.available ? 'Available for new jobs' : 'New requests paused'}
+              </Text>
+            </View>
+            <Text className="mt-2 font-body text-sm text-muted">
+              {listing.available ? 'Customers can send you booking requests.' : 'Customers can see you but can’t book.'}
+            </Text>
+          </View>
+          <Switch
+            accessibilityLabel="Taking new jobs"
+            value={listing.available}
+            disabled={setAvailability.isPending}
+            onValueChange={toggle}
+            trackColor={{ true: colors.primary, false: colors.line }}
+            thumbColor={colors.surface}
+          />
         </View>
-        <Switch
-          accessibilityLabel="Taking new jobs"
-          value={listing.available}
-          disabled={setAvailability.isPending}
-          onValueChange={toggle}
-          trackColor={{ true: colors.primary, false: colors.line }}
-          thumbColor={colors.surface}
-        />
-      </View>
 
-      <View className="mt-3 flex-row gap-3">
-        <MiniStat icon={<Star size={18} color={colors.star} fill={colors.star} />} value={reviewCount ? rating.toFixed(1) : '–'} label={reviewCount === 1 ? '1 review' : `${reviewCount} reviews`} />
-        <MiniStat icon={<Trophy size={18} color={colors.brand} />} value={String(listing.completedJobs)} label="Jobs done" />
-        <MiniStat icon={<Timer size={18} color={colors.brand} />} value={responseTime ? responseTime.replace('Usually replies within ', '< ') : '–'} label="Reply time" />
+        <View className="mt-4 flex-row gap-2">
+          <MiniStat icon={<Star size={15} color={colors.star} fill={colors.star} />} value={reviewCount ? rating.toFixed(1) : '–'} label={reviewCount === 1 ? '1 review' : `${reviewCount} reviews`} />
+          <MiniStat value={String(listing.completedJobs)} label="Jobs done" />
+          <MiniStat value={shortReply(listing.responseTimeMinutes) ?? '–'} label="Replies in" />
+        </View>
       </View>
 
       {reviews.data && reviews.data.length > 0 ? (
@@ -306,7 +317,7 @@ function BuilderOverview({ builderId, listing }: { builderId: string; listing: O
                     ))}
                   </View>
                 </View>
-                <Text numberOfLines={3} className="mt-2 font-body text-sm text-muted">
+                <Text numberOfLines={3} className="mt-2 font-body text-sm text-ink">
                   {review.comment}
                 </Text>
               </View>
@@ -318,14 +329,26 @@ function BuilderOverview({ builderId, listing }: { builderId: string; listing: O
   );
 }
 
-function MiniStat({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
+/** "~45 min", "~2 h", "~1 day", matching the profile's stat tile. */
+function shortReply(minutes: number | null): string | null {
+  if (minutes == null) return null;
+  if (minutes < 60) return `~${Math.max(5, Math.round(minutes / 5) * 5)} min`;
+  const hours = Math.round(minutes / 60);
+  return hours < 24 ? `~${hours} h` : `~${Math.round(hours / 24)} d`;
+}
+
+const CARD_SHADOW = { elevation: 3, shadowColor: '#10201E', shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } };
+
+function MiniStat({ icon, value, label }: { icon?: React.ReactNode; value: string; label: string }) {
   return (
-    <View className="flex-1 items-center rounded-3xl border border-line bg-surface px-2 py-3">
-      {icon}
-      <Text numberOfLines={1} className="mt-1 font-heading-semibold text-base text-ink">
-        {value}
-      </Text>
-      <Text numberOfLines={1} className="font-body text-xs text-muted">
+    <View accessible accessibilityLabel={`${label}: ${value}`} className="flex-1 items-center rounded-2xl bg-canvas px-1 py-3">
+      <View className="flex-row items-center gap-1">
+        {icon}
+        <Text numberOfLines={1} adjustsFontSizeToFit className="font-heading text-xl text-ink">
+          {value}
+        </Text>
+      </View>
+      <Text numberOfLines={1} className="mt-0.5 font-body text-xs text-muted">
         {label}
       </Text>
     </View>

@@ -20,7 +20,7 @@ export function ScreenHeader({ title, right, onHero = false }: Props) {
       <HeaderButton label="Go back" onHero={onHero} onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}>
         <ChevronLeft color={onHero ? '#FFFFFF' : colors.ink} size={24} />
       </HeaderButton>
-      <Text numberOfLines={1} className={`flex-1 px-1 font-heading-semibold text-lg ${onHero ? 'text-white' : 'text-ink'}`}>
+      <Text numberOfLines={1} className={`flex-1 px-1 font-heading text-lg ${onHero ? 'text-white' : 'text-ink'}`}>
         {title}
       </Text>
       {right}

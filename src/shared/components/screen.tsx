@@ -3,7 +3,10 @@ import { setStatusBarStyle } from 'expo-status-bar';
 import { useCallback, type ReactNode } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { CONTENT_MAX_WIDTH } from '@/shared/hooks/use-layout';
 import { useThemeColors } from '@/shared/theme';
+
+const contentStyle = { width: '100%', maxWidth: CONTENT_MAX_WIDTH, alignSelf: 'center' } as const;
 
 type Props = {
   children: ReactNode;
@@ -58,10 +61,21 @@ export function Screen({ children, header, hero, footer, onRefresh, refreshing =
             ) : undefined
           }
         >
-          {hero ? <View className={`rounded-b-3xl bg-hero px-5 pb-6 ${header ? 'pt-1' : 'pt-4'}`}>{hero}</View> : null}
-          <View className={`flex-grow px-5 pb-6 ${header && !hero ? 'pt-2' : 'pt-5'}`}>{children}</View>
+          {hero ? (
+            <View className={`rounded-b-3xl bg-hero px-5 pb-6 ${header ? 'pt-1' : 'pt-4'}`}>
+              <View style={contentStyle}>{hero}</View>
+            </View>
+          ) : null}
+          {/* Centred at a readable width on tablets and web; full width on phones. */}
+          <View style={contentStyle} className={`flex-grow px-5 pb-6 ${header && !hero ? 'pt-2' : 'pt-5'}`}>
+            {children}
+          </View>
         </ScrollView>
-        {footer ? <View className="border-t border-line bg-surface px-5 py-3">{footer}</View> : null}
+        {footer ? (
+          <View className="border-t border-line bg-surface px-5 py-3">
+            <View style={contentStyle}>{footer}</View>
+          </View>
+        ) : null}
       </SafeAreaView>
     </View>
   );

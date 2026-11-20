@@ -3,13 +3,17 @@ import {
   doc,
   getDoc,
   getDocs,
+  increment,
   query,
+  runTransaction,
   serverTimestamp,
   setDoc,
   updateDoc,
   where,
+  type DocumentReference,
   type Timestamp,
 } from 'firebase/firestore';
+import { formatShortDate, notifyUser } from '@/features/notifications/push-service';
 import { firebaseDb } from '@/shared/services/firebase';
 
 export type BookingStatus = 'pending' | 'accepted' | 'declined' | 'cancelled' | 'completed';
@@ -151,6 +155,14 @@ export async function createBooking(input: CreateBookingInput): Promise<string> 
     created_at: serverTimestamp(),
     updated_at: serverTimestamp(),
   });
+  void notifyUser({
+    senderId: input.customerId,
+    recipientId: input.builderId,
+    bookingId: ref.id,
+    title: 'New booking request',
+    body: `${customerName} needs a ${input.service.toLowerCase()} on ${formatShortDate(input.preferredDate)}.`,
+    data: { bookingId: ref.id },
+  });
   return ref.id;
 }
 
@@ -182,22 +194,126 @@ export type BookingAction =
 
 const optionalText = (text: string) => (text.trim() ? text.trim() : null);
 
-export async function applyBookingAction(bookingId: string, action: BookingAction): Promise<void> {
-  const ref = doc(requireDb(), 'bookings', bookingId);
-  const updated_at = serverTimestamp();
+/** The booking fields each action changes (matches the security rules). */
+function changesFor(action: BookingAction): Partial<BookingDocument> {
   switch (action.type) {
     case 'accept':
-      return updateDoc(ref, { status: 'accepted', quote_amount: action.quoteAmount, proposed_date: null, updated_at });
+      return { status: 'accepted', quote_amount: action.quoteAmount, proposed_date: null };
     case 'decline':
-      return updateDoc(ref, { status: 'declined', decline_reason: optionalText(action.reason), proposed_date: null, updated_at });
+      return { status: 'declined', decline_reason: optionalText(action.reason), proposed_date: null };
     case 'propose':
-      return updateDoc(ref, { proposed_date: action.date, quote_amount: action.quoteAmount, updated_at });
+      return { proposed_date: action.date, quote_amount: action.quoteAmount };
     case 'complete':
-      return updateDoc(ref, { status: 'completed', updated_at });
+      return { status: 'completed' };
     case 'cancel':
-      return updateDoc(ref, { status: 'cancelled', cancel_reason: optionalText(action.reason), updated_at });
+      return { status: 'cancelled', cancel_reason: optionalText(action.reason) };
     case 'acceptProposal':
-      return updateDoc(ref, { status: 'accepted', preferred_date: action.date, proposed_date: null, updated_at });
+      return { status: 'accepted', preferred_date: action.date, proposed_date: null };
+  }
+}
+
+/**
+ * Update the booking and the builder's stats in one transaction; the rules
+ * only accept the stats change alongside the booking change it counts. If
+ * the stats are refused (e.g. the phone's clock is far off), the booking
+ * change still goes through on its own: it matters more than the stat.
+ */
+async function updateWithStats(
+  bookingRef: DocumentReference,
+  changes: Record<string, unknown>,
+  builderId: string,
+  stats: (builder: Record<string, unknown>) => Record<string, unknown>,
+): Promise<void> {
+  const db = requireDb();
+  const builderRef = doc(db, 'builders', builderId);
+  try {
+    await runTransaction(db, async (transaction) => {
+      const builder = await transaction.get(builderRef);
+      transaction.update(bookingRef, changes);
+      if (builder.exists()) transaction.update(builderRef, stats(builder.data()));
+    });
+  } catch (error) {
+    console.warn('Saving builder stats failed; saving the booking change alone:', error);
+    await updateDoc(bookingRef, changes);
+  }
+}
+
+export async function applyBookingAction(bookingId: string, action: BookingAction): Promise<void> {
+  const db = requireDb();
+  const ref = doc(db, 'bookings', bookingId);
+  const snapshot = await getDoc(ref);
+  if (!snapshot.exists()) throw new Error('This booking no longer exists.');
+  const before = snapshot.data() as BookingDocument;
+  const changes = { ...changesFor(action), updated_at: serverTimestamp() };
+
+  const isBuilderReply = action.type === 'accept' || action.type === 'decline' || action.type === 'propose';
+  const firstReply = isBuilderReply && before.status === 'pending' && !before.proposed_date;
+
+  if (firstReply && before.created_at) {
+    // Running average of how fast the builder replies to new requests.
+    const minutes = Math.max(0, Math.round((Date.now() - before.created_at.toMillis()) / 60_000));
+    await updateWithStats(ref, changes, before.builder_id, (builder) => {
+      const count = (builder.response_count as number | undefined) ?? 0;
+      const average = (builder.response_time_minutes as number | null | undefined) ?? 0;
+      return {
+        response_time_minutes: Math.round((average * count + minutes) / (count + 1)),
+        response_count: count + 1,
+        last_response_booking_id: bookingId,
+      };
+    });
+  } else if (action.type === 'complete') {
+    await updateWithStats(ref, changes, before.builder_id, () => ({
+      completed_jobs: increment(1),
+      last_completed_booking_id: bookingId,
+    }));
+  } else {
+    await updateDoc(ref, changes);
+  }
+
+  const after = { ...before, ...changesFor(action) } as BookingDocument;
+  if (after.status !== before.status) {
+    // Keep the inbox in step. Fails harmlessly when nobody has messaged yet.
+    updateDoc(doc(db, 'conversations', bookingId), { status: after.status }).catch(() => undefined);
+  }
+  void notifyBookingChange(bookingId, before, after);
+}
+
+/** Tell the other party what just happened to their booking. */
+function notifyBookingChange(bookingId: string, before: BookingDocument, after: BookingDocument): Promise<void> {
+  const data = { bookingId };
+  const toCustomer = (title: string, body: string) =>
+    notifyUser({ senderId: after.builder_id, recipientId: after.customer_id, bookingId, title, body, data });
+  const toBuilder = (title: string, body: string) =>
+    notifyUser({ senderId: after.customer_id, recipientId: after.builder_id, bookingId, title, body, data });
+  const quote = after.quote_amount != null ? ` Quote: ${formatMoney(after.quote_amount)}.` : '';
+
+  if (before.status === after.status) {
+    if (after.proposed_date && after.proposed_date !== before.proposed_date) {
+      return toCustomer('New date proposed', `${after.builder_name} can do ${formatShortDate(after.proposed_date)} instead.${quote}`);
+    }
+    return Promise.resolve();
+  }
+  switch (after.status) {
+    case 'accepted':
+      return before.proposed_date
+        ? toBuilder('New date agreed', `${after.customer_name} agreed to ${formatShortDate(after.preferred_date)}. The job is confirmed.`)
+        : toCustomer('Booking accepted', `${after.builder_name} accepted your ${after.service.toLowerCase()} request.${quote}`);
+    case 'declined':
+      return toCustomer(
+        'Booking declined',
+        after.decline_reason
+          ? `${after.builder_name} declined: “${after.decline_reason}”`
+          : `${after.builder_name} can’t take this job. Try another professional.`,
+      );
+    case 'cancelled':
+      return toBuilder(
+        'Booking cancelled',
+        after.cancel_reason ? `${after.customer_name} cancelled: “${after.cancel_reason}”` : `${after.customer_name} cancelled their booking.`,
+      );
+    case 'completed':
+      return toCustomer('Job completed', `${after.builder_name} marked the job as done. Leave a review to help others.`);
+    default:
+      return Promise.resolve();
   }
 }
 

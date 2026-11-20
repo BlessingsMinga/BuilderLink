@@ -182,7 +182,7 @@ function Step({ number, title, children }: { number: number; title: string; chil
         <View className="h-6 w-6 items-center justify-center rounded-full bg-subtle">
           <Text className="font-semibold text-xs text-muted">{number}</Text>
         </View>
-        <Text className="font-heading-semibold text-lg text-ink">{title}</Text>
+        <Text className="font-heading text-lg text-ink">{title}</Text>
       </View>
       {children}
     </View>

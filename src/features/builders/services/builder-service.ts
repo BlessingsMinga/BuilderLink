@@ -18,6 +18,10 @@ export type BuilderSummary = {
   available: boolean;
   /** Average minutes to reply to a request, once known. */
   responseTimeMinutes: number | null;
+  /** The builder's own description of their work. */
+  bio: string | null;
+  /** The person's name, when the listing is shown under a business name. */
+  personName: string | null;
 };
 
 type BuilderDocument = {
@@ -48,6 +52,8 @@ const toSummary = (raw: BuilderDocument): BuilderSummary => {
     verified: raw.verification_status === 'verified',
     available: raw.available ?? true,
     responseTimeMinutes: raw.response_time_minutes ?? null,
+    bio: raw.bio?.trim() || null,
+    personName: raw.business_name && raw.display_name ? raw.display_name : null,
   };
 };
 

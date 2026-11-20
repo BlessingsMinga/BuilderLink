@@ -1,33 +1,41 @@
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, type Href } from 'expo-router';
 import type { ImagePickerAsset } from 'expo-image-picker';
-import { ImagePlus, MessageCircle, SendHorizontal, X } from 'lucide-react-native';
+import { CheckCheck, ChevronLeft, ImagePlus, MessageCircle, SendHorizontal, X } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Image, KeyboardAvoidingView, Modal, Platform, Pressable, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
 import { useBooking, useBookingMessages, useConversation, useSendMessage, useSendPhoto } from '@/features/bookings/hooks/use-bookings';
+import { formatBookingDate } from '@/features/bookings/services/booking-service';
 import type { ChatMessage } from '@/features/bookings/services/chat-service';
 import { markConversationRead } from '@/features/bookings/services/conversation-service';
 import { PhotoPermissionDenied, PickCancelled, pickPhoto, thumbnailUrl } from '@/features/portfolio/services/portfolio-service';
 import { Protected } from '@/shared/components/protected';
-import { ScreenHeader } from '@/shared/components/screen-header';
+import { HeaderButton } from '@/shared/components/screen-header';
 import { EmptyState, ErrorState, ErrorText } from '@/shared/components/states';
 import { failureMessage } from '@/shared/components/toast';
+import { CONTENT_MAX_WIDTH, useLayout } from '@/shared/hooks/use-layout';
 import { useThemeColors } from '@/shared/theme';
 
 const formatTime = (date: Date) => date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 const formatDay = (date: Date) => date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+const STATUS_LABEL = { pending: 'Requested', accepted: 'Accepted', declined: 'Declined', cancelled: 'Cancelled', completed: 'Completed' } as const;
+/** On tablets and web, the conversation is centred at a readable width. */
+const columnStyle = { width: '100%', maxWidth: CONTENT_MAX_WIDTH, alignSelf: 'center' } as const;
 
 export default function Chat() {
   const colors = useThemeColors();
+  const { width } = useLayout();
+  // Photo thumbnails scale with the screen, within sensible limits.
+  const photoSize = Math.round(Math.min(280, Math.max(180, Math.min(width, CONTENT_MAX_WIDTH) * 0.6)));
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
   const session = useAuthStore((state) => state.session);
   const booking = useBooking(bookingId);
   const { messages, error, isLoading } = useBookingMessages(bookingId);
-  const send = useSendMessage(bookingId, session?.userId);
+  const send = useSendMessage(booking.data, session?.userId);
   const [draft, setDraft] = useState('');
   const [sendError, setSendError] = useState<string | null>(null);
-  const sendPhoto = useSendPhoto(bookingId, session?.userId);
+  const sendPhoto = useSendPhoto(booking.data, session?.userId);
   const [photo, setPhoto] = useState<ImagePickerAsset | null>(null);
   const [openPhoto, setOpenPhoto] = useState<string | null>(null);
   const list = useRef<FlatList<ChatMessage>>(null);
@@ -111,7 +119,38 @@ export default function Chat() {
     <Protected>
       <View className="flex-1 bg-canvas">
         <SafeAreaView edges={['top']} className="bg-canvas" />
-        <ScreenHeader title={otherName || 'Messages'} />
+        <View className="border-b border-line bg-surface">
+          <View style={columnStyle} className="h-16 flex-row items-center gap-2 px-2">
+            <HeaderButton label="Go back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/messages' as Href))}>
+              <ChevronLeft color={colors.ink} size={24} />
+            </HeaderButton>
+            {otherName ? (
+              <View className="h-10 w-10 items-center justify-center rounded-full bg-brand-soft">
+                <Text className="font-heading text-base text-brand">{otherName.charAt(0).toUpperCase()}</Text>
+              </View>
+            ) : null}
+            <View className="flex-1">
+              <Text numberOfLines={1} accessibilityRole="header" className="font-heading text-base text-ink">
+                {otherName || 'Messages'}
+              </Text>
+              {booking.data ? (
+                <Text numberOfLines={1} className="font-body text-xs text-muted">
+                  {booking.data.service} · {STATUS_LABEL[booking.data.status]} · {formatBookingDate(booking.data.preferredDate)}
+                </Text>
+              ) : null}
+            </View>
+            {booking.data ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="View booking"
+                onPress={() => router.push(`/bookings/${booking.data!.id}` as Href)}
+                className="mr-2 h-11 justify-center rounded-full border border-line px-3 active:bg-subtle"
+              >
+                <Text className="font-semibold text-sm text-ink">Booking</Text>
+              </Pressable>
+            ) : null}
+          </View>
+        </View>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
           {error || booking.isError ? (
             <View className="p-5">
@@ -126,7 +165,8 @@ export default function Chat() {
               ref={list}
               data={messages}
               keyExtractor={(message) => message.id}
-              contentContainerClassName="flex-grow gap-2 px-5 py-4"
+              contentContainerClassName="flex-grow gap-2 px-4 py-4"
+              contentContainerStyle={columnStyle}
               onContentSizeChange={() => list.current?.scrollToEnd({ animated: true })}
               ListEmptyComponent={
                 <View className="flex-1 justify-center">
@@ -146,24 +186,39 @@ export default function Chat() {
                     {showDay && item.createdAt ? (
                       <Text className="my-2 text-center font-medium text-xs text-faint">{formatDay(item.createdAt)}</Text>
                     ) : null}
-                    <View className={`max-w-[80%] rounded-2xl px-4 py-2 ${mine ? 'self-end rounded-br-md bg-primary' : 'self-start rounded-bl-md border border-line bg-surface'}`}>
+                    <View
+                      className={`max-w-[80%] rounded-3xl ${item.imageUrl ? 'p-1.5' : 'px-4 py-2.5'} ${mine ? 'self-end rounded-br-md bg-primary' : 'self-start rounded-bl-md border border-line bg-surface'}`}
+                    >
                       {item.imageUrl ? (
                         <Pressable
                           accessibilityRole="imagebutton"
-                          accessibilityLabel="Open photo"
+                          accessibilityLabel={item.text ? `Photo: ${item.text}. Open full screen` : 'Open photo full screen'}
                           onPress={() => setOpenPhoto(item.imageUrl)}
-                          className="-mx-2 mb-1 mt-0.5 active:opacity-80"
+                          className="active:opacity-80"
                         >
-                          <Image source={{ uri: thumbnailUrl(item.imageUrl, 600) }} className="h-56 w-56 rounded-xl bg-subtle" />
+                          <Image
+                            source={{ uri: thumbnailUrl(item.imageUrl, 600) }}
+                            style={{ width: photoSize, height: Math.round(photoSize * 0.85) }}
+                            className="rounded-[18px] bg-subtle"
+                          />
                         </Pressable>
                       ) : null}
-                      {item.text ? (
-                        <Text className={`font-body text-base ${mine ? 'text-on-primary' : 'text-ink'}`}>{item.text}</Text>
-                      ) : null}
-                      <Text className={`mt-0.5 text-right font-body text-xs ${mine ? 'text-on-primary/70' : 'text-faint'}`}>
-                        {item.pending ? 'Sending…' : item.createdAt ? formatTime(item.createdAt) : ''}
-                        {item.id === seenId ? ' · Seen' : ''}
-                      </Text>
+                      <View className={item.imageUrl ? 'px-2.5 pb-1 pt-1.5' : ''} style={item.imageUrl ? { maxWidth: photoSize } : undefined}>
+                        {item.text ? (
+                          <Text className={`font-body text-base leading-6 ${mine ? 'text-on-primary' : 'text-ink'}`}>{item.text}</Text>
+                        ) : null}
+                        <View className="mt-0.5 flex-row items-center justify-end gap-1">
+                          <Text className={`font-body text-xs ${mine ? 'text-on-primary/80' : 'text-muted'}`}>
+                            {item.pending ? 'Sending…' : item.createdAt ? formatTime(item.createdAt) : ''}
+                          </Text>
+                          {item.id === seenId ? (
+                            <View accessible accessibilityLabel="Seen" className="flex-row items-center gap-0.5">
+                              <CheckCheck size={15} color={colors.onPrimary} />
+                              <Text className="font-semibold text-xs text-on-primary">Seen</Text>
+                            </View>
+                          ) : null}
+                        </View>
+                      </View>
                     </View>
                   </View>
                 );
@@ -171,7 +226,8 @@ export default function Chat() {
             />
           )}
 
-          <SafeAreaView edges={['bottom']} className="border-t border-line bg-surface px-4 py-3">
+          <SafeAreaView edges={['bottom']} className="border-t border-line bg-surface px-3 py-3">
+            <View style={columnStyle}>
             {open ? (
               <>
                 {photo ? (
@@ -238,6 +294,7 @@ export default function Chat() {
                 {booking.data ? 'This booking is closed, so new messages can’t be sent.' : ' '}
               </Text>
             )}
+            </View>
           </SafeAreaView>
         </KeyboardAvoidingView>
 

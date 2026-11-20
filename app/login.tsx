@@ -40,23 +40,35 @@ export default function Login() {
 
   return (
     <Screen>
-      <BrandMark />
-      <Text className="mt-8 font-heading text-3xl text-ink">Welcome back</Text>
-      <Text className="mt-2 font-body text-base text-muted">Sign in to find professionals and manage your bookings.</Text>
+      <View className="flex-row items-center gap-3 pt-4">
+        <BrandMark />
+        <Text className="font-heading text-xl text-ink">BuilderLink</Text>
+      </View>
+      <Text accessibilityRole="header" className="mt-10 font-heading text-3xl text-ink">
+        Welcome back
+      </Text>
+      <Text className="mt-2 font-body text-base text-muted">Log in to find professionals and manage your bookings.</Text>
 
       <View className="mt-8 gap-3">
         <AppButton label="Continue with phone" onPress={() => router.push('/phone-sign-in' as never)} />
         {isGoogleAuthConfigured ? <GoogleSignInButton onSuccess={() => router.replace('/(tabs)')} /> : null}
       </View>
+      {!useEmail ? null : (
+        <View className="mt-6 flex-row items-center gap-3">
+          <View className="h-px flex-1 bg-line" />
+          <Text className="font-body text-sm text-muted">or with email</Text>
+          <View className="h-px flex-1 bg-line" />
+        </View>
+      )}
 
       {useEmail ? (
-        <View className="mt-8 gap-4">
+        <View className="mt-6 gap-4">
           <Controller
             control={control}
             name="identifier"
             render={({ field: { onChange, value } }) => (
               <FormField
-                label="Email address"
+                label="Email"
                 value={value}
                 onChangeText={onChange}
                 autoCapitalize="none"
@@ -86,7 +98,7 @@ export default function Login() {
           <View>
             <ErrorText>{signInError}</ErrorText>
             <View className={signInError ? 'mt-3' : ''}>
-              <AppButton label="Sign in with email" variant="outline" loading={isSubmitting} onPress={handleSubmit(submit)} />
+              <AppButton label="Log in with email" variant="outline" loading={isSubmitting} onPress={handleSubmit(submit)} />
             </View>
           </View>
         </View>
@@ -98,7 +110,7 @@ export default function Login() {
 
       <Text className="mt-8 text-center font-body text-base text-muted">
         New to BuilderLink?{' '}
-        <Text className="font-semibold text-brand" onPress={() => router.push('/register')}>
+        <Text accessibilityRole="link" className="font-semibold text-brand" onPress={() => router.push('/register')}>
           Create an account
         </Text>
       </Text>

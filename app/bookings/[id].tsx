@@ -256,14 +256,14 @@ export default function BookingDetail() {
               <ChevronRight size={20} color={colors.faint} />
             </Pressable>
 
-            <Text className="mb-2 mt-8 font-heading-semibold text-lg text-ink">Work description</Text>
+            <Text className="mb-2 mt-8 font-heading text-lg text-ink">Work description</Text>
             <Text className="font-body text-base text-muted">{booking.description}</Text>
 
             {panel ? (
               <View className="mt-8 gap-4 rounded-2xl border border-line bg-surface p-4">
                 {panel === 'accept' ? (
                   <>
-                    <Text className="font-heading-semibold text-lg text-ink">Accept this request</Text>
+                    <Text className="font-heading text-lg text-ink">Accept this request</Text>
                     <FormField
                       label="Your price in kwacha (optional)"
                       value={quote}
@@ -276,7 +276,7 @@ export default function BookingDetail() {
                 ) : null}
                 {panel === 'propose' ? (
                   <>
-                    <Text className="font-heading-semibold text-lg text-ink">Propose another date</Text>
+                    <Text className="font-heading text-lg text-ink">Propose another date</Text>
                     <Text className="font-body text-sm text-muted">
                       {booking.customerName} asked for {formatBookingDate(booking.preferredDate)}. They can accept your date or cancel.
                     </Text>
@@ -293,7 +293,7 @@ export default function BookingDetail() {
                 ) : null}
                 {panel === 'decline' || panel === 'cancel' ? (
                   <>
-                    <Text className="font-heading-semibold text-lg text-ink">{panel === 'decline' ? 'Decline this request' : 'Cancel this booking'}</Text>
+                    <Text className="font-heading text-lg text-ink">{panel === 'decline' ? 'Decline this request' : 'Cancel this booking'}</Text>
                     <FormField
                       label={`Reason (optional, shared with ${perspective === 'builder' ? booking.customerName : booking.builderName})`}
                       value={reason}

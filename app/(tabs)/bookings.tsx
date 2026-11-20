@@ -32,7 +32,9 @@ export default function Bookings() {
       }}
       hero={
         <>
-          <Text className="font-heading text-3xl text-white">Bookings</Text>
+          <Text accessibilityRole="header" className="font-heading text-3xl text-white">
+            Bookings
+          </Text>
           {isBuilder ? (
             <View className="mt-4 flex-row rounded-2xl bg-white/15 p-1">
               <Segment label="Requests to me" active={perspective === 'builder'} onPress={() => setPerspective('builder')} />
@@ -77,8 +79,8 @@ function Group({ title, bookings, perspective, hint }: { title: string; bookings
   if (bookings.length === 0) return null;
   return (
     <View>
-      <Text className="mb-3 font-heading-semibold text-lg text-ink">
-        {title} <Text className="font-medium text-base text-faint">{bookings.length}</Text>
+      <Text accessibilityRole="header" className="mb-3 font-heading text-lg text-ink">
+        {title} <Text className="font-medium text-base text-muted">{bookings.length}</Text>
       </Text>
       <View className="gap-3">
         {bookings.map((booking) => (

@@ -19,13 +19,17 @@ export function Chip({ label, selected = false, onPress }: ChipProps) {
 
 type AvatarProps = {
   name: string;
-  size?: 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg';
+  /** `tile` is a rounded square, used for builders (as in the profile design); `circle` for people. */
+  shape?: 'circle' | 'tile';
   /** Set when the avatar sits on the coloured hero band. */
   onHero?: boolean;
 };
 
+const AVATAR_SIZE = { sm: 'h-11 w-11', md: 'h-16 w-16', lg: 'h-24 w-24' } as const;
+
 /** Initials in a tinted circle, standing in for a profile photo. */
-export function Avatar({ name, size = 'md', onHero = false }: AvatarProps) {
+export function Avatar({ name, size = 'md', shape = 'circle', onHero = false }: AvatarProps) {
   const initials = name
     .split(/\s+/)
     .filter(Boolean)
@@ -34,9 +38,9 @@ export function Avatar({ name, size = 'md', onHero = false }: AvatarProps) {
     .join('');
   return (
     <View
-      className={`items-center justify-center rounded-full ${onHero ? 'bg-white/20' : 'bg-brand-soft'} ${size === 'lg' ? 'h-24 w-24' : 'h-14 w-14'}`}
+      className={`items-center justify-center ${shape === 'tile' ? (size === 'lg' ? 'rounded-3xl' : 'rounded-[18px]') : 'rounded-full'} ${onHero ? 'bg-white/20' : 'bg-brand-soft'} ${AVATAR_SIZE[size]}`}
     >
-      <Text className={`font-heading ${onHero ? 'text-white' : 'text-brand'} ${size === 'lg' ? 'text-3xl' : 'text-lg'}`}>
+      <Text className={`font-heading ${onHero ? 'text-white' : 'text-brand'} ${size === 'lg' ? 'text-3xl' : size === 'sm' ? 'text-base' : 'text-xl'}`}>
         {initials || '?'}
       </Text>
     </View>
