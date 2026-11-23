@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from 'react-native';
+import { Image, Pressable, Text, View } from 'react-native';
 
 type ChipProps = { label: string; selected?: boolean; onPress?: () => void };
 
@@ -24,12 +24,24 @@ type AvatarProps = {
   shape?: 'circle' | 'tile';
   /** Set when the avatar sits on the coloured hero band. */
   onHero?: boolean;
+  /** Profile photo; initials are shown when absent. */
+  photoUrl?: string | null;
 };
 
 const AVATAR_SIZE = { sm: 'h-11 w-11', md: 'h-16 w-16', lg: 'h-24 w-24' } as const;
 
 /** Initials in a tinted circle, standing in for a profile photo. */
-export function Avatar({ name, size = 'md', shape = 'circle', onHero = false }: AvatarProps) {
+export function Avatar({ name, size = 'md', shape = 'circle', onHero = false, photoUrl }: AvatarProps) {
+  const rounded = shape === 'tile' ? (size === 'lg' ? 'rounded-3xl' : 'rounded-[18px]') : 'rounded-full';
+  if (photoUrl) {
+    const px = size === 'lg' ? 300 : 200;
+    const uri = photoUrl.replace('/image/upload/', `/image/upload/c_fill,g_face,w_${px},h_${px},q_auto,f_auto/`);
+    return (
+      <View className={`overflow-hidden bg-subtle ${rounded} ${AVATAR_SIZE[size]}`}>
+        <Image source={{ uri }} accessibilityLabel={`Photo of ${name}`} className="h-full w-full" />
+      </View>
+    );
+  }
   const initials = name
     .split(/\s+/)
     .filter(Boolean)
@@ -38,7 +50,7 @@ export function Avatar({ name, size = 'md', shape = 'circle', onHero = false }: 
     .join('');
   return (
     <View
-      className={`items-center justify-center ${shape === 'tile' ? (size === 'lg' ? 'rounded-3xl' : 'rounded-[18px]') : 'rounded-full'} ${onHero ? 'bg-white/20' : 'bg-brand-soft'} ${AVATAR_SIZE[size]}`}
+      className={`items-center justify-center ${rounded} ${onHero ? 'bg-white/20' : 'bg-brand-soft'} ${AVATAR_SIZE[size]}`}
     >
       <Text className={`font-heading ${onHero ? 'text-white' : 'text-brand'} ${size === 'lg' ? 'text-3xl' : size === 'sm' ? 'text-base' : 'text-xl'}`}>
         {initials || '?'}

@@ -153,7 +153,7 @@ export default function BuilderDetail() {
             {/* Profile card, pulled up to overlap the hero band. */}
             <View className="-mt-16 rounded-3xl border border-line bg-surface p-5" style={{ elevation: 3, shadowColor: '#10201E', shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } }}>
               <View className="flex-row items-center gap-4">
-                <Avatar name={builder.name} />
+                <Avatar name={builder.name} photoUrl={builder.avatarUrl} />
                 <View className="flex-1">
                   <View className="flex-row flex-wrap items-center gap-x-1.5">
                     <Text accessibilityRole="header" className={`shrink font-heading text-ink ${isCompact ? 'text-lg' : 'text-xl'}`}>
@@ -205,6 +205,26 @@ export default function BuilderDetail() {
                 </View>
               ) : null}
             </Section>
+
+            {builder.serviceAreas.length || builder.languages.length || builder.startingPrice != null || builder.qualifications ? (
+              <Section title="Work details">
+                <View className="overflow-hidden rounded-2xl border border-line bg-surface">
+                  {[
+                    builder.startingPrice != null ? ['Starting from', `MWK ${builder.startingPrice.toLocaleString('en-US')}`] : null,
+                    builder.serviceAreas.length ? ['Also works in', builder.serviceAreas.join(', ')] : null,
+                    builder.languages.length ? ['Languages', builder.languages.join(', ')] : null,
+                    builder.qualifications ? ['Qualifications', builder.qualifications] : null,
+                  ]
+                    .filter((row): row is string[] => row !== null)
+                    .map(([label, value], index) => (
+                      <View key={label} className={`p-4 ${index > 0 ? 'border-t border-line' : ''}`}>
+                        <Text className="font-medium text-xs text-muted">{label}</Text>
+                        <Text className="mt-0.5 font-body text-base text-ink">{value}</Text>
+                      </View>
+                    ))}
+                </View>
+              </Section>
+            ) : null}
 
             <Section
               title="Recent work"

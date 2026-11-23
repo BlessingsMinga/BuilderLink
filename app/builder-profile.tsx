@@ -1,10 +1,11 @@
 import { CheckCircle2, Circle } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
+import { ProfilePhotoPicker } from '@/features/authentication/components/profile-photo-picker';
 import { useProfile } from '@/features/authentication/hooks/use-profile';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
 import { useOwnBuilder, useSaveOwnBuilder } from '@/features/builders/hooks/use-builders';
-import { MALAWI_DISTRICTS, TRADES, type VerificationStatus } from '@/features/builders/services/builder-service';
+import { LANGUAGES, MALAWI_DISTRICTS, TRADES, type VerificationStatus } from '@/features/builders/services/builder-service';
 import { AppButton } from '@/shared/components/app-button';
 import { Chip } from '@/shared/components/chip';
 import { FormField } from '@/shared/components/form-field';
@@ -53,6 +54,10 @@ export default function BuilderProfile() {
   const [district, setDistrict] = useState<string | null>(null);
   const [bio, setBio] = useState('');
   const [trades, setTrades] = useState<string[]>([]);
+  const [serviceAreas, setServiceAreas] = useState<string[]>([]);
+  const [languages, setLanguages] = useState<string[]>([]);
+  const [startingPrice, setStartingPrice] = useState('');
+  const [qualifications, setQualifications] = useState('');
   const [attempted, setAttempted] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -67,6 +72,10 @@ export default function BuilderProfile() {
       setDistrict(listing.data.district);
       setBio(listing.data.bio);
       setTrades(listing.data.trades);
+      setServiceAreas(listing.data.serviceAreas);
+      setLanguages(listing.data.languages);
+      setStartingPrice(listing.data.startingPrice == null ? '' : String(listing.data.startingPrice));
+      setQualifications(listing.data.qualifications);
     }
     setHydrated(true);
   }, [hydrated, listing.data, listing.isLoading, listing.isError]);
@@ -77,10 +86,11 @@ export default function BuilderProfile() {
     years: years.trim() === '' || !Number.isInteger(yearsNumber) || yearsNumber < 0 || yearsNumber > 70 ? 'Enter your years of experience as a whole number.' : null,
     district: district ? null : 'Choose the district you work in.',
     trades: trades.length === 0 ? 'Choose at least one skill.' : null,
+    startingPrice: startingPrice.trim() !== '' && !/^[0-9]{1,9}$/.test(startingPrice.replace(/,/g, '')) ? 'Enter an amount in kwacha, numbers only.' : null,
   };
-  const detailsDone = !errors.businessName && !errors.years && !errors.district;
+  const detailsDone = !errors.businessName && !errors.years && !errors.district && !errors.startingPrice;
   const skillsDone = !errors.trades;
-  const shown = attempted ? errors : { businessName: null, years: null, district: null, trades: null };
+  const shown = attempted ? errors : { businessName: null, years: null, district: null, trades: null, startingPrice: null };
 
   // Trades saved earlier that aren't in the standard list stay selectable.
   const tradeOptions = [...TRADES, ...trades.filter((trade) => !(TRADES as readonly string[]).includes(trade))];
@@ -89,6 +99,10 @@ export default function BuilderProfile() {
     setTrades((current) =>
       current.includes(trade) ? current.filter((item) => item !== trade) : current.length < MAX_TRADES ? [...current, trade] : current,
     );
+  };
+  const toggleIn = (setter: React.Dispatch<React.SetStateAction<string[]>>) => (item: string) => {
+    setSaved(false);
+    setter((current) => (current.includes(item) ? current.filter((value) => value !== item) : [...current, item]));
   };
   // Any edit clears the "saved" confirmation.
   const edit = <T,>(setter: (value: T) => void) => (value: T) => {
@@ -103,7 +117,18 @@ export default function BuilderProfile() {
     try {
       await save.mutateAsync({
         displayName: profile.data?.fullName ?? businessName.trim(),
-        input: { businessName, bio, yearsExperience: yearsNumber, trades, district },
+        input: {
+          businessName,
+          bio,
+          yearsExperience: yearsNumber,
+          trades,
+          district,
+          serviceAreas,
+          languages,
+          startingPrice: startingPrice.trim() ? Number(startingPrice.replace(/,/g, '')) : null,
+          qualifications,
+        },
+        avatarUrl: profile.data?.avatarUrl ?? null,
       });
       setSaved(true);
       toast.success(listing.data ? 'Profile saved.' : 'Profile submitted. We’ll review it shortly.');
@@ -153,6 +178,13 @@ export default function BuilderProfile() {
               ) : null}
             </View>
 
+            {session ? (
+              <View className="mt-8">
+                <ProfilePhotoPicker userId={session.userId} name={businessName || profile.data?.fullName || ''} shape="tile" />
+                <Text className="mt-2 text-center font-body text-xs text-muted">A clear photo of you or your logo helps customers trust you.</Text>
+              </View>
+            ) : null}
+
             <Step title="Your details" done={detailsDone}>
               <View className="gap-4">
                 <FormField
@@ -186,8 +218,48 @@ export default function BuilderProfile() {
                   value={bio}
                   onChangeText={edit(setBio)}
                   multiline
-                  placeholder="Tell customers about the work you do."
+                  placeholder="Tell customers about the work you do, the jobs you enjoy and what makes you reliable."
                   maxLength={1000}
+                />
+              </View>
+            </Step>
+
+            <Step title="More about your work" done={false} optional>
+              <View className="gap-4">
+                <View>
+                  <Text className="mb-1 font-medium text-sm text-ink">Other districts you travel to</Text>
+                  <Text className="mb-2 font-body text-xs text-muted">Customers there will see you can take their job.</Text>
+                  <View className="flex-row flex-wrap gap-2">
+                    {MALAWI_DISTRICTS.filter((item) => item !== district).map((item) => (
+                      <Chip key={item} label={item} selected={serviceAreas.includes(item)} onPress={() => toggleIn(setServiceAreas)(item)} />
+                    ))}
+                  </View>
+                </View>
+                <View>
+                  <Text className="mb-2 font-medium text-sm text-ink">Languages you speak</Text>
+                  <View className="flex-row flex-wrap gap-2">
+                    {LANGUAGES.map((item) => (
+                      <Chip key={item} label={item} selected={languages.includes(item)} onPress={() => toggleIn(setLanguages)(item)} />
+                    ))}
+                  </View>
+                </View>
+                <FormField
+                  label="Starting price (optional)"
+                  prefix="MWK"
+                  value={startingPrice}
+                  onChangeText={edit(setStartingPrice)}
+                  keyboardType="number-pad"
+                  placeholder="e.g. 50000"
+                  maxLength={11}
+                  error={shown.startingPrice}
+                />
+                <FormField
+                  label="Qualifications and training (optional)"
+                  value={qualifications}
+                  onChangeText={edit(setQualifications)}
+                  multiline
+                  placeholder="e.g. Trade Test Grade 1 in Bricklaying, NCIC registered"
+                  maxLength={500}
                 />
               </View>
             </Step>

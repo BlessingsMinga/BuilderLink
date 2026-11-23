@@ -1,5 +1,5 @@
 import { router, type Href } from 'expo-router';
-import { BriefcaseBusiness, CalendarDays, ChevronRight, Heart, LogOut } from 'lucide-react-native';
+import { BriefcaseBusiness, CalendarDays, ChevronRight, Heart, LogOut, UserPen } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { ROLE_LABELS, useProfile } from '@/features/authentication/hooks/use-profile';
@@ -45,7 +45,7 @@ export default function Profile() {
         className="-mt-16 mb-4 flex-row items-center gap-4 rounded-3xl border border-line bg-surface p-5"
         style={{ elevation: 3, shadowColor: '#10201E', shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } }}
       >
-        <Avatar name={profile.isLoading ? '' : name} shape={session?.role === 'builder' ? 'tile' : 'circle'} />
+        <Avatar name={profile.isLoading ? '' : name} shape={session?.role === 'builder' ? 'tile' : 'circle'} photoUrl={profile.data?.avatarUrl} />
         <View className="flex-1">
           <Text numberOfLines={1} className="font-heading text-xl text-ink">
             {profile.isLoading ? ' ' : name}
@@ -64,7 +64,9 @@ export default function Profile() {
       </View>
 
       <View className="overflow-hidden rounded-3xl border border-line bg-surface">
+        <Row icon={<UserPen size={20} color={colors.brand} />} label="Edit profile" onPress={() => router.push('/edit-profile' as Href)} />
         <Row
+          divider
           icon={<CalendarDays size={20} color={colors.brand} />}
           label="My bookings"
           onPress={() => router.push('/(tabs)/bookings' as never)}

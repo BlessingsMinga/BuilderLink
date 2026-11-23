@@ -43,8 +43,8 @@ export function useOwnBuilder(profileId: string | undefined, enabled = true) {
 export function useSaveOwnBuilder(profileId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ displayName, input }: { displayName: string; input: OwnBuilderInput }) =>
-      saveOwnBuilder(profileId!, displayName, input),
+    mutationFn: ({ displayName, input, avatarUrl }: { displayName: string; input: OwnBuilderInput; avatarUrl?: string | null }) =>
+      saveOwnBuilder(profileId!, displayName, input, avatarUrl ?? null),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: buildersKey }),
   });
 }

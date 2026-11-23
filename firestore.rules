@@ -30,6 +30,11 @@ rules_version = '2';
 //   - average_rating: number (required, 0-5)
 //   - completed_jobs: number (required, >= 0)
 //   - response_time_minutes: number (optional, nullable, >= 0)
+//   - avatar_url: string (optional, nullable) - Cloudinary photo URL
+//   - service_areas: string[] (optional, <= 30) - extra districts served
+//   - languages: string[] (optional, <= 10)
+//   - starting_price: int (optional, nullable) - minimum charge in MWK
+//   - qualifications: string (optional, nullable, max 500 chars)
 //
 // Collection: categories
 // Document ID: auto-generated
@@ -167,7 +172,8 @@ function isValidProfile(data) {
 function isValidBuilder(data) {
   return hasRequiredFields(['profile_id', 'years_experience', 'verification_status', 'average_rating', 'completed_jobs']) &&
     hasOnlyAllowedFields(['profile_id', 'business_name', 'bio', 'display_name', 'district', 'trades', 'years_experience', 'verification_status', 'average_rating', 'completed_jobs', 'response_time_minutes', 'response_count', 'available', 'rejection_reason',
-      'rating_sum', 'review_count', 'last_review_id', 'last_completed_booking_id', 'last_response_booking_id']) &&
+      'rating_sum', 'review_count', 'last_review_id', 'last_completed_booking_id', 'last_response_booking_id',
+      'avatar_url', 'service_areas', 'languages', 'starting_price', 'qualifications']) &&
     data.profile_id is string && data.profile_id.size() > 0 && data.profile_id.size() < 128 &&
     isValidOptionalString('business_name', 2, 100) &&
     isValidOptionalString('bio', 1, 1000) &&
@@ -183,7 +189,13 @@ function isValidBuilder(data) {
     (data.get('review_count', 0) is int && data.get('review_count', 0) >= 0) &&
     (data.get('rating_sum', 0) is number && data.get('rating_sum', 0) >= 0) &&
     data.get('available', true) is bool &&
-    isValidOptionalString('rejection_reason', 1, 500);
+    isValidOptionalString('rejection_reason', 1, 500) &&
+    (data.get('avatar_url', null) == null ||
+      (data.avatar_url is string && data.avatar_url.size() <= 500 && data.avatar_url.matches('^https://res[.]cloudinary[.]com/.+'))) &&
+    (!('service_areas' in data) || (data.service_areas is list && data.service_areas.size() <= 30)) &&
+    (!('languages' in data) || (data.languages is list && data.languages.size() <= 10)) &&
+    (data.get('starting_price', null) == null || (data.starting_price is int && data.starting_price >= 0 && data.starting_price <= 1000000000)) &&
+    isValidOptionalString('qualifications', 1, 500);
 }
 
 // Validate category document

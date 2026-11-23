@@ -29,7 +29,7 @@ export default function Search() {
     const text = query.trim().toLowerCase();
     return builders.filter(
       (builder) =>
-        (!district || builder.district === district) &&
+        (!district || builder.district === district || builder.serviceAreas.includes(district)) &&
         (!text || `${builder.name} ${builder.trades.join(' ')}`.toLowerCase().includes(text)),
     );
   }, [builders, district, query]);

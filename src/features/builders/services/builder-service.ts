@@ -22,6 +22,15 @@ export type BuilderSummary = {
   bio: string | null;
   /** The person's name, when the listing is shown under a business name. */
   personName: string | null;
+  /** Profile photo, if the builder added one. */
+  avatarUrl: string | null;
+  /** Other districts the builder travels to. */
+  serviceAreas: string[];
+  languages: string[];
+  /** Typical minimum charge in Malawi kwacha. */
+  startingPrice: number | null;
+  /** Training, certificates and memberships, in the builder's words. */
+  qualifications: string | null;
 };
 
 type BuilderDocument = {
@@ -38,6 +47,11 @@ type BuilderDocument = {
   available?: boolean;
   response_time_minutes?: number | null;
   rejection_reason?: string | null;
+  avatar_url?: string | null;
+  service_areas?: string[];
+  languages?: string[];
+  starting_price?: number | null;
+  qualifications?: string | null;
 };
 
 const toSummary = (raw: BuilderDocument): BuilderSummary => {
@@ -54,6 +68,11 @@ const toSummary = (raw: BuilderDocument): BuilderSummary => {
     responseTimeMinutes: raw.response_time_minutes ?? null,
     bio: raw.bio?.trim() || null,
     personName: raw.business_name && raw.display_name ? raw.display_name : null,
+    avatarUrl: raw.avatar_url ?? null,
+    serviceAreas: raw.service_areas ?? [],
+    languages: raw.languages ?? [],
+    startingPrice: raw.starting_price ?? null,
+    qualifications: raw.qualifications?.trim() || null,
   };
 };
 
@@ -100,9 +119,17 @@ export type OwnBuilder = {
   rating: number;
   completedJobs: number;
   responseTimeMinutes: number | null;
+  avatarUrl: string | null;
+  serviceAreas: string[];
+  languages: string[];
+  startingPrice: number | null;
+  qualifications: string;
 };
 
-export type OwnBuilderInput = Pick<OwnBuilder, 'businessName' | 'bio' | 'yearsExperience' | 'trades' | 'district'>;
+export type OwnBuilderInput = Pick<
+  OwnBuilder,
+  'businessName' | 'bio' | 'yearsExperience' | 'trades' | 'district' | 'serviceAreas' | 'languages' | 'startingPrice' | 'qualifications'
+>;
 
 /** The builder's own listing whatever its verification status, or null if not created yet. */
 export async function fetchOwnBuilder(profileId: string): Promise<OwnBuilder | null> {
@@ -122,6 +149,11 @@ export async function fetchOwnBuilder(profileId: string): Promise<OwnBuilder | n
     rating: raw.average_rating,
     completedJobs: raw.completed_jobs,
     responseTimeMinutes: raw.response_time_minutes ?? null,
+    avatarUrl: raw.avatar_url ?? null,
+    serviceAreas: raw.service_areas ?? [],
+    languages: raw.languages ?? [],
+    startingPrice: raw.starting_price ?? null,
+    qualifications: raw.qualifications ?? '',
   };
 }
 
@@ -145,7 +177,12 @@ export function formatResponseTime(minutes: number | null): string | null {
  * Create or update the builder's own listing. New listings start as `pending`
  * and stay hidden from customers until an administrator verifies them.
  */
-export async function saveOwnBuilder(profileId: string, displayName: string, input: OwnBuilderInput): Promise<void> {
+export async function saveOwnBuilder(
+  profileId: string,
+  displayName: string,
+  input: OwnBuilderInput,
+  avatarUrl: string | null = null,
+): Promise<void> {
   if (!firebaseDb) throw new Error('Firestore is not configured.');
   const ref = doc(firebaseDb, 'builders', profileId);
   const editable = {
@@ -154,6 +191,10 @@ export async function saveOwnBuilder(profileId: string, displayName: string, inp
     years_experience: input.yearsExperience,
     trades: input.trades,
     district: input.district,
+    service_areas: input.serviceAreas.filter((area) => area !== input.district),
+    languages: input.languages,
+    starting_price: input.startingPrice,
+    qualifications: input.qualifications.trim() || null,
   };
   const existing = await getDoc(ref);
   if (existing.exists()) {
@@ -166,6 +207,7 @@ export async function saveOwnBuilder(profileId: string, displayName: string, inp
     profile_id: profileId,
     display_name: displayName,
     ...editable,
+    avatar_url: avatarUrl,
     verification_status: 'pending',
     average_rating: 0,
     completed_jobs: 0,
@@ -186,6 +228,9 @@ export const TRADES = [
   'Plasterer',
   'General builder',
 ] as const;
+
+/** Languages a builder can say they work in. */
+export const LANGUAGES = ['English', 'Chichewa', 'Tumbuka', 'Yao', 'Lomwe', 'Sena', 'Tonga'] as const;
 
 /** Districts offered in pickers and filters. */
 export const MALAWI_DISTRICTS = [

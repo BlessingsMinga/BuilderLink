@@ -24,7 +24,7 @@ export function BuilderCard({ builder }: { builder: BuilderSummary }) {
       className="rounded-3xl border border-line bg-surface p-4 active:bg-subtle"
     >
       <View className="flex-row items-center gap-4">
-        <Avatar name={builder.name} shape="tile" />
+        <Avatar name={builder.name} shape="tile" photoUrl={builder.avatarUrl} />
         <View className="flex-1">
           <View className="flex-row items-center gap-1.5">
             <Text numberOfLines={1} className="shrink font-heading text-base text-ink">
