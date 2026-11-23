@@ -34,27 +34,27 @@
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --color-canvas: 10 18 16;
-      --color-surface: 18 28 25;
-      --color-subtle: 26 38 35;
-      --color-line: 37 51 47;
-      --color-ink: 241 246 244;
-      --color-muted: 157 176 170;
-      --color-faint: 106 124 118;
-      --color-brand: 45 212 191;
-      --color-brand-soft: 15 47 42;
-      --color-primary: 20 184 166;
-      --color-on-primary: 3 32 28;
-      --color-hero: 14 79 72;
-      --color-star: 245 158 11;
-      --color-success: 74 222 128;
-      --color-success-soft: 16 38 26;
-      --color-warn: 251 191 36;
-      --color-warn-soft: 51 38 10;
-      --color-danger: 248 113 113;
-      --color-danger-soft: 45 20 20;
-      --color-info: 96 165 250;
-      --color-info-soft: 17 28 48;
+      --color-canvas: 11 18 16;
+      --color-surface: 22 33 28;
+      --color-subtle: 18 27 24;
+      --color-line: 34 50 43;
+      --color-ink: 234 242 238;
+      --color-muted: 154 171 163;
+      --color-faint: 110 130 122;
+      --color-brand: 61 220 151;
+      --color-brand-soft: 22 51 39;
+      --color-primary: 61 220 151;
+      --color-on-primary: 6 20 13;
+      --color-hero: 22 33 28;
+      --color-star: 242 181 68;
+      --color-success: 61 220 151;
+      --color-success-soft: 20 48 34;
+      --color-warn: 242 181 68;
+      --color-warn-soft: 46 38 18;
+      --color-danger: 240 138 126;
+      --color-danger-soft: 46 24 21;
+      --color-info: 125 183 245;
+      --color-info-soft: 19 34 51;
     }
   }
 }

@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { BadgeCheck, Heart, ImageIcon, MapPin, MessageSquareText, Star } from 'lucide-react-native';
+import { BadgeCheck, Bookmark, Check, ImageIcon, MapPin, MessageSquareText, Star } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { Image, Modal, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,16 +26,6 @@ const REVIEW_PREVIEW = 3;
 /** Horizontal page padding (px-5) and grid gap (gap-3). */
 const PAGE_PADDING = 20;
 const GRID_GAP = 12;
-
-/** "~45 min", "~2 h", "~1 day": a compact reply time for the stat tile. */
-function shortResponseTime(minutes: number | null): string | null {
-  if (minutes == null) return null;
-  if (minutes < 60) return `~${Math.max(5, Math.round(minutes / 5) * 5)} min`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `~${hours} h`;
-  const days = Math.round(hours / 24);
-  return `~${days} day${days === 1 ? '' : 's'}`;
-}
 
 /** Average of each detail rating across reviews, in REVIEW_CATEGORIES order. */
 function categoryAverages(reviews: Review[]) {
@@ -68,7 +58,6 @@ export default function BuilderDetail() {
   // Prefer the live average of published reviews over the stored catalogue figure.
   const rating = averageRating(reviewList) ?? builder?.rating ?? 0;
   const categories = useMemo(() => categoryAverages(reviewList), [reviewList]);
-  const replyTime = shortResponseTime(builder?.responseTimeMinutes ?? null);
   const replyText = formatResponseTime(builder?.responseTimeMinutes ?? null);
 
   // Square-ish tiles that fill the content width in 2 (phone) or 3 (wide) columns.
@@ -103,18 +92,15 @@ export default function BuilderDetail() {
         }}
         header={
           <ScreenHeader
-            onHero
             right={
               builder && favoriteIds && !isOwnProfile ? (
-                <HeaderButton onHero label={isSaved ? 'Remove from saved professionals' : 'Save this professional'} onPress={onToggleFavorite}>
-                  <Heart color="#FFFFFF" fill={isSaved ? '#FFFFFF' : 'transparent'} size={22} />
+                <HeaderButton label={isSaved ? 'Remove from saved professionals' : 'Save this professional'} onPress={onToggleFavorite}>
+                  <Bookmark color={isSaved ? colors.brand : colors.ink} fill={isSaved ? colors.brand : 'transparent'} size={21} />
                 </HeaderButton>
               ) : undefined
             }
           />
         }
-        // An empty band the profile card overlaps.
-        hero={<View className="h-16" />}
         footer={
           builder && !isOwnProfile ? (
             <View>
@@ -150,46 +136,62 @@ export default function BuilderDetail() {
           <EmptyState message="This professional isn’t listed any more." actionLabel="Find a professional" onAction={() => router.replace('/(tabs)/search')} />
         ) : (
           <>
-            {/* Profile card, pulled up to overlap the hero band. */}
-            <View className="-mt-16 rounded-3xl border border-line bg-surface p-5" style={{ elevation: 3, shadowColor: '#10201E', shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } }}>
-              <View className="flex-row items-center gap-4">
-                <Avatar name={builder.name} photoUrl={builder.avatarUrl} />
-                <View className="flex-1">
-                  <View className="flex-row flex-wrap items-center gap-x-1.5">
-                    <Text accessibilityRole="header" className={`shrink font-heading text-ink ${isCompact ? 'text-lg' : 'text-xl'}`}>
-                      {builder.name}
-                    </Text>
-                    {builder.verified ? <BadgeCheck accessibilityLabel="Verified professional" size={20} color={colors.onPrimary} fill={colors.brand} /> : null}
-                  </View>
-                  <View className="mt-0.5 flex-row flex-wrap items-center gap-1">
-                    {builder.personName ? <Text className="font-body text-sm text-muted">{builder.personName} ·</Text> : null}
-                    <MapPin size={14} color={colors.muted} />
-                    <Text className="font-body text-sm text-muted">{builder.district ?? 'Malawi'}</Text>
-                  </View>
-                  <View className={`mt-2 flex-row items-center gap-1.5 self-start rounded-full px-2.5 py-1 ${builder.available ? 'bg-brand-soft' : 'bg-subtle'}`}>
-                    <View className={`h-2 w-2 rounded-full ${builder.available ? 'bg-primary' : 'bg-faint'}`} />
-                    <Text className={`font-bold text-xs ${builder.available ? 'text-brand' : 'text-muted'}`}>
-                      {builder.available ? 'Available for new jobs' : 'Not taking new jobs'}
-                    </Text>
-                  </View>
-                </View>
+            {/* Centred identity block. */}
+            <View className="items-center gap-3 pt-2">
+              <Avatar name={builder.name} size="lg" shape="tile" photoUrl={builder.avatarUrl} />
+              <View className="flex-row flex-wrap items-center justify-center gap-x-2">
+                <Text accessibilityRole="header" className={`text-center font-heading text-ink ${isCompact ? 'text-2xl' : 'text-[28px] leading-[34px]'}`}>
+                  {builder.name}
+                </Text>
+                {builder.verified ? <BadgeCheck accessibilityLabel="Verified professional" size={22} color={colors.onPrimary} fill={colors.brand} /> : null}
               </View>
-
-              <View className="mt-5 flex-row gap-2">
-                <StatTile
-                  value={reviewCount ? rating.toFixed(1) : '–'}
-                  label={reviewCount === 1 ? '1 review' : `${reviewCount} reviews`}
-                  icon={<Star size={15} color={colors.star} fill={colors.star} />}
-                />
-                <StatTile value={String(builder.completedJobs)} label="Jobs done" />
-                {replyTime ? (
-                  <StatTile value={replyTime} label="Replies in" />
-                ) : (
-                  <StatTile value={`${builder.experience} yrs`} label="Experience" />
-                )}
+              <View className="flex-row flex-wrap items-center justify-center gap-1">
+                <MapPin size={14} color={colors.muted} />
+                <Text className="text-center font-body text-sm text-muted">
+                  {[builder.trades[0], builder.district ?? 'Malawi'].filter(Boolean).join(' · ')}
+                  {builder.personName ? ` · ${builder.personName}` : ''}
+                </Text>
+              </View>
+              <View className={`flex-row items-center gap-1.5 rounded-[10px] px-2.5 py-1.5 ${builder.available ? 'bg-brand-soft' : 'bg-subtle'}`}>
+                <View className={`h-1.5 w-1.5 rounded-full ${builder.available ? 'bg-primary' : 'bg-faint'}`} />
+                <Text className={`font-semibold text-xs ${builder.available ? 'text-brand' : 'text-muted'}`}>
+                  {builder.available ? 'Available for new jobs' : 'Not taking new jobs'}
+                </Text>
               </View>
             </View>
+
+            <View className="mt-6 flex-row rounded-[20px] border border-line bg-surface">
+              <StatTile value={`${builder.experience} yrs`} label="Experience" />
+              <View className="w-px bg-line" />
+              <StatTile value={String(builder.completedJobs)} label="Jobs on app" />
+              <View className="w-px bg-line" />
+              <StatTile
+                value={reviewCount ? rating.toFixed(1) : '—'}
+                label={reviewCount === 0 ? 'No reviews yet' : reviewCount === 1 ? '1 review' : `${reviewCount} reviews`}
+                icon={reviewCount ? <Star size={15} color={colors.star} fill={colors.star} /> : undefined}
+              />
+            </View>
+            {replyText && builder.available ? (
+              <Text className="mt-3 text-center font-body text-xs text-muted">{replyText}</Text>
+            ) : null}
             <ErrorText>{favoriteError}</ErrorText>
+
+            {builder.verified ? (
+              <Section title="What’s been checked">
+                <View className="gap-2.5 rounded-[20px] border border-line bg-subtle p-4">
+                  <View className="flex-row items-center gap-3">
+                    <Check size={20} color={colors.brand} strokeWidth={2.25} />
+                    <Text className="flex-1 font-body text-sm text-ink">Profile reviewed and verified by BuilderLink</Text>
+                  </View>
+                  {builder.qualifications ? (
+                    <View className="flex-row items-center gap-3">
+                      <Check size={20} color={colors.brand} strokeWidth={2.25} />
+                      <Text className="flex-1 font-body text-sm text-ink">{builder.qualifications}</Text>
+                    </View>
+                  ) : null}
+                </View>
+              </Section>
+            ) : null}
 
             <Section title="About">
               <Text className="font-body text-base leading-6 text-ink">
@@ -208,7 +210,7 @@ export default function BuilderDetail() {
 
             {builder.serviceAreas.length || builder.languages.length || builder.startingPrice != null || builder.qualifications ? (
               <Section title="Work details">
-                <View className="overflow-hidden rounded-2xl border border-line bg-surface">
+                <View className="overflow-hidden rounded-[20px] border border-line bg-subtle">
                   {[
                     builder.startingPrice != null ? ['Starting from', `MWK ${builder.startingPrice.toLocaleString('en-US')}`] : null,
                     builder.serviceAreas.length ? ['Also works in', builder.serviceAreas.join(', ')] : null,
@@ -350,8 +352,8 @@ export default function BuilderDetail() {
 
 function Section({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <View className="mt-8">
-      <View className="mb-3 flex-row items-baseline justify-between gap-3">
+    <View className="mt-6">
+      <View className="mb-2.5 flex-row items-baseline justify-between gap-3">
         <Text accessibilityRole="header" className="font-heading text-lg text-ink">
           {title}
         </Text>
@@ -364,7 +366,7 @@ function Section({ title, action, children }: { title: string; action?: React.Re
 
 function StatTile({ value, label, icon }: { value: string; label: string; icon?: React.ReactNode }) {
   return (
-    <View accessible accessibilityLabel={`${label}: ${value}`} className="flex-1 items-center rounded-2xl bg-canvas px-1 py-3">
+    <View accessible accessibilityLabel={`${label}: ${value}`} className="flex-1 items-center px-2 py-4">
       <View className="flex-row items-center gap-1">
         {icon}
         <Text numberOfLines={1} adjustsFontSizeToFit className="font-heading text-xl text-ink">

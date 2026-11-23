@@ -1,7 +1,9 @@
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import {
   BrickWall,
   CalendarCheck,
+  ChevronDown,
+  Ellipsis,
   Flame,
   Grid3x3,
   Hammer,
@@ -9,8 +11,10 @@ import {
   House,
   Inbox,
   Layers,
+  MapPin,
   PaintRoller,
   Search,
+  SlidersHorizontal,
   Star,
   Wrench,
   Zap,
@@ -27,6 +31,7 @@ import { useBuilders, useOwnBuilder, useSetAvailability } from '@/features/build
 import { TRADES, type OwnBuilder } from '@/features/builders/services/builder-service';
 import { useBuilderReviews } from '@/features/reviews/hooks/use-reviews';
 import { averageRating } from '@/features/reviews/services/review-service';
+import { Avatar } from '@/shared/components/chip';
 import { failureMessage, toast } from '@/shared/components/toast';
 import { Screen } from '@/shared/components/screen';
 import { ListSkeleton } from '@/shared/components/skeleton';
@@ -75,18 +80,29 @@ function SectionTitle({ title, action, onAction }: { title: string; action?: str
   );
 }
 
-/** Customers: search, browse by trade, and the top-rated professionals. */
+/** "Good morning" / "Good afternoon" / "Good evening" from the phone's clock. */
+function timeGreeting(): string {
+  const hour = new Date().getHours();
+  return hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+}
+
+/** The trades shown as tiles on Home; the last tile opens the full list in search. */
+const HOME_TRADES = TRADES.slice(0, 7);
+
+/** Customers: search, their current booking, browse by trade, and top-rated professionals. */
 function CustomerHome() {
   const colors = useThemeColors();
-  const greeting = useGreeting();
   const session = useAuthStore((state) => state.session);
+  const { data: profile } = useProfile(session?.userId);
   const builders = useBuilders();
   const bookings = useBookings(session?.userId, 'customer');
 
+  const firstName = profile && profile.fullName !== 'BuilderLink member' ? profile.fullName.split(/\s+/)[0] : null;
   // The catalogue is sorted by rating, so the first few are the top rated.
   const featured = (builders.data ?? []).slice(0, 4);
   // The customer's next open booking, if they have one.
   const activeBooking = groupBookings(bookings.data ?? [], 'customer', undefined).upcoming[0];
+  const openSearch = (q?: string) => router.push(q ? { pathname: '/(tabs)/search', params: { q } } : '/(tabs)/search');
 
   return (
     <Screen
@@ -95,54 +111,83 @@ function CustomerHome() {
         builders.refetch();
         bookings.refetch();
       }}
-      hero={
-        <>
-          <Text className="font-medium text-sm text-white/80">{greeting}</Text>
-          <Text accessibilityRole="header" className="mt-1 font-heading text-3xl text-white">
-            Find a trusted builder
-          </Text>
-          <Text className="mt-1 font-medium text-sm text-white/85">Verified professionals across Malawi.</Text>
-          <Pressable
-            accessibilityRole="search"
-            onPress={() => router.push('/(tabs)/search')}
-            className="mt-5 h-14 flex-row items-center gap-3 rounded-2xl bg-surface px-4 active:opacity-90"
-          >
-            <Search size={20} color={colors.muted} />
-            <Text className="font-body text-base text-faint">Search a trade or name</Text>
-          </Pressable>
-        </>
-      }
     >
-      {activeBooking ? (
-        <View className="mb-8">
-          <Text accessibilityRole="header" className="mb-3 font-heading text-lg text-ink">Your booking</Text>
-          <BookingCard booking={activeBooking} perspective="customer" />
+      <View className="flex-row items-center gap-3">
+        <Avatar name={profile?.fullName ?? '?'} size="sm" photoUrl={profile?.avatarUrl} />
+        <View className="flex-1">
+          <Text className="font-body text-xs text-muted">{timeGreeting()}</Text>
+          {firstName ? <Text className="font-semibold text-base text-ink">{firstName}</Text> : null}
         </View>
+      </View>
+
+      <Text accessibilityRole="header" className="mt-5 font-heading text-[34px] leading-[36px] tracking-tight text-ink">
+        Find a builder{'\n'}
+        <Text className="text-brand">you can trust.</Text>
+      </Text>
+
+      <View className="mt-5 flex-row gap-2.5">
+        <Pressable
+          accessibilityRole="search"
+          accessibilityLabel="Search trades or builders"
+          onPress={() => openSearch()}
+          className="h-[52px] flex-1 flex-row items-center gap-2.5 rounded-2xl border border-line bg-subtle px-4 active:opacity-80"
+        >
+          <Search size={20} color={colors.muted} />
+          <Text numberOfLines={1} className="flex-1 font-body text-sm text-muted">Plumber, electrician, name…</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Filters"
+          onPress={() => openSearch()}
+          className="h-[52px] w-[52px] items-center justify-center rounded-2xl bg-primary active:opacity-80"
+        >
+          <SlidersHorizontal size={20} color={colors.onPrimary} />
+        </Pressable>
+      </View>
+
+      {profile?.district ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Builders near ${profile.district}`}
+          onPress={() => openSearch(profile.district ?? undefined)}
+          className="mt-5 h-9 flex-row items-center gap-1.5 self-start rounded-full border border-line pl-2.5 pr-3.5 active:bg-subtle"
+        >
+          <MapPin size={16} color={colors.brand} />
+          <Text className="font-medium text-xs text-ink">Near {profile.district}</Text>
+          <ChevronDown size={14} color={colors.muted} />
+        </Pressable>
       ) : null}
 
-      <Text accessibilityRole="header" className="mb-3 font-heading text-lg text-ink">Browse by trade</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-5 flex-grow-0" contentContainerClassName="gap-3 px-5">
-        {TRADES.map((trade) => {
-          const Icon = tradeIcons[trade];
+      {activeBooking ? (
+        <>
+          <SectionTitle title="Your booking" action="Details" onAction={() => router.push(`/bookings/${activeBooking.id}` as Href)} />
+          <BookingCard booking={activeBooking} perspective="customer" />
+        </>
+      ) : null}
+
+      <SectionTitle title="Browse by trade" action="All trades" onAction={() => openSearch()} />
+      <View className="flex-row flex-wrap" style={{ gap: 10 }}>
+        {[...HOME_TRADES, 'More' as const].map((trade) => {
+          const Icon = trade === 'More' ? Ellipsis : tradeIcons[trade];
           return (
             <Pressable
               key={trade}
               accessibilityRole="button"
-              onPress={() => router.push({ pathname: '/(tabs)/search', params: { q: trade } })}
-              className="w-20 items-center gap-2 active:opacity-70"
+              accessibilityLabel={trade === 'More' ? 'All trades' : trade}
+              onPress={() => openSearch(trade === 'More' ? undefined : trade)}
+              style={{ width: '22.5%', flexGrow: 1 }}
+              className="items-center gap-2 rounded-[18px] border border-line bg-subtle px-1 pb-3 pt-3.5 active:opacity-70"
             >
-              <View className="h-16 w-16 items-center justify-center rounded-[20px] border border-line bg-surface">
-                <Icon size={26} color={colors.brand} />
-              </View>
-              <Text numberOfLines={2} className="text-center font-medium text-xs text-ink">
+              <Icon size={26} color={colors.brand} strokeWidth={1.7} />
+              <Text numberOfLines={1} adjustsFontSizeToFit className="text-center font-medium text-xs text-ink">
                 {trade}
               </Text>
             </Pressable>
           );
         })}
-      </ScrollView>
+      </View>
 
-      <SectionTitle title="Top rated" action="See all" onAction={() => router.push('/(tabs)/search')} />
+      <SectionTitle title="Top rated" action="See all" onAction={() => openSearch()} />
       {builders.isLoading ? (
         <ListSkeleton />
       ) : builders.isError ? (
