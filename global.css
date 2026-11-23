@@ -9,19 +9,19 @@
  */
 @layer base {
   :root {
-    --color-canvas: 244 247 246;
+    --color-canvas: 245 247 250;
     --color-surface: 255 255 255;
-    --color-subtle: 233 239 237;
-    --color-line: 221 229 226;
-    --color-ink: 18 32 28;
-    --color-muted: 86 102 96;
-    --color-faint: 143 160 154;
-    --color-brand: 15 118 110;
-    --color-brand-soft: 223 241 238;
-    --color-primary: 15 118 110;
+    --color-subtle: 235 239 245;
+    --color-line: 221 227 236;
+    --color-ink: 11 26 51;
+    --color-muted: 85 98 122;
+    --color-faint: 142 153 173;
+    --color-brand: 1 33 80;
+    --color-brand-soft: 229 235 245;
+    --color-primary: 1 33 80;
     --color-on-primary: 255 255 255;
-    --color-hero: 15 118 110;
-    --color-star: 245 158 11;
+    --color-hero: 1 33 80;
+    --color-star: 249 110 19;
     --color-success: 21 128 61;
     --color-success-soft: 227 245 232;
     --color-warn: 180 83 9;
@@ -34,19 +34,19 @@
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --color-canvas: 11 18 16;
-      --color-surface: 22 33 28;
-      --color-subtle: 18 27 24;
-      --color-line: 34 50 43;
-      --color-ink: 234 242 238;
-      --color-muted: 154 171 163;
-      --color-faint: 110 130 122;
-      --color-brand: 61 220 151;
-      --color-brand-soft: 22 51 39;
-      --color-primary: 61 220 151;
-      --color-on-primary: 6 20 13;
-      --color-hero: 22 33 28;
-      --color-star: 242 181 68;
+      --color-canvas: 7 13 26;
+      --color-surface: 17 26 46;
+      --color-subtle: 13 21 38;
+      --color-line: 31 42 66;
+      --color-ink: 233 238 247;
+      --color-muted: 154 166 189;
+      --color-faint: 108 120 145;
+      --color-brand: 255 138 61;
+      --color-brand-soft: 51 32 15;
+      --color-primary: 249 110 19;
+      --color-on-primary: 255 255 255;
+      --color-hero: 1 33 80;
+      --color-star: 255 138 61;
       --color-success: 61 220 151;
       --color-success-soft: 20 48 34;
       --color-warn: 242 181 68;
