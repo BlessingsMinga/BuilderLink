@@ -18,15 +18,15 @@ export function FormField({ label, error, multiline, prefix, onFocus, onBlur, ..
   const border = error ? 'border border-danger px-4' : focused ? 'border-2 border-primary px-[15px]' : 'border border-line px-4';
   return (
     <View>
-      <Text className="mb-2 font-semibold text-sm text-ink">{label}</Text>
+      <Text className="mb-2 font-medium text-sm text-ink">{label}</Text>
       <View className="flex-row gap-2">
         {prefix ? (
-          <View className="h-14 justify-center rounded-2xl border border-line bg-surface px-3.5">
+          <View className="h-14 justify-center rounded-2xl border border-line bg-subtle px-3.5">
             <Text className="font-semibold text-base text-ink">{prefix}</Text>
           </View>
         ) : null}
         <TextInput
-          className={`min-w-0 flex-1 rounded-2xl bg-surface font-body text-base text-ink ${multiline ? 'h-28 py-3' : 'h-14'} ${border}`}
+          className={`min-w-0 flex-1 rounded-2xl bg-subtle font-body text-base text-ink ${multiline ? 'h-28 py-3' : 'h-14'} ${border}`}
           placeholderTextColor={colors.faint}
           multiline={multiline}
           textAlignVertical={multiline ? 'top' : 'center'}

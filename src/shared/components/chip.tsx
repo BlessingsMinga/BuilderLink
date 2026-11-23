@@ -10,7 +10,7 @@ export function Chip({ label, selected = false, onPress }: ChipProps) {
       accessibilityState={{ selected }}
       hitSlop={4}
       onPress={onPress}
-      className={`h-11 items-center justify-center rounded-full border px-4 ${selected ? 'border-primary bg-primary' : 'border-line bg-surface'}`}
+      className={`h-10 items-center justify-center rounded-full border px-4 ${selected ? 'border-primary bg-primary' : 'border-line bg-transparent'}`}
     >
       <Text className={`text-sm ${selected ? 'font-semibold text-on-primary' : 'font-medium text-ink'}`}>{label}</Text>
     </Pressable>
@@ -28,11 +28,11 @@ type AvatarProps = {
   photoUrl?: string | null;
 };
 
-const AVATAR_SIZE = { sm: 'h-11 w-11', md: 'h-16 w-16', lg: 'h-24 w-24' } as const;
+const AVATAR_SIZE = { sm: 'h-11 w-11', md: 'h-14 w-14', lg: 'h-24 w-24' } as const;
 
 /** Initials in a tinted circle, standing in for a profile photo. */
 export function Avatar({ name, size = 'md', shape = 'circle', onHero = false, photoUrl }: AvatarProps) {
-  const rounded = shape === 'tile' ? (size === 'lg' ? 'rounded-3xl' : 'rounded-[18px]') : 'rounded-full';
+  const rounded = shape === 'tile' ? (size === 'lg' ? 'rounded-[30px]' : size === 'sm' ? 'rounded-2xl' : 'rounded-[18px]') : 'rounded-full';
   if (photoUrl) {
     const px = size === 'lg' ? 300 : 200;
     const uri = photoUrl.replace('/image/upload/', `/image/upload/c_fill,g_face,w_${px},h_${px},q_auto,f_auto/`);
@@ -50,9 +50,9 @@ export function Avatar({ name, size = 'md', shape = 'circle', onHero = false, ph
     .join('');
   return (
     <View
-      className={`items-center justify-center ${rounded} ${onHero ? 'bg-white/20' : 'bg-brand-soft'} ${AVATAR_SIZE[size]}`}
+      className={`items-center justify-center ${rounded} ${onHero ? 'bg-white/20' : shape === 'tile' ? 'bg-primary' : 'bg-brand-soft'} ${AVATAR_SIZE[size]}`}
     >
-      <Text className={`font-heading ${onHero ? 'text-white' : 'text-brand'} ${size === 'lg' ? 'text-3xl' : size === 'sm' ? 'text-base' : 'text-xl'}`}>
+      <Text className={`font-heading ${onHero ? 'text-white' : shape === 'tile' ? 'text-on-primary' : 'text-brand'} ${size === 'lg' ? 'text-3xl' : size === 'sm' ? 'text-base' : 'text-xl'}`}>
         {initials || '?'}
       </Text>
     </View>

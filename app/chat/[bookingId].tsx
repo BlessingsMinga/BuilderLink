@@ -119,7 +119,7 @@ export default function Chat() {
     <Protected>
       <View className="flex-1 bg-canvas">
         <SafeAreaView edges={['top']} className="bg-canvas" />
-        <View className="border-b border-line bg-surface">
+        <View className="border-b border-line bg-canvas">
           <View style={columnStyle} className="h-16 flex-row items-center gap-2 px-2">
             <HeaderButton label="Go back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/messages' as Href))}>
               <ChevronLeft color={colors.ink} size={24} />
@@ -226,7 +226,7 @@ export default function Chat() {
             />
           )}
 
-          <SafeAreaView edges={['bottom']} className="border-t border-line bg-surface px-3 py-3">
+          <SafeAreaView edges={['bottom']} className="border-t border-line bg-canvas px-3 py-3">
             <View style={columnStyle}>
             {open ? (
               <>

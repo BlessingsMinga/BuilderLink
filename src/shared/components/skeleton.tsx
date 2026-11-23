@@ -26,7 +26,7 @@ export function Skeleton({ className = '' }: { className?: string }) {
 /** Placeholder with the outline of a list card. */
 export function CardSkeleton() {
   return (
-    <View className="flex-row gap-4 rounded-3xl border border-line bg-surface p-4">
+    <View className="flex-row gap-4 rounded-[22px] border border-line bg-surface p-4">
       <Skeleton className="h-16 w-16 rounded-[18px]" />
       <View className="flex-1 gap-2.5 pt-1">
         <Skeleton className="h-5 w-2/3" />

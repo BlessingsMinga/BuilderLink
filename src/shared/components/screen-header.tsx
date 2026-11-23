@@ -16,11 +16,11 @@ type Props = {
 export function ScreenHeader({ title, right, onHero = false }: Props) {
   const colors = useThemeColors();
   return (
-    <View className="h-14 flex-row items-center px-2">
+    <View className="h-16 flex-row items-center gap-3.5 px-5">
       <HeaderButton label="Go back" onHero={onHero} onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}>
-        <ChevronLeft color={onHero ? '#FFFFFF' : colors.ink} size={24} />
+        <ChevronLeft color={onHero ? '#FFFFFF' : colors.ink} size={22} />
       </HeaderButton>
-      <Text numberOfLines={1} className={`flex-1 px-1 font-heading text-lg ${onHero ? 'text-white' : 'text-ink'}`}>
+      <Text numberOfLines={1} className={`flex-1 font-semibold text-base ${onHero ? 'text-white' : 'text-ink'}`}>
         {title}
       </Text>
       {right}
@@ -30,14 +30,15 @@ export function ScreenHeader({ title, right, onHero = false }: Props) {
 
 type HeaderButtonProps = { label: string; onPress: () => void; children: ReactNode; onHero?: boolean };
 
-/** A 48pt icon button for the header. */
+/** A 44pt round, bordered icon button for the header. */
 export function HeaderButton({ label, onPress, children, onHero = false }: HeaderButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
-      className={`h-12 w-12 items-center justify-center rounded-full ${onHero ? 'active:bg-white/20' : 'active:bg-subtle'}`}
+      hitSlop={4}
+      className={`h-11 w-11 items-center justify-center rounded-full border ${onHero ? 'border-white/30 active:bg-white/20' : 'border-line bg-subtle active:bg-line'}`}
     >
       {children}
     </Pressable>

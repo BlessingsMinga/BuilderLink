@@ -1,6 +1,4 @@
-import { useFocusEffect } from 'expo-router';
-import { setStatusBarStyle } from 'expo-status-bar';
-import { useCallback, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CONTENT_MAX_WIDTH } from '@/shared/hooks/use-layout';
@@ -13,9 +11,7 @@ type Props = {
   /** Fixed bar above the scrolling content, usually a `<ScreenHeader />`. */
   header?: ReactNode;
   /**
-   * Content for the coloured band at the top of the screen (title, search,
-   * summary). It scrolls with the page and runs up under the status bar.
-   * Text inside it should be white.
+   * The page heading area (title, search, summary). It scrolls with the page.
    */
   hero?: ReactNode;
   /** Pinned below the scrolling content. Use for the screen's one primary action. */
@@ -30,21 +26,13 @@ export function Screen({ children, header, hero, footer, onRefresh, refreshing =
   const colors = useThemeColors();
   const hasHero = Boolean(hero);
 
-  // White status bar icons while a hero screen is in front; back to automatic after.
-  useFocusEffect(
-    useCallback(() => {
-      if (!hasHero) return undefined;
-      setStatusBarStyle('light');
-      return () => setStatusBarStyle('auto');
-    }, [hasHero]),
-  );
 
   return (
     <View className="flex-1 bg-canvas">
       {/* Spacer behind the status bar, coloured to match what sits below it. */}
-      <SafeAreaView edges={['top']} className={hasHero ? 'bg-hero' : 'bg-canvas'} />
+      <SafeAreaView edges={['top']} className="bg-canvas" />
       <SafeAreaView edges={['left', 'right', 'bottom']} className="flex-1">
-        {header ? <View className={hasHero ? 'bg-hero' : ''}>{header}</View> : null}
+        {header ? <View>{header}</View> : null}
         <ScrollView
           contentContainerClassName="flex-grow"
           showsVerticalScrollIndicator={false}
@@ -62,7 +50,7 @@ export function Screen({ children, header, hero, footer, onRefresh, refreshing =
           }
         >
           {hero ? (
-            <View className={`rounded-b-3xl bg-hero px-5 pb-6 ${header ? 'pt-1' : 'pt-4'}`}>
+            <View className={`px-5 pb-1 ${header ? 'pt-1' : 'pt-5'}`}>
               <View style={contentStyle}>{hero}</View>
             </View>
           ) : null}
@@ -72,7 +60,7 @@ export function Screen({ children, header, hero, footer, onRefresh, refreshing =
           </View>
         </ScrollView>
         {footer ? (
-          <View className="border-t border-line bg-surface px-5 py-3">
+          <View className="border-t border-line bg-canvas px-5 pb-4 pt-4">
             <View style={contentStyle}>{footer}</View>
           </View>
         ) : null}

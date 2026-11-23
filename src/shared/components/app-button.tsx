@@ -14,12 +14,12 @@ export function AppButton({ label, onPress, variant = 'primary', loading = false
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       disabled={isDisabled}
       onPress={onPress}
-      className={`h-14 items-center justify-center rounded-2xl border px-5 active:opacity-80 ${isPrimary ? 'border-primary bg-primary' : 'border-line bg-surface'} ${isDisabled ? 'opacity-50' : ''}`}
+      className={`h-14 items-center justify-center rounded-[18px] border px-5 active:opacity-80 ${isPrimary ? 'border-primary bg-primary' : 'border-line bg-transparent'} ${isDisabled ? 'opacity-50' : ''}`}
     >
       {loading ? (
         <ActivityIndicator color={isPrimary ? colors.onPrimary : colors.brand} />
       ) : (
-        <Text className={`font-bold text-base ${isPrimary ? 'text-on-primary' : 'text-ink'}`}>{label}</Text>
+        <Text className={`font-semibold text-base ${isPrimary ? 'text-on-primary' : 'text-ink'}`}>{label}</Text>
       )}
     </Pressable>
   );

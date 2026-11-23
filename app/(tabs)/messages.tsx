@@ -43,21 +43,21 @@ export default function Messages() {
     <Screen
       hero={
         <>
-          <Text accessibilityRole="header" className="font-heading text-3xl text-white">
+          <Text accessibilityRole="header" className="font-heading text-[34px] leading-[38px] tracking-tight text-ink">
             Messages
           </Text>
-          <Text className="mt-1 font-medium text-sm text-white/80">Chats with your customers and builders.</Text>
+          <Text className="mt-1 font-medium text-sm text-muted">Chats with your customers and builders.</Text>
           {conversations?.length ? (
-            <View className="mt-4 h-12 flex-row items-center gap-2 rounded-2xl bg-white/15 px-4">
-              <Search size={18} color="#FFFFFF" />
+            <View className="mt-5 h-[52px] flex-row items-center gap-2.5 rounded-2xl border border-line bg-subtle px-4">
+              <Search size={20} color={colors.muted} />
               <TextInput
                 value={search}
                 onChangeText={setSearch}
                 placeholder="Search by name or job"
-                placeholderTextColor="rgba(255,255,255,0.75)"
+                placeholderTextColor={colors.muted}
                 accessibilityLabel="Search chats"
                 returnKeyType="search"
-                className="h-12 flex-1 font-body text-base text-white"
+                className="h-[52px] flex-1 font-body text-sm text-ink"
               />
             </View>
           ) : null}
@@ -76,7 +76,7 @@ export default function Messages() {
       ) : !filtered?.length ? (
         <EmptyState icon={<Search size={26} color={colors.brand} />} message={`No chats match “${search.trim()}”.`} />
       ) : (
-        <View className="overflow-hidden rounded-3xl border border-line bg-surface">
+        <View className="overflow-hidden rounded-[22px] border border-line bg-surface">
           {filtered.map((item, index) => (
             <Row key={item.bookingId} conversation={item} userId={userId!} divider={index > 0} />
           ))}

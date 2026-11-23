@@ -236,8 +236,8 @@ function BuilderHome() {
       }}
       hero={
         <>
-          <Text className="font-medium text-sm text-white/80">{greeting}</Text>
-          <Text accessibilityRole="header" className="mt-1 font-heading text-3xl text-white">
+          <Text className="font-body text-xs text-muted">{greeting}</Text>
+          <Text accessibilityRole="header" className="mt-1 font-heading text-[34px] leading-[38px] tracking-tight text-ink">
             Your work
           </Text>
           <View className="mt-5 flex-row gap-3">
@@ -316,7 +316,7 @@ function BuilderOverview({ builderId, listing }: { builderId: string; listing: O
 
   return (
     <View className="mb-8">
-      <View className="rounded-3xl border border-line bg-surface p-5" style={CARD_SHADOW}>
+      <View className="rounded-[22px] border border-line bg-surface p-5">
         <View className="flex-row items-center gap-4">
           <View className="flex-1">
             <View className={`flex-row items-center gap-1.5 self-start rounded-full px-2.5 py-1 ${listing.available ? 'bg-brand-soft' : 'bg-subtle'}`}>
@@ -351,7 +351,7 @@ function BuilderOverview({ builderId, listing }: { builderId: string; listing: O
           <SectionTitle title="Latest reviews" />
           <View className="gap-3">
             {reviews.data.slice(0, 3).map((review) => (
-              <View key={review.id} className="rounded-3xl border border-line bg-surface p-4">
+              <View key={review.id} className="rounded-[22px] border border-line bg-surface p-4">
                 <View className="flex-row items-center justify-between gap-3">
                   <Text numberOfLines={1} className="flex-1 font-bold text-base text-ink">
                     {review.customerName}
@@ -382,8 +382,6 @@ function shortReply(minutes: number | null): string | null {
   return hours < 24 ? `~${hours} h` : `~${Math.round(hours / 24)} d`;
 }
 
-const CARD_SHADOW = { elevation: 3, shadowColor: '#10201E', shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } };
-
 function MiniStat({ icon, value, label }: { icon?: React.ReactNode; value: string; label: string }) {
   return (
     <View accessible accessibilityLabel={`${label}: ${value}`} className="flex-1 items-center rounded-2xl bg-canvas px-1 py-3">
@@ -402,9 +400,9 @@ function MiniStat({ icon, value, label }: { icon?: React.ReactNode; value: strin
 
 function HeroStat({ value, label }: { value: string; label: string }) {
   return (
-    <View className="flex-1 rounded-2xl bg-white/15 p-4">
-      <Text className="font-heading text-3xl text-white">{value}</Text>
-      <Text className="font-medium text-sm text-white/80">{label}</Text>
+    <View className="flex-1 rounded-[20px] border border-line bg-surface p-4">
+      <Text className="font-heading text-3xl text-ink">{value}</Text>
+      <Text className="font-body text-xs text-muted">{label}</Text>
     </View>
   );
 }

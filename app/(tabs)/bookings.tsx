@@ -32,16 +32,16 @@ export default function Bookings() {
       }}
       hero={
         <>
-          <Text accessibilityRole="header" className="font-heading text-3xl text-white">
+          <Text accessibilityRole="header" className="font-heading text-[34px] leading-[38px] tracking-tight text-ink">
             Bookings
           </Text>
           {isBuilder ? (
-            <View className="mt-4 flex-row rounded-2xl bg-white/15 p-1">
+            <View className="mt-5 flex-row rounded-2xl border border-line bg-subtle p-1">
               <Segment label="Requests to me" active={perspective === 'builder'} onPress={() => setPerspective('builder')} />
               <Segment label="Sent by me" active={perspective === 'customer'} onPress={() => setPerspective('customer')} />
             </View>
           ) : (
-            <Text className="mt-1 font-medium text-sm text-white/80">Track your requests and jobs.</Text>
+            <Text className="mt-1 font-medium text-sm text-muted">Track your requests and jobs.</Text>
           )}
         </>
       }
@@ -91,16 +91,16 @@ function Group({ title, bookings, perspective, hint }: { title: string; bookings
   );
 }
 
-/** One half of the switch on the hero band. */
+/** One half of the Requests / Sent switch. */
 function Segment({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   return (
     <Pressable
       accessibilityRole="tab"
       accessibilityState={{ selected: active }}
       onPress={onPress}
-      className={`h-11 flex-1 items-center justify-center rounded-xl ${active ? 'bg-white' : ''}`}
+      className={`h-11 flex-1 items-center justify-center rounded-xl ${active ? 'bg-primary' : ''}`}
     >
-      <Text className={`font-semibold text-sm ${active ? 'text-hero' : 'text-white'}`}>{label}</Text>
+      <Text className={`font-semibold text-sm ${active ? 'text-on-primary' : 'text-muted'}`}>{label}</Text>
     </Pressable>
   );
 }

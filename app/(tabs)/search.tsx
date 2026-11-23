@@ -46,16 +46,16 @@ export default function Search() {
       onRefresh={refetch}
       hero={
         <>
-          <Text accessibilityRole="header" className="font-heading text-3xl text-white">
+          <Text accessibilityRole="header" className="font-heading text-[34px] leading-[38px] tracking-tight text-ink">
             Search
           </Text>
-          <Text className="mt-1 font-medium text-sm text-white/85">Verified builders by trade, name or district.</Text>
-          <View className="mt-4 h-14 flex-row items-center gap-3 rounded-2xl bg-surface px-4">
+          <Text className="mt-1 font-medium text-sm text-muted">Verified builders by trade, name or district.</Text>
+          <View className="mt-5 h-[52px] flex-row items-center gap-2.5 rounded-2xl border border-line bg-subtle px-4">
             <SearchIcon size={20} color={colors.muted} />
             <TextInput
               value={query}
               onChangeText={setQuery}
-              className="h-14 flex-1 font-body text-base text-ink"
+              className="h-[52px] flex-1 font-body text-sm text-ink"
               placeholder="Search a trade or name"
               placeholderTextColor={colors.faint}
               returnKeyType="search"

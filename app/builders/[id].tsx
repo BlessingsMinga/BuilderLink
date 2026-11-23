@@ -283,7 +283,7 @@ export default function BuilderDetail() {
               ) : (
                 <View className="gap-3">
                   {categories.length ? (
-                    <View className="gap-3 rounded-3xl border border-line bg-surface p-4">
+                    <View className="gap-3 rounded-[22px] border border-line bg-surface p-4">
                       {categories.map((category) => (
                         <View
                           key={category.key}
@@ -302,7 +302,7 @@ export default function BuilderDetail() {
                   ) : null}
 
                   {visibleReviews.map((review) => (
-                    <View key={review.id} className="rounded-3xl border border-line bg-surface p-4">
+                    <View key={review.id} className="rounded-[22px] border border-line bg-surface p-4">
                       <View className="flex-row items-center justify-between gap-3">
                         <Text numberOfLines={1} className="flex-1 font-bold text-base text-ink">
                           {review.customerName}

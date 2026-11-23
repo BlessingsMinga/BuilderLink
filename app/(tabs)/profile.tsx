@@ -33,18 +33,13 @@ export default function Profile() {
       onRefresh={profile.refetch}
       hero={
         <>
-          <Text accessibilityRole="header" className="font-heading text-3xl text-white">
+          <Text accessibilityRole="header" className="font-heading text-[34px] leading-[38px] tracking-tight text-ink">
             Profile
           </Text>
-          <View className="h-14" />
         </>
       }
     >
-      {/* Identity card overlapping the hero, as in the builder profile design. */}
-      <View
-        className="-mt-16 mb-4 flex-row items-center gap-4 rounded-3xl border border-line bg-surface p-5"
-        style={{ elevation: 3, shadowColor: '#10201E', shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } }}
-      >
+      <View className="mb-4 flex-row items-center gap-4 rounded-[22px] border border-line bg-surface p-[18px]">
         <Avatar name={profile.isLoading ? '' : name} shape={session?.role === 'builder' ? 'tile' : 'circle'} photoUrl={profile.data?.avatarUrl} />
         <View className="flex-1">
           <Text numberOfLines={1} className="font-heading text-xl text-ink">
@@ -63,7 +58,7 @@ export default function Profile() {
         </View>
       </View>
 
-      <View className="overflow-hidden rounded-3xl border border-line bg-surface">
+      <View className="overflow-hidden rounded-[22px] border border-line bg-surface">
         <Row icon={<UserPen size={20} color={colors.brand} />} label="Edit profile" onPress={() => router.push('/edit-profile' as Href)} />
         <Row
           divider
@@ -84,7 +79,7 @@ export default function Profile() {
 
       <Pressable
         onPress={handleSignOut}
-        className="mt-4 h-16 flex-row items-center gap-4 rounded-3xl border border-line bg-surface px-4 active:bg-subtle"
+        className="mt-4 h-16 flex-row items-center gap-4 rounded-[22px] border border-line bg-surface px-4 active:bg-subtle"
       >
         <View className="h-10 w-10 items-center justify-center rounded-xl bg-danger-soft">
           <LogOut size={20} color={colors.danger} />

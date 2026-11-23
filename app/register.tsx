@@ -74,7 +74,7 @@ function RoleCard({ selected, onPress, icon, title, description }: RoleCardProps
       accessibilityState={{ selected }}
       accessibilityLabel={`${title}. ${description}`}
       onPress={onPress}
-      className={`flex-row items-center gap-4 rounded-3xl border-2 bg-surface p-4 active:opacity-90 ${selected ? 'border-primary' : 'border-line'}`}
+      className={`flex-row items-center gap-4 rounded-[22px] border-2 bg-surface p-4 active:opacity-90 ${selected ? 'border-primary' : 'border-line'}`}
     >
       <View className="h-14 w-14 items-center justify-center rounded-2xl bg-brand-soft">{icon}</View>
       <View className="flex-1">
