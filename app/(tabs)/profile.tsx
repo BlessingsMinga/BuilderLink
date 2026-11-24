@@ -1,5 +1,5 @@
 import { router, type Href } from 'expo-router';
-import { BriefcaseBusiness, CalendarDays, ChevronRight, Heart, LogOut, UserPen } from 'lucide-react-native';
+import { BriefcaseBusiness, CalendarDays, ChevronRight, Heart, Info, LogOut, ScrollText, ShieldCheck, UserPen } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { ROLE_LABELS, useProfile } from '@/features/authentication/hooks/use-profile';
@@ -75,6 +75,22 @@ export default function Profile() {
             onPress={() => router.push('/builder-profile')}
           />
         ) : null}
+      </View>
+
+      <View className="mt-4 overflow-hidden rounded-[22px] border border-line bg-surface">
+        <Row icon={<Info size={20} color={colors.brand} />} label="About BuilderLink" onPress={() => router.push('/about' as Href)} />
+        <Row
+          divider
+          icon={<ShieldCheck size={20} color={colors.brand} />}
+          label="Data & privacy"
+          onPress={() => router.push('/legal/privacy' as Href)}
+        />
+        <Row
+          divider
+          icon={<ScrollText size={20} color={colors.brand} />}
+          label="Terms & policies"
+          onPress={() => router.push('/about' as Href)}
+        />
       </View>
 
       <Pressable
