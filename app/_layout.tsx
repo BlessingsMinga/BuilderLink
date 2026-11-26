@@ -8,10 +8,10 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
 import { authService } from '@/features/authentication/services/auth-service';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
 import { usePushNotifications } from '@/features/notifications/notification-service';
+import { BuilderLinkFullScreenLoader } from '@/shared/components/builderlink-loader';
 import { ToastHost } from '@/shared/components/toast';
 import { useThemeColors } from '@/shared/theme';
 import type { AuthSession } from '@/shared/types';
@@ -47,9 +47,8 @@ export default function RootLayout() {
   // carry on with the system font rather than blocking the app.
   if (!sessionReady || (!fontsLoaded && !fontError)) {
     return (
-      <View className="flex-1 items-center justify-center bg-canvas">
-        <ActivityIndicator size="large" color={colors.brand} />
-      </View>
+      // White to match the native splash screen (app.json) it takes over from.
+      <BuilderLinkFullScreenLoader />
     );
   }
 
