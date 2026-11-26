@@ -4,10 +4,11 @@
 // they are would double every notification and stat update; remove the
 // app-side copies first if you ever move back to Cloud Functions (Blaze).
 import { initializeApp } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions';
 import { setGlobalOptions } from 'firebase-functions/v2';
-import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/firestore';
+import { onDocumentCreated, onDocumentUpdated, onDocumentWritten } from 'firebase-functions/v2/firestore';
 
 // Triggers must run in the same region as the named database.
 const DATABASE = 'builderlink';
@@ -105,6 +106,8 @@ export const onBookingUpdated = onDocumentUpdated({ document: 'bookings/{booking
   }
 
   const proposedNow = !before.proposed_date && Boolean(after.proposed_date);
+  // The customer picked a new date; the booking waits for the builder again.
+  const rescheduled = after.status === 'pending' && after.preferred_date !== before.preferred_date;
 
   // The builder's first reply to a request: accept, decline, or a counter-offer.
   const firstReply = before.status === 'pending' && !before.proposed_date && (after.status !== 'pending' || proposedNow);
@@ -113,7 +116,15 @@ export const onBookingUpdated = onDocumentUpdated({ document: 'bookings/{booking
     tasks.push(recordResponseTime(after.builder_id, minutes));
   }
 
-  if (before.status !== after.status) {
+  if (rescheduled) {
+    tasks.push(
+      notify(after.builder_id, {
+        title: 'Booking moved',
+        body: `${after.customer_name} moved their ${after.service.toLowerCase()} booking to ${formatDate(after.preferred_date)}. Please confirm.`,
+        data,
+      }),
+    );
+  } else if (before.status !== after.status) {
     switch (after.status) {
       case 'accepted':
         if (before.proposed_date) {
@@ -199,6 +210,34 @@ async function recordResponseTime(builderId: string, minutes: number): Promise<v
     });
   });
 }
+
+// ---------------------------------------------------------------
+// Verification checks shown on the public profile
+// ---------------------------------------------------------------
+
+/**
+ * When an administrator approves or rejects a verification document, copy the
+ * approved document types (plus a verified phone number) onto the builder's
+ * public listing as `checks`. Builders can't write this field themselves.
+ */
+export const onBuilderDocumentWritten = onDocumentWritten(
+  { document: 'builder_documents/{documentId}', database: DATABASE },
+  async (event) => {
+    const builderId = (event.data?.after.data() ?? event.data?.before.data())?.builder_id as string | undefined;
+    if (!builderId) return;
+    const builderRef = db.collection('builders').doc(builderId);
+    const [documents, user, builder] = await Promise.all([
+      db.collection('builder_documents').where('builder_id', '==', builderId).where('review_status', '==', 'approved').get(),
+      // Firebase Auth only sets phoneNumber after an SMS code is confirmed.
+      getAuth().getUser(builderId).catch(() => null),
+      builderRef.get(),
+    ]);
+    if (!builder.exists) return;
+    const checks = new Set<string>(documents.docs.map((document) => document.get('type') as string));
+    if (user?.phoneNumber) checks.add('phone');
+    await builderRef.update({ checks: [...checks].sort() });
+  },
+);
 
 // ---------------------------------------------------------------
 // Chat

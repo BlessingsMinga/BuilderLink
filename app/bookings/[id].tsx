@@ -27,7 +27,7 @@ import { failureMessage, toast } from '@/shared/components/toast';
 import { useThemeColors } from '@/shared/theme';
 
 /** A reply that needs extra input before it is sent. */
-type Panel = 'accept' | 'decline' | 'propose' | 'cancel';
+type Panel = 'accept' | 'decline' | 'propose' | 'cancel' | 'reschedule';
 
 const SUCCESS: Record<BookingAction['type'], string> = {
   accept: 'Request accepted. The customer has been notified.',
@@ -36,6 +36,7 @@ const SUCCESS: Record<BookingAction['type'], string> = {
   complete: 'Job marked as completed. Nice work!',
   cancel: 'Booking cancelled.',
   acceptProposal: 'New date accepted. Your booking is confirmed.',
+  reschedule: 'Booking moved. We’ll let you know when the builder confirms.',
 };
 
 /** One plain sentence telling the viewer where the booking stands and what happens next. */
@@ -133,12 +134,17 @@ export default function BookingDetail() {
       if (proposedDate === booking.preferredDate) return setPanelError('Pick a different date from the one requested.');
       run({ type: 'propose', date: proposedDate, quoteAmount });
     }
+    if (panel === 'reschedule') {
+      if (!proposedDate) return setPanelError('Choose the new date.');
+      if (proposedDate === booking.preferredDate) return setPanelError('Pick a different date from the current one.');
+      run({ type: 'reschedule', date: proposedDate });
+    }
   };
 
   const busy = bookingAction.isPending;
   let footer: ReactNode;
   if (booking && panel) {
-    const confirmLabel = { accept: 'Accept request', decline: 'Decline request', propose: 'Send new date', cancel: 'Cancel booking' }[panel];
+    const confirmLabel = { accept: 'Accept request', decline: 'Decline request', propose: 'Send new date', cancel: 'Cancel booking', reschedule: 'Move booking' }[panel];
     footer = (
       <View>
         <ErrorText>{actionError}</ErrorText>
@@ -166,13 +172,16 @@ export default function BookingDetail() {
       });
     }
     if (perspective === 'customer' && (booking.status === 'pending' || booking.status === 'accepted')) {
-      buttons.push({ label: 'Cancel booking', outline: true, onPress: () => openPanel('cancel') });
       if (booking.status === 'pending' && booking.proposedDate) {
+        buttons.push({ label: 'Cancel booking', outline: true, onPress: () => openPanel('cancel') });
         const date = booking.proposedDate;
         buttons.push({
           label: 'Accept new date',
           onPress: () => confirmThen('Accept new date', `Confirm your booking for ${formatBookingDate(date)}?`, { type: 'acceptProposal', date }),
         });
+      } else {
+        buttons.push({ label: 'Reschedule', outline: true, onPress: () => openPanel('reschedule') });
+        buttons.push({ label: 'Cancel', outline: true, onPress: () => openPanel('cancel') });
       }
     }
     if (canReview) {
@@ -318,6 +327,17 @@ export default function BookingDetail() {
                       placeholder="e.g. 150000"
                       maxLength={12}
                     />
+                  </>
+                ) : null}
+                {panel === 'reschedule' ? (
+                  <>
+                    <Text className="font-heading text-lg text-ink">Move to another date</Text>
+                    <Text className="font-body text-sm text-muted">
+                      {booking.status === 'accepted'
+                        ? `${booking.builderName} will need to confirm the new date again.`
+                        : `${booking.builderName} will be asked to confirm the new date.`}
+                    </Text>
+                    <DateField value={proposedDate} onChange={setProposedDate} />
                   </>
                 ) : null}
                 {panel === 'decline' || panel === 'cancel' ? (

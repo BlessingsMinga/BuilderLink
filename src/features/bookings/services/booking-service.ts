@@ -190,7 +190,9 @@ export type BookingAction =
   | { type: 'complete' }
   | { type: 'cancel'; reason: string }
   /** Customer agrees to the builder's proposed date. */
-  | { type: 'acceptProposal'; date: string };
+  | { type: 'acceptProposal'; date: string }
+  /** Customer picks a new date. The builder has to confirm it again. */
+  | { type: 'reschedule'; date: string };
 
 const optionalText = (text: string) => (text.trim() ? text.trim() : null);
 
@@ -209,6 +211,8 @@ function changesFor(action: BookingAction): Partial<BookingDocument> {
       return { status: 'cancelled', cancel_reason: optionalText(action.reason) };
     case 'acceptProposal':
       return { status: 'accepted', preferred_date: action.date, proposed_date: null };
+    case 'reschedule':
+      return { status: 'pending', preferred_date: action.date, proposed_date: null };
   }
 }
 
@@ -287,6 +291,9 @@ function notifyBookingChange(bookingId: string, before: BookingDocument, after: 
     notifyUser({ senderId: after.customer_id, recipientId: after.builder_id, bookingId, title, body, data });
   const quote = after.quote_amount != null ? ` Quote: ${formatMoney(after.quote_amount)}.` : '';
 
+  if (after.preferred_date !== before.preferred_date && after.status === 'pending') {
+    return toBuilder('Booking moved', `${after.customer_name} moved their ${after.service.toLowerCase()} booking to ${formatShortDate(after.preferred_date)}. Please confirm.`);
+  }
   if (before.status === after.status) {
     if (after.proposed_date && after.proposed_date !== before.proposed_date) {
       return toCustomer('New date proposed', `${after.builder_name} can do ${formatShortDate(after.proposed_date)} instead.${quote}`);

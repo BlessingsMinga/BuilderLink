@@ -1,11 +1,11 @@
-import { CheckCircle2, Circle } from 'lucide-react-native';
+import { CheckCircle2, Circle, Plus, X } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { ProfilePhotoPicker } from '@/features/authentication/components/profile-photo-picker';
 import { useProfile } from '@/features/authentication/hooks/use-profile';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
 import { useOwnBuilder, useSaveOwnBuilder } from '@/features/builders/hooks/use-builders';
-import { LANGUAGES, MALAWI_DISTRICTS, TRADES, type VerificationStatus } from '@/features/builders/services/builder-service';
+import { LANGUAGES, MALAWI_DISTRICTS, MAX_SERVICES, TRADES, type VerificationStatus } from '@/features/builders/services/builder-service';
 import { AppButton } from '@/shared/components/app-button';
 import { Chip } from '@/shared/components/chip';
 import { FormField } from '@/shared/components/form-field';
@@ -19,6 +19,11 @@ import { DocumentsManager, PortfolioManager } from '@/features/portfolio/compone
 import { toast } from '@/shared/components/toast';
 
 const MAX_TRADES = 12;
+
+/** A service row as typed: the price stays text until saved. */
+type ServiceDraft = { name: string; price: string };
+
+const parsePrice = (text: string) => text.replace(/,/g, '').trim();
 
 const statusBanners: Record<VerificationStatus | 'new', { title: string; text: string; tone: string }> = {
   new: {
@@ -44,6 +49,7 @@ const statusBanners: Record<VerificationStatus | 'new', { title: string; text: s
 };
 
 export default function BuilderProfile() {
+  const colors = useThemeColors();
   const session = useAuthStore((state) => state.session);
   const profile = useProfile(session?.userId);
   const listing = useOwnBuilder(session?.userId);
@@ -58,6 +64,7 @@ export default function BuilderProfile() {
   const [languages, setLanguages] = useState<string[]>([]);
   const [startingPrice, setStartingPrice] = useState('');
   const [qualifications, setQualifications] = useState('');
+  const [services, setServices] = useState<ServiceDraft[]>([]);
   const [attempted, setAttempted] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -76,6 +83,7 @@ export default function BuilderProfile() {
       setLanguages(listing.data.languages);
       setStartingPrice(listing.data.startingPrice == null ? '' : String(listing.data.startingPrice));
       setQualifications(listing.data.qualifications);
+      setServices(listing.data.services.map((service) => ({ name: service.name, price: service.price == null ? '' : String(service.price) })));
     }
     setHydrated(true);
   }, [hydrated, listing.data, listing.isLoading, listing.isError]);
@@ -87,10 +95,15 @@ export default function BuilderProfile() {
     district: district ? null : 'Choose the district you work in.',
     trades: trades.length === 0 ? 'Choose at least one skill.' : null,
     startingPrice: startingPrice.trim() !== '' && !/^[0-9]{1,9}$/.test(startingPrice.replace(/,/g, '')) ? 'Enter an amount in kwacha, numbers only.' : null,
+    services: services.some((service) => parsePrice(service.price) !== '' && !/^[0-9]{1,9}$/.test(parsePrice(service.price)))
+      ? 'Enter service prices in kwacha, numbers only.'
+      : services.some((service) => service.name.trim() === '' && parsePrice(service.price) !== '')
+        ? 'Give each priced service a name.'
+        : null,
   };
-  const detailsDone = !errors.businessName && !errors.years && !errors.district && !errors.startingPrice;
+  const detailsDone = !errors.businessName && !errors.years && !errors.district && !errors.startingPrice && !errors.services;
   const skillsDone = !errors.trades;
-  const shown = attempted ? errors : { businessName: null, years: null, district: null, trades: null, startingPrice: null };
+  const shown = attempted ? errors : { businessName: null, years: null, district: null, trades: null, startingPrice: null, services: null };
 
   // Trades saved earlier that aren't in the standard list stay selectable.
   const tradeOptions = [...TRADES, ...trades.filter((trade) => !(TRADES as readonly string[]).includes(trade))];
@@ -104,6 +117,19 @@ export default function BuilderProfile() {
     setSaved(false);
     setter((current) => (current.includes(item) ? current.filter((value) => value !== item) : [...current, item]));
   };
+  const updateService = (index: number, change: Partial<ServiceDraft>) => {
+    setSaved(false);
+    setServices((current) => current.map((service, i) => (i === index ? { ...service, ...change } : service)));
+  };
+  const removeService = (index: number) => {
+    setSaved(false);
+    setServices((current) => current.filter((_, i) => i !== index));
+  };
+  const addService = () => {
+    setSaved(false);
+    setServices((current) => (current.length < MAX_SERVICES ? [...current, { name: '', price: '' }] : current));
+  };
+
   // Any edit clears the "saved" confirmation.
   const edit = <T,>(setter: (value: T) => void) => (value: T) => {
     setSaved(false);
@@ -127,6 +153,9 @@ export default function BuilderProfile() {
           languages,
           startingPrice: startingPrice.trim() ? Number(startingPrice.replace(/,/g, '')) : null,
           qualifications,
+          services: services
+            .filter((service) => service.name.trim() !== '')
+            .map((service) => ({ name: service.name, price: parsePrice(service.price) ? Number(parsePrice(service.price)) : null })),
         },
         avatarUrl: profile.data?.avatarUrl ?? null,
       });
@@ -253,6 +282,54 @@ export default function BuilderProfile() {
                   maxLength={11}
                   error={shown.startingPrice}
                 />
+                <View>
+                  <Text className="mb-1 font-medium text-sm text-ink">Services and prices (optional)</Text>
+                  <Text className="mb-2 font-body text-xs text-muted">
+                    Customers see these as “From MWK …”. Leave a price empty to show “Ask for a quote”.
+                  </Text>
+                  <View className="gap-3">
+                    {services.map((service, index) => (
+                      <View key={index} className="flex-row items-start gap-2">
+                        <View className="flex-[1.4]">
+                          <FormField
+                            label={`Service ${index + 1}`}
+                            value={service.name}
+                            onChangeText={(name) => updateService(index, { name })}
+                            placeholder="e.g. Wall building"
+                            maxLength={60}
+                          />
+                        </View>
+                        <View className="flex-1">
+                          <FormField
+                            label="From"
+                            prefix="MWK"
+                            value={service.price}
+                            onChangeText={(price) => updateService(index, { price })}
+                            keyboardType="number-pad"
+                            placeholder="50000"
+                            maxLength={11}
+                          />
+                        </View>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Remove service ${index + 1}`}
+                          hitSlop={8}
+                          onPress={() => removeService(index)}
+                          className="mt-8 h-10 w-10 items-center justify-center rounded-full active:opacity-70"
+                        >
+                          <X size={18} color={colors.muted} />
+                        </Pressable>
+                      </View>
+                    ))}
+                  </View>
+                  {services.length < MAX_SERVICES ? (
+                    <Pressable accessibilityRole="button" onPress={addService} className="mt-3 flex-row items-center gap-2 self-start py-1 active:opacity-70">
+                      <Plus size={18} color={colors.brand} />
+                      <Text className="font-semibold text-sm text-brand">Add a service</Text>
+                    </Pressable>
+                  ) : null}
+                  <ErrorText>{shown.services}</ErrorText>
+                </View>
                 <FormField
                   label="Qualifications and training (optional)"
                   value={qualifications}

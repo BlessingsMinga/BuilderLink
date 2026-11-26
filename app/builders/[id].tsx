@@ -5,7 +5,7 @@ import { Image, Modal, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
 import { useBuilder } from '@/features/builders/hooks/use-builders';
-import { formatResponseTime } from '@/features/builders/services/builder-service';
+import { CHECK_LABELS, formatResponseTime } from '@/features/builders/services/builder-service';
 import { useFavoriteBuilderIds, useToggleFavorite } from '@/features/favorites/hooks/use-favorites';
 import { usePortfolio } from '@/features/portfolio/hooks/use-portfolio';
 import { thumbnailUrl } from '@/features/portfolio/services/portfolio-service';
@@ -179,16 +179,15 @@ export default function BuilderDetail() {
             {builder.verified ? (
               <Section title="What’s been checked">
                 <View className="gap-2.5 rounded-[20px] border border-line bg-subtle p-4">
-                  <View className="flex-row items-center gap-3">
-                    <Check size={20} color={colors.brand} strokeWidth={2.25} />
-                    <Text className="flex-1 font-body text-sm text-ink">Profile reviewed and verified by BuilderLink</Text>
-                  </View>
-                  {builder.qualifications ? (
-                    <View className="flex-row items-center gap-3">
+                  {[
+                    'Profile reviewed and approved by BuilderLink',
+                    ...builder.checks.map((check) => CHECK_LABELS[check]),
+                  ].map((label) => (
+                    <View key={label} className="flex-row items-center gap-3">
                       <Check size={20} color={colors.brand} strokeWidth={2.25} />
-                      <Text className="flex-1 font-body text-sm text-ink">{builder.qualifications}</Text>
+                      <Text className="flex-1 font-body text-sm text-ink">{label}</Text>
                     </View>
-                  ) : null}
+                  ))}
                 </View>
               </Section>
             ) : null}
@@ -207,6 +206,21 @@ export default function BuilderDetail() {
                 </View>
               ) : null}
             </Section>
+
+            {builder.services.length ? (
+              <Section title="Services">
+                <View className="overflow-hidden rounded-[20px] border border-line bg-subtle">
+                  {builder.services.map((service, index) => (
+                    <View key={`${service.name}-${index}`} className={`flex-row items-center gap-3 p-4 ${index > 0 ? 'border-t border-line' : ''}`}>
+                      <Text className="flex-1 font-semibold text-base text-ink">{service.name}</Text>
+                      <Text className="font-body text-sm text-muted">
+                        {service.price != null ? `From MWK ${service.price.toLocaleString('en-US')}` : 'Ask for a quote'}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </Section>
+            ) : null}
 
             {builder.serviceAreas.length || builder.languages.length || builder.startingPrice != null || builder.qualifications ? (
               <Section title="Work details">

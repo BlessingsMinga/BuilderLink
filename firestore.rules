@@ -173,7 +173,7 @@ function isValidBuilder(data) {
   return hasRequiredFields(['profile_id', 'years_experience', 'verification_status', 'average_rating', 'completed_jobs']) &&
     hasOnlyAllowedFields(['profile_id', 'business_name', 'bio', 'display_name', 'district', 'trades', 'years_experience', 'verification_status', 'average_rating', 'completed_jobs', 'response_time_minutes', 'response_count', 'available', 'rejection_reason',
       'rating_sum', 'review_count', 'last_review_id', 'last_completed_booking_id', 'last_response_booking_id',
-      'avatar_url', 'service_areas', 'languages', 'starting_price', 'qualifications']) &&
+      'avatar_url', 'service_areas', 'languages', 'starting_price', 'qualifications', 'services', 'checks']) &&
     data.profile_id is string && data.profile_id.size() > 0 && data.profile_id.size() < 128 &&
     isValidOptionalString('business_name', 2, 100) &&
     isValidOptionalString('bio', 1, 1000) &&
@@ -195,7 +195,28 @@ function isValidBuilder(data) {
     (!('service_areas' in data) || (data.service_areas is list && data.service_areas.size() <= 30)) &&
     (!('languages' in data) || (data.languages is list && data.languages.size() <= 10)) &&
     (data.get('starting_price', null) == null || (data.starting_price is int && data.starting_price >= 0 && data.starting_price <= 1000000000)) &&
-    isValidOptionalString('qualifications', 1, 500);
+    isValidOptionalString('qualifications', 1, 500) &&
+    // Priced services: up to 10 entries, each checked by isValidService.
+    (!('services' in data) || (data.services is list && data.services.size() <= 10 &&
+      (data.services.size() < 1 || isValidService(data.services[0])) &&
+      (data.services.size() < 2 || isValidService(data.services[1])) &&
+      (data.services.size() < 3 || isValidService(data.services[2])) &&
+      (data.services.size() < 4 || isValidService(data.services[3])) &&
+      (data.services.size() < 5 || isValidService(data.services[4])) &&
+      (data.services.size() < 6 || isValidService(data.services[5])) &&
+      (data.services.size() < 7 || isValidService(data.services[6])) &&
+      (data.services.size() < 8 || isValidService(data.services[7])) &&
+      (data.services.size() < 9 || isValidService(data.services[8])) &&
+      (data.services.size() < 10 || isValidService(data.services[9])))) &&
+    // Verification checks are written by a Cloud Function only.
+    (!('checks' in data) || (data.checks is list && data.checks.size() <= 4));
+}
+
+// One priced service on a builder listing.
+function isValidService(item) {
+  return item is map && item.keys().hasOnly(['name', 'price']) &&
+    item.name is string && item.name.size() >= 1 && item.name.size() <= 60 &&
+    (item.get('price', null) == null || (item.price is int && item.price >= 0 && item.price <= 1000000000));
 }
 
 // Validate category document
@@ -337,12 +358,12 @@ function isAdmin() {
         // Stats start at zero and only change through the stat rules below.
         request.resource.data.average_rating == 0 &&
         request.resource.data.completed_jobs == 0 &&
-        !request.resource.data.keys().hasAny(['response_time_minutes', 'response_count', 'rejection_reason',
+        !request.resource.data.keys().hasAny(['checks', 'response_time_minutes', 'response_count', 'rejection_reason',
           'rating_sum', 'review_count', 'last_review_id', 'last_completed_booking_id', 'last_response_booking_id']);
       allow update: if isOwner(builderId) &&
         isValidBuilder(request.resource.data) &&
         request.resource.data.profile_id == resource.data.profile_id &&
-        areImmutableFieldsUnchanged(['profile_id', 'average_rating', 'completed_jobs', 'response_time_minutes', 'response_count', 'rejection_reason',
+        areImmutableFieldsUnchanged(['profile_id', 'checks', 'average_rating', 'completed_jobs', 'response_time_minutes', 'response_count', 'rejection_reason',
           'rating_sum', 'review_count', 'last_review_id', 'last_completed_booking_id', 'last_response_booking_id']) &&
         (request.resource.data.verification_status == resource.data.verification_status ||
          request.resource.data.verification_status == 'pending');
@@ -502,6 +523,7 @@ function isAdmin() {
     //             accepted -> completed
     //   customer: pending | accepted -> cancelled (optional reason)
     //             pending with a proposed date -> accepted on that date
+    //             pending | accepted -> pending on a new date (reschedule)
     // ===========================================================
     match /bookings/{bookingId} {
       allow read: if isAuthenticated() &&
@@ -680,6 +702,12 @@ function isAdmin() {
         (before.status == 'pending' && before.get('proposed_date', null) != null &&
           after.status == 'accepted' &&
           after.preferred_date == before.proposed_date &&
+          after.get('proposed_date', null) == null &&
+          bookingChanged(['status', 'updated_at', 'preferred_date', 'proposed_date'])) ||
+        // Moving the booking to another date sends it back to the builder to confirm.
+        (before.status in ['pending', 'accepted'] &&
+          after.status == 'pending' &&
+          after.preferred_date != before.preferred_date &&
           after.get('proposed_date', null) == null &&
           bookingChanged(['status', 'updated_at', 'preferred_date', 'proposed_date']))
       );

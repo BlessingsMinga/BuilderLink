@@ -31,7 +31,36 @@ export type BuilderSummary = {
   startingPrice: number | null;
   /** Training, certificates and memberships, in the builder's words. */
   qualifications: string | null;
+  /** Priced services, in the builder's order. */
+  services: BuilderService[];
+  /** Checks an administrator has confirmed, e.g. ID and phone. */
+  checks: BuilderCheck[];
 };
+
+/** One service a builder offers, with an optional "from" price in kwacha. */
+export type BuilderService = { name: string; price: number | null };
+
+/** Things BuilderLink has confirmed about a builder. Written only by the backend. */
+export type BuilderCheck = 'national_id' | 'phone' | 'certificate' | 'license';
+
+export const CHECK_LABELS: Record<BuilderCheck, string> = {
+  national_id: 'National ID confirmed',
+  phone: 'Phone number verified',
+  certificate: 'Trade certificate checked',
+  license: 'Business licence checked',
+};
+
+const CHECK_ORDER: BuilderCheck[] = ['national_id', 'phone', 'certificate', 'license'];
+
+/** Most services a builder can list. Keep in step with firestore.rules. */
+export const MAX_SERVICES = 10;
+
+const toServices = (raw: unknown): BuilderService[] =>
+  Array.isArray(raw)
+    ? raw
+        .filter((item): item is { name: string; price?: number | null } => typeof item?.name === 'string' && item.name.trim() !== '')
+        .map((item) => ({ name: item.name.trim(), price: typeof item.price === 'number' ? item.price : null }))
+    : [];
 
 type BuilderDocument = {
   profile_id: string;
@@ -52,6 +81,8 @@ type BuilderDocument = {
   languages?: string[];
   starting_price?: number | null;
   qualifications?: string | null;
+  services?: { name: string; price?: number | null }[];
+  checks?: string[];
 };
 
 const toSummary = (raw: BuilderDocument): BuilderSummary => {
@@ -73,6 +104,8 @@ const toSummary = (raw: BuilderDocument): BuilderSummary => {
     languages: raw.languages ?? [],
     startingPrice: raw.starting_price ?? null,
     qualifications: raw.qualifications?.trim() || null,
+    services: toServices(raw.services),
+    checks: CHECK_ORDER.filter((check) => raw.checks?.includes(check)),
   };
 };
 
@@ -124,11 +157,12 @@ export type OwnBuilder = {
   languages: string[];
   startingPrice: number | null;
   qualifications: string;
+  services: BuilderService[];
 };
 
 export type OwnBuilderInput = Pick<
   OwnBuilder,
-  'businessName' | 'bio' | 'yearsExperience' | 'trades' | 'district' | 'serviceAreas' | 'languages' | 'startingPrice' | 'qualifications'
+  'businessName' | 'bio' | 'yearsExperience' | 'trades' | 'district' | 'serviceAreas' | 'languages' | 'startingPrice' | 'qualifications' | 'services'
 >;
 
 /** The builder's own listing whatever its verification status, or null if not created yet. */
@@ -154,6 +188,7 @@ export async function fetchOwnBuilder(profileId: string): Promise<OwnBuilder | n
     languages: raw.languages ?? [],
     startingPrice: raw.starting_price ?? null,
     qualifications: raw.qualifications ?? '',
+    services: toServices(raw.services),
   };
 }
 
@@ -195,6 +230,10 @@ export async function saveOwnBuilder(
     languages: input.languages,
     starting_price: input.startingPrice,
     qualifications: input.qualifications.trim() || null,
+    services: input.services
+      .map((service) => ({ name: service.name.trim(), price: service.price }))
+      .filter((service) => service.name !== '')
+      .slice(0, MAX_SERVICES),
   };
   const existing = await getDoc(ref);
   if (existing.exists()) {
