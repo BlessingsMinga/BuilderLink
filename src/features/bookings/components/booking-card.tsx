@@ -1,6 +1,12 @@
 import { router, type Href } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
-import { type Booking, type BookingPerspective, type BookingStatus } from '../services/booking-service';
+import {
+  awaitsCustomer,
+  formatMoney,
+  type Booking,
+  type BookingPerspective,
+  type BookingStatus,
+} from '../services/booking-service';
 
 const statusStyles: Record<BookingStatus, { label: string; badge: string; text: string }> = {
   pending: { label: 'Pending', badge: 'bg-warn-soft', text: 'text-warn' },
@@ -69,11 +75,14 @@ type Props = {
 /** Booking summary with a progress bar. Tapping opens the booking's detail screen. */
 export function BookingCard({ booking, perspective, hint: givenHint }: Props) {
   // A counter-offer needs its own prompt whichever group the card is shown in.
-  const hint =
-    booking.status === 'pending' && booking.proposedDate
-      ? perspective === 'customer'
-        ? 'New date proposed, tap to reply'
-        : 'Waiting for the customer to agree'
+  const hint = awaitsCustomer(booking)
+    ? perspective === 'customer'
+      ? booking.quoteStatus === 'sent'
+        ? `Quote received: ${formatMoney(booking.quote?.total ?? 0)}, tap to reply`
+        : 'New date proposed, tap to reply'
+      : 'Waiting for the customer to agree'
+    : booking.status === 'pending' && booking.quoteStatus === 'revision_requested' && perspective === 'builder'
+      ? 'Customer asked for a revised quote'
       : givenHint;
   const done = completedSteps(booking.status);
   return (

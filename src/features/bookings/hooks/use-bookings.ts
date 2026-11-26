@@ -12,6 +12,12 @@ import {
   type CreateBookingInput,
 } from '../services/booking-service';
 import { sendMessage, sendPhotoMessage, subscribeToMessages, type ChatMessage } from '../services/chat-service';
+import {
+  postProgressUpdate,
+  subscribeToProgress,
+  type NewProgressUpdate,
+  type ProgressUpdate,
+} from '../services/progress-service';
 import { subscribeToConversation, subscribeToConversations, type Conversation } from '../services/conversation-service';
 
 const bookingsKey = ['bookings'] as const;
@@ -93,6 +99,22 @@ export function useConversation(bookingId: string | undefined) {
 
 export function useSendMessage(booking: Booking | null | undefined, senderId: string | undefined) {
   return useMutation({ mutationFn: (text: string) => sendMessage(booking!, senderId!, text) });
+}
+
+/** Live progress updates for one booking, newest first. */
+export function useProgressUpdates(bookingId: string | undefined) {
+  const [updates, setUpdates] = useState<ProgressUpdate[] | undefined>(undefined);
+  const [error, setError] = useState<unknown>(null);
+  useEffect(() => {
+    if (!bookingId) return undefined;
+    setError(null);
+    return subscribeToProgress(bookingId, setUpdates, setError);
+  }, [bookingId]);
+  return { updates, error, isLoading: updates === undefined && !error };
+}
+
+export function usePostProgressUpdate(booking: Booking | null | undefined) {
+  return useMutation({ mutationFn: (update: NewProgressUpdate) => postProgressUpdate(booking!, update) });
 }
 
 export function useSendPhoto(booking: Booking | null | undefined, senderId: string | undefined) {

@@ -7,6 +7,7 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  updateDoc,
   where,
   type Timestamp,
 } from 'firebase/firestore';
@@ -14,7 +15,31 @@ import { firebaseDb } from '@/shared/services/firebase';
 
 export const MAX_PORTFOLIO_PHOTOS = 12;
 
-export type PortfolioPhoto = { id: string; storagePath: string; url: string; caption: string | null; createdAt: Date | null };
+export type PhotoKind = 'before' | 'after';
+
+export type PortfolioPhoto = {
+  id: string;
+  storagePath: string;
+  url: string;
+  caption: string | null;
+  /** Labelled as a before or after shot of a job. */
+  kind: PhotoKind | null;
+  /** The completed BuilderLink booking this photo is from, if linked. */
+  bookingId: string | null;
+  /** The service of the linked job, e.g. "Plumbing". */
+  service: string | null;
+  createdAt: Date | null;
+};
+
+/** What the builder can say about a photo. */
+export type PhotoDetails = { caption: string; kind: PhotoKind | null; bookingId: string | null; service: string | null };
+
+const detailFields = (details: PhotoDetails) => ({
+  caption: details.caption.trim() ? details.caption.trim() : null,
+  kind: details.kind,
+  booking_id: details.bookingId,
+  service: details.bookingId ? details.service : null,
+});
 
 export type DocumentType = 'national_id' | 'certificate' | 'license';
 export type DocumentReviewStatus = 'pending' | 'approved' | 'rejected';
@@ -90,12 +115,22 @@ export async function fetchPortfolio(builderId: string): Promise<PortfolioPhoto[
   const results = await getDocs(query(collection(requireDb(), 'portfolio_items'), where('builder_id', '==', builderId)));
   return results.docs
     .map((item) => {
-      const raw = item.data() as { storage_path: string; caption?: string | null; created_at?: Timestamp | null };
+      const raw = item.data() as {
+        storage_path: string;
+        caption?: string | null;
+        kind?: PhotoKind | null;
+        booking_id?: string | null;
+        service?: string | null;
+        created_at?: Timestamp | null;
+      };
       return {
         id: item.id,
         storagePath: raw.storage_path,
         url: raw.storage_path,
         caption: raw.caption ?? null,
+        kind: raw.kind ?? null,
+        bookingId: raw.booking_id ?? null,
+        service: raw.service ?? null,
         createdAt: raw.created_at?.toDate() ?? null,
       };
     })
@@ -103,10 +138,14 @@ export async function fetchPortfolio(builderId: string): Promise<PortfolioPhoto[
     .sort((a, b) => (b.createdAt?.getTime() ?? Date.now()) - (a.createdAt?.getTime() ?? Date.now()));
 }
 
-export async function addPortfolioPhoto(builderId: string, asset: ImagePicker.ImagePickerAsset): Promise<void> {
+export async function addPortfolioPhoto(builderId: string, asset: ImagePicker.ImagePickerAsset, details: PhotoDetails): Promise<void> {
   const record = doc(collection(requireDb(), 'portfolio_items'));
   const url = await upload(`builders/${builderId}/portfolio`, PORTFOLIO_PRESET, asset);
-  await setDoc(record, { id: record.id, builder_id: builderId, storage_path: url, caption: null, created_at: serverTimestamp() });
+  await setDoc(record, { id: record.id, builder_id: builderId, storage_path: url, ...detailFields(details), created_at: serverTimestamp() });
+}
+
+export async function updatePortfolioPhoto(photo: PortfolioPhoto, details: PhotoDetails): Promise<void> {
+  await updateDoc(doc(requireDb(), 'portfolio_items', photo.id), detailFields(details));
 }
 
 /**

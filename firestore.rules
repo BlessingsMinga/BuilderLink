@@ -245,12 +245,24 @@ function isValidBuilderSkill(data) {
 
 // Validate portfolio item document
 function isValidPortfolioItem(data) {
-  return hasOnlyAllowedFields(['id', 'builder_id', 'storage_path', 'caption', 'created_at']) &&
+  return hasOnlyAllowedFields(['id', 'builder_id', 'storage_path', 'caption', 'created_at', 'kind', 'booking_id', 'service']) &&
     data.id is string && data.id.size() > 0 && data.id.size() < 128 &&
     data.builder_id is string && data.builder_id.size() > 0 && data.builder_id.size() < 128 &&
     data.storage_path is string && data.storage_path.size() > 0 && data.storage_path.size() < 500 &&
     isValidOptionalString('caption', 1, 500) &&
-    isValidTimestamp('created_at');
+    data.get('kind', null) in [null, 'before', 'after'] &&
+    isValidOptionalString('service', 1, 100) &&
+    isValidTimestamp('created_at') &&
+    portfolioBookingIsOwnCompletedJob(data);
+}
+
+// A photo linked to a job must point at one of this builder's completed bookings,
+// so the "Job done on BuilderLink" badge can be trusted.
+function portfolioBookingIsOwnCompletedJob(data) {
+  return data.get('booking_id', null) == null ||
+    (data.booking_id is string && data.booking_id.size() > 0 && data.booking_id.size() < 128 &&
+     get(/databases/$(database)/documents/bookings/$(data.booking_id)).data.builder_id == data.builder_id &&
+     get(/databases/$(database)/documents/bookings/$(data.booking_id)).data.status == 'completed');
 }
 
 // Validate builder document
@@ -267,9 +279,14 @@ function isValidBuilderDocument(data) {
 // Validate booking document
 function isValidBooking(data) {
   return hasRequiredFields(['customer_id', 'builder_id', 'customer_name', 'builder_name', 'service', 'preferred_date', 'location', 'description', 'status', 'created_at', 'updated_at']) &&
-    hasOnlyAllowedFields(['customer_id', 'builder_id', 'customer_name', 'builder_name', 'service', 'preferred_date', 'location', 'description', 'status', 'created_at', 'updated_at', 'proposed_date', 'quote_amount', 'decline_reason', 'cancel_reason']) &&
+    hasOnlyAllowedFields(['customer_id', 'builder_id', 'customer_name', 'builder_name', 'service', 'preferred_date', 'location', 'description', 'status', 'created_at', 'updated_at', 'proposed_date', 'quote_amount', 'decline_reason', 'cancel_reason',
+      'quote', 'quote_status', 'quote_feedback']) &&
     (data.get('proposed_date', null) == null || (data.proposed_date is string && data.proposed_date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))) &&
     (data.get('quote_amount', null) == null || (data.quote_amount is int && data.quote_amount >= 0 && data.quote_amount <= 1000000000)) &&
+    (data.get('quote', null) == null || isValidQuote(data.quote)) &&
+    data.get('quote_status', null) in [null, 'sent', 'accepted', 'revision_requested'] &&
+    (data.get('quote_status', null) == null || data.get('quote', null) != null) &&
+    isValidOptionalString('quote_feedback', 1, 300) &&
     isValidOptionalString('decline_reason', 1, 300) &&
     isValidOptionalString('cancel_reason', 1, 300) &&
     data.customer_id is string && data.customer_id.size() > 0 && data.customer_id.size() < 128 &&
@@ -283,6 +300,43 @@ function isValidBooking(data) {
     data.status in ['pending', 'accepted', 'declined', 'cancelled', 'completed'] &&
     isValidTimestamp('created_at') &&
     isValidTimestamp('updated_at');
+}
+
+// An itemised quote: 1-10 lines and a total that equals their sum.
+function isValidQuote(quote) {
+  return quote is map && quote.keys().hasAll(['items', 'total']) && quote.keys().hasOnly(['items', 'total', 'note']) &&
+    quote.items is list && quote.items.size() >= 1 && quote.items.size() <= 10 &&
+    (quote.items.size() < 1 || isValidQuoteItem(quote.items[0])) &&
+    (quote.items.size() < 2 || isValidQuoteItem(quote.items[1])) &&
+    (quote.items.size() < 3 || isValidQuoteItem(quote.items[2])) &&
+    (quote.items.size() < 4 || isValidQuoteItem(quote.items[3])) &&
+    (quote.items.size() < 5 || isValidQuoteItem(quote.items[4])) &&
+    (quote.items.size() < 6 || isValidQuoteItem(quote.items[5])) &&
+    (quote.items.size() < 7 || isValidQuoteItem(quote.items[6])) &&
+    (quote.items.size() < 8 || isValidQuoteItem(quote.items[7])) &&
+    (quote.items.size() < 9 || isValidQuoteItem(quote.items[8])) &&
+    (quote.items.size() < 10 || isValidQuoteItem(quote.items[9])) &&
+    quote.total is int && quote.total == quoteItemsSum(quote.items) &&
+    (quote.get('note', null) == null || (quote.note is string && quote.note.size() >= 1 && quote.note.size() <= 500));
+}
+
+function isValidQuoteItem(item) {
+  return item is map && item.keys().hasAll(['label', 'amount']) && item.keys().hasOnly(['label', 'amount']) &&
+    item.label is string && item.label.size() >= 1 && item.label.size() <= 80 &&
+    item.amount is int && item.amount >= 0 && item.amount <= 1000000000;
+}
+
+function quoteItemsSum(items) {
+  return (items.size() > 0 ? items[0].amount : 0) + (items.size() > 1 ? items[1].amount : 0) +
+    (items.size() > 2 ? items[2].amount : 0) + (items.size() > 3 ? items[3].amount : 0) +
+    (items.size() > 4 ? items[4].amount : 0) + (items.size() > 5 ? items[5].amount : 0) +
+    (items.size() > 6 ? items[6].amount : 0) + (items.size() > 7 ? items[7].amount : 0) +
+    (items.size() > 8 ? items[8].amount : 0) + (items.size() > 9 ? items[9].amount : 0);
+}
+
+// A pending booking with a counter-offer (date or quote) is waiting on the customer.
+function awaitsCustomer(booking) {
+  return booking.get('proposed_date', null) != null || booking.get('quote_status', null) == 'sent';
 }
 
 // Validate one 1-5 star rating
@@ -408,8 +462,8 @@ function isAdmin() {
       return data.diff(resource.data).affectedKeys().hasOnly(['response_time_minutes', 'response_count', 'last_response_booking_id']) &&
         id is string && id.size() > 0 &&
         before.builder_id == builderId &&
-        before.status == 'pending' && before.get('proposed_date', null) == null &&
-        (after.status in ['accepted', 'declined'] || after.get('proposed_date', null) != null) &&
+        before.status == 'pending' && !awaitsCustomer(before) && before.get('quote', null) == null &&
+        (after.status in ['accepted', 'declined'] || awaitsCustomer(after)) &&
         data.response_count == count + 1 &&
         math.abs(data.response_time_minutes * (count + 1) - (average * count + minutes)) <= 15 + count + 1;
     }
@@ -520,9 +574,12 @@ function isAdmin() {
     //   builder:  pending -> accepted (optional quote)
     //             pending -> declined (optional reason)
     //             pending -> pending  (propose another date, optional quote)
+    //             pending -> pending  (send or revise an itemised quote)
     //             accepted -> completed
     //   customer: pending | accepted -> cancelled (optional reason)
     //             pending with a proposed date -> accepted on that date
+    //             pending with a quote -> accepted (quote accepted)
+    //             pending with a quote -> pending (revision requested)
     //             pending | accepted -> pending on a new date (reschedule)
     // ===========================================================
     match /bookings/{bookingId} {
@@ -535,7 +592,7 @@ function isAdmin() {
         request.resource.data.customer_id == request.auth.uid &&
         request.resource.data.builder_id != request.auth.uid &&
         request.resource.data.status == 'pending' &&
-        !request.resource.data.keys().hasAny(['proposed_date', 'quote_amount', 'decline_reason', 'cancel_reason']) &&
+        !request.resource.data.keys().hasAny(['proposed_date', 'quote_amount', 'decline_reason', 'cancel_reason', 'quote', 'quote_status', 'quote_feedback']) &&
         request.resource.data.created_at == request.time &&
         request.resource.data.updated_at == request.time &&
         request.resource.data.customer_name ==
@@ -565,6 +622,28 @@ function isAdmin() {
             (request.resource.data.image_url is string &&
              request.resource.data.image_url.size() <= 500 &&
              request.resource.data.image_url.matches('^https://res[.]cloudinary[.]com/.+'))) &&
+          request.resource.data.created_at == request.time;
+        allow update, delete: if false;
+      }
+
+      // Progress updates the builder posts while the job is under way.
+      // Both parties read them; they are a permanent record.
+      match /updates/{updateId} {
+        allow read: if isAuthenticated() && isBookingParty(bookingId);
+        allow create: if isAuthenticated() &&
+          bookingOf(bookingId).builder_id == request.auth.uid &&
+          bookingOf(bookingId).status == 'accepted' &&
+          hasRequiredFields(['author_id', 'text', 'created_at']) &&
+          hasOnlyAllowedFields(['author_id', 'text', 'image_url', 'percent', 'created_at']) &&
+          request.resource.data.author_id == request.auth.uid &&
+          validStringLength('text', 0, 1000) &&
+          (request.resource.data.text.size() > 0 || 'image_url' in request.resource.data) &&
+          (!('image_url' in request.resource.data) ||
+            (request.resource.data.image_url is string &&
+             request.resource.data.image_url.size() <= 500 &&
+             request.resource.data.image_url.matches('^https://res[.]cloudinary[.]com/.+'))) &&
+          (request.resource.data.get('percent', null) == null ||
+            (request.resource.data.percent is int && request.resource.data.percent >= 0 && request.resource.data.percent <= 100)) &&
           request.resource.data.created_at == request.time;
         allow update, delete: if false;
       }
@@ -678,15 +757,26 @@ function isAdmin() {
       let before = resource.data;
       let after = request.resource.data;
       return before.builder_id == request.auth.uid && (
+        // Accepting directly; not while the builder's own quote waits on the customer.
         (before.status == 'pending' && after.status == 'accepted' &&
+          before.get('quote_status', null) != 'sent' &&
           bookingChanged(['status', 'updated_at', 'quote_amount', 'proposed_date']) &&
           after.get('proposed_date', null) == null) ||
         (before.status == 'pending' && after.status == 'declined' &&
           bookingChanged(['status', 'updated_at', 'decline_reason', 'proposed_date']) &&
           after.get('proposed_date', null) == null) ||
+        // Proposing another date only.
         (before.status == 'pending' && after.status == 'pending' &&
           bookingChanged(['updated_at', 'proposed_date', 'quote_amount']) &&
           after.get('proposed_date', null) != null) ||
+        // Sending (or revising) an itemised quote, optionally with another date.
+        (before.status == 'pending' && after.status == 'pending' &&
+          bookingChanged(['updated_at', 'proposed_date', 'quote_amount', 'quote', 'quote_status', 'quote_feedback']) &&
+          after.get('quote_status', null) == 'sent' &&
+          after.get('quote', null) != null &&
+          after.get('quote_amount', null) == after.quote.total &&
+          after.get('quote_feedback', null) == null &&
+          after.preferred_date == before.preferred_date) ||
         (before.status == 'accepted' && after.status == 'completed' &&
           bookingChanged(['status', 'updated_at']))
       );
@@ -700,12 +790,27 @@ function isAdmin() {
           bookingChanged(['status', 'updated_at', 'cancel_reason'])) ||
         // Agreeing to the builder's proposed date accepts the booking on that date.
         (before.status == 'pending' && before.get('proposed_date', null) != null &&
+          before.get('quote_status', null) != 'sent' &&
           after.status == 'accepted' &&
           after.preferred_date == before.proposed_date &&
           after.get('proposed_date', null) == null &&
           bookingChanged(['status', 'updated_at', 'preferred_date', 'proposed_date'])) ||
+        // Accepting the builder's quote confirms the booking, on the quoted date if one was given.
+        (before.status == 'pending' && before.get('quote_status', null) == 'sent' &&
+          after.status == 'accepted' &&
+          after.quote_status == 'accepted' &&
+          after.preferred_date == (before.get('proposed_date', null) == null ? before.preferred_date : before.proposed_date) &&
+          after.get('proposed_date', null) == null &&
+          bookingChanged(['status', 'updated_at', 'preferred_date', 'proposed_date', 'quote_status'])) ||
+        // Asking for a revised quote sends it back to the builder.
+        (before.status == 'pending' && before.get('quote_status', null) == 'sent' &&
+          after.status == 'pending' &&
+          after.quote_status == 'revision_requested' &&
+          after.get('proposed_date', null) == null &&
+          bookingChanged(['updated_at', 'proposed_date', 'quote_status', 'quote_feedback'])) ||
         // Moving the booking to another date sends it back to the builder to confirm.
         (before.status in ['pending', 'accepted'] &&
+          before.get('quote_status', null) != 'sent' &&
           after.status == 'pending' &&
           after.preferred_date != before.preferred_date &&
           after.get('proposed_date', null) == null &&

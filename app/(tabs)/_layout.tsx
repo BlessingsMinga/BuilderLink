@@ -5,7 +5,8 @@ import { CalendarDays, House, MessageCircle, Search, UserRound } from 'lucide-re
 import { useAuthStore } from '@/features/authentication/store/auth-store';
 import { useUnreadCount } from '@/features/bookings/hooks/use-bookings';
 import { Protected } from '@/shared/components/protected';
-import { useThemeColors } from '@/shared/theme';
+import { palettes, useThemeColors } from '@/shared/theme';
+import { BlurView } from 'expo-blur';
 
 const icons = { index: House, search: Search, bookings: CalendarDays, messages: MessageCircle, profile: UserRound };
 
@@ -26,11 +27,15 @@ export default function TabLayout() {
           headerShown: false,
           tabBarActiveTintColor: colors.brand,
           tabBarInactiveTintColor: colors.muted,
-          tabBarStyle: { backgroundColor: colors.canvas, borderTopWidth: 0, elevation: 0, height: barHeight, paddingTop: 10, paddingBottom: bottomGap + 6, paddingHorizontal: 12 },
+          // Floats over the screen content so the semi-transparent pill lets it show through.
+          tabBarStyle: { position: 'absolute', backgroundColor: 'transparent', borderTopWidth: 0, elevation: 0, height: barHeight, paddingTop: 10, paddingBottom: bottomGap + 6, paddingHorizontal: 12 },
           tabBarBackground: () => (
-            <View style={{ flex: 1, backgroundColor: colors.canvas }}>
-              <View
-                style={{ position: 'absolute', left: 12, right: 12, top: 0, bottom: bottomGap, borderRadius: 24, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.surface }}
+            <View style={{ flex: 1 }}>
+              <BlurView
+                intensity={60}
+                tint={colors === palettes.dark ? 'dark' : 'light'}
+                experimentalBlurMethod="dimezisBlurView"
+                style={{ position: 'absolute', left: 12, right: 12, top: 0, bottom: bottomGap, borderRadius: 24, borderWidth: 1, borderColor: colors.line, overflow: 'hidden' }}
               />
             </View>
           ),

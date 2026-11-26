@@ -41,9 +41,29 @@ export type Booking = {
   declineReason: string | null;
   /** Why the customer cancelled, if they said. */
   cancelReason: string | null;
+  /** The builder's itemised quote, if they sent one. */
+  quote: Quote | null;
+  quoteStatus: QuoteStatus | null;
+  /** What the customer wants changed when asking for a revised quote. */
+  quoteFeedback: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
 };
+
+export type QuoteItem = { label: string; amount: number };
+
+/** Prices are whole Malawian kwacha; `total` is always the sum of the items. */
+export type Quote = { items: QuoteItem[]; total: number; note: string | null };
+
+/** `sent`: waiting on the customer. `revision_requested`: back with the builder. */
+export type QuoteStatus = 'sent' | 'accepted' | 'revision_requested';
+
+export const MAX_QUOTE_ITEMS = 10;
+
+/** True when a pending booking is waiting for the customer to answer a counter-offer. */
+export function awaitsCustomer(booking: Booking): boolean {
+  return booking.status === 'pending' && (Boolean(booking.proposedDate) || booking.quoteStatus === 'sent');
+}
 
 export type CreateBookingInput = {
   customerId: string;
@@ -70,6 +90,9 @@ type BookingDocument = {
   quote_amount?: number | null;
   decline_reason?: string | null;
   cancel_reason?: string | null;
+  quote?: { items: QuoteItem[]; total: number; note?: string | null } | null;
+  quote_status?: QuoteStatus | null;
+  quote_feedback?: string | null;
   created_at: Timestamp | null;
   updated_at: Timestamp | null;
 };
@@ -94,6 +117,9 @@ const toBooking = (id: string, raw: BookingDocument): Booking => ({
   quoteAmount: raw.quote_amount ?? null,
   declineReason: raw.decline_reason ?? null,
   cancelReason: raw.cancel_reason ?? null,
+  quote: raw.quote ? { items: raw.quote.items, total: raw.quote.total, note: raw.quote.note ?? null } : null,
+  quoteStatus: raw.quote_status ?? null,
+  quoteFeedback: raw.quote_feedback ?? null,
   createdAt: raw.created_at?.toDate() ?? null,
   updatedAt: raw.updated_at?.toDate() ?? null,
 });
@@ -187,6 +213,12 @@ export type BookingAction =
   | { type: 'accept'; quoteAmount: number | null }
   | { type: 'decline'; reason: string }
   | { type: 'propose'; date: string; quoteAmount: number | null }
+  /** Builder sends or revises an itemised quote, optionally for another date. */
+  | { type: 'sendQuote'; items: QuoteItem[]; note: string; date: string | null }
+  /** Customer accepts the quote; the booking is confirmed. */
+  | { type: 'acceptQuote' }
+  /** Customer asks the builder to change the quote. */
+  | { type: 'requestRevision'; feedback: string }
   | { type: 'complete' }
   | { type: 'cancel'; reason: string }
   /** Customer agrees to the builder's proposed date. */
@@ -197,10 +229,30 @@ export type BookingAction =
 const optionalText = (text: string) => (text.trim() ? text.trim() : null);
 
 /** The booking fields each action changes (matches the security rules). */
-function changesFor(action: BookingAction): Partial<BookingDocument> {
+function changesFor(action: BookingAction, before: BookingDocument): Partial<BookingDocument> {
   switch (action.type) {
     case 'accept':
       return { status: 'accepted', quote_amount: action.quoteAmount, proposed_date: null };
+    case 'sendQuote': {
+      const items = action.items.map((item) => ({ label: item.label.trim(), amount: item.amount }));
+      const total = items.reduce((sum, item) => sum + item.amount, 0);
+      return {
+        quote: { items, total, note: optionalText(action.note) },
+        quote_amount: total,
+        quote_status: 'sent',
+        quote_feedback: null,
+        proposed_date: action.date,
+      };
+    }
+    case 'acceptQuote':
+      return {
+        status: 'accepted',
+        quote_status: 'accepted',
+        preferred_date: before.proposed_date ?? before.preferred_date,
+        proposed_date: null,
+      };
+    case 'requestRevision':
+      return { quote_status: 'revision_requested', quote_feedback: optionalText(action.feedback), proposed_date: null };
     case 'decline':
       return { status: 'declined', decline_reason: optionalText(action.reason), proposed_date: null };
     case 'propose':
@@ -248,10 +300,11 @@ export async function applyBookingAction(bookingId: string, action: BookingActio
   const snapshot = await getDoc(ref);
   if (!snapshot.exists()) throw new Error('This booking no longer exists.');
   const before = snapshot.data() as BookingDocument;
-  const changes = { ...changesFor(action), updated_at: serverTimestamp() };
+  const changes = { ...changesFor(action, before), updated_at: serverTimestamp() };
 
-  const isBuilderReply = action.type === 'accept' || action.type === 'decline' || action.type === 'propose';
-  const firstReply = isBuilderReply && before.status === 'pending' && !before.proposed_date;
+  const isBuilderReply = ['accept', 'decline', 'propose', 'sendQuote'].includes(action.type);
+  const firstReply =
+    isBuilderReply && before.status === 'pending' && !before.proposed_date && before.quote_status !== 'sent' && !before.quote;
 
   if (firstReply && before.created_at) {
     // Running average of how fast the builder replies to new requests.
@@ -274,7 +327,7 @@ export async function applyBookingAction(bookingId: string, action: BookingActio
     await updateDoc(ref, changes);
   }
 
-  const after = { ...before, ...changesFor(action) } as BookingDocument;
+  const after = { ...before, ...changesFor(action, before) } as BookingDocument;
   if (after.status !== before.status) {
     // Keep the inbox in step. Fails harmlessly when nobody has messaged yet.
     updateDoc(doc(db, 'conversations', bookingId), { status: after.status }).catch(() => undefined);
@@ -295,6 +348,21 @@ function notifyBookingChange(bookingId: string, before: BookingDocument, after: 
     return toBuilder('Booking moved', `${after.customer_name} moved their ${after.service.toLowerCase()} booking to ${formatShortDate(after.preferred_date)}. Please confirm.`);
   }
   if (before.status === after.status) {
+    if (after.quote_status === 'sent' && after.quote !== before.quote && after.quote) {
+      const when = after.proposed_date ? ` for ${formatShortDate(after.proposed_date)}` : '';
+      return toCustomer(
+        before.quote ? 'Quote updated' : 'New quote',
+        `${after.builder_name} quoted ${formatMoney(after.quote.total)}${when}. Tap to review and accept.`,
+      );
+    }
+    if (after.quote_status === 'revision_requested' && before.quote_status === 'sent') {
+      return toBuilder(
+        'Quote changes requested',
+        after.quote_feedback
+          ? `${after.customer_name}: “${after.quote_feedback}”`
+          : `${after.customer_name} asked you to revise your quote.`,
+      );
+    }
     if (after.proposed_date && after.proposed_date !== before.proposed_date) {
       return toCustomer('New date proposed', `${after.builder_name} can do ${formatShortDate(after.proposed_date)} instead.${quote}`);
     }
@@ -302,6 +370,12 @@ function notifyBookingChange(bookingId: string, before: BookingDocument, after: 
   }
   switch (after.status) {
     case 'accepted':
+      if (before.quote_status === 'sent' && after.quote) {
+        return toBuilder(
+          'Quote accepted',
+          `${after.customer_name} accepted your ${formatMoney(after.quote.total)} quote. The job is confirmed for ${formatShortDate(after.preferred_date)}.`,
+        );
+      }
       return before.proposed_date
         ? toBuilder('New date agreed', `${after.customer_name} agreed to ${formatShortDate(after.preferred_date)}. The job is confirmed.`)
         : toCustomer('Booking accepted', `${after.builder_name} accepted your ${after.service.toLowerCase()} request.${quote}`);
@@ -352,11 +426,11 @@ export function groupBookings(
   for (const booking of bookings) {
     if (perspective === 'builder') {
       // A pending request with a counter-offer is waiting on the customer, not the builder.
-      if (booking.status === 'pending' && !booking.proposedDate) groups.needsAction.push(booking);
+      if (booking.status === 'pending' && !awaitsCustomer(booking)) groups.needsAction.push(booking);
       else if (booking.status === 'pending') groups.upcoming.push(booking);
       else if (booking.status === 'accepted') groups.upcoming.push(booking);
       else groups.past.push(booking);
-    } else if (booking.status === 'pending' && booking.proposedDate) {
+    } else if (awaitsCustomer(booking)) {
       groups.needsAction.push(booking);
     } else if (booking.status === 'pending' || booking.status === 'accepted') {
       groups.upcoming.push(booking);

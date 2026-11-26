@@ -1,5 +1,6 @@
-import { FileCheck2, ImagePlus, Trash2 } from 'lucide-react-native';
-import { useState } from 'react';
+import type { ImagePickerAsset } from 'expo-image-picker';
+import { BadgeCheck, FileCheck2, ImagePlus, Trash2 } from 'lucide-react-native';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Linking, Pressable, Text, View } from 'react-native';
 import { useThemeColors } from '@/shared/theme';
 import { failureMessage, toast } from '@/shared/components/toast';
@@ -10,8 +11,11 @@ import {
   usePortfolio,
   useRemoveBuilderDocument,
   useRemovePortfolioPhoto,
+  useUpdatePortfolioPhoto,
   useUploadBuilderDocument,
 } from '../hooks/use-portfolio';
+import { PhotoDetailsSheet } from './photo-details-sheet';
+import { KindBadge } from './photo-viewer';
 import {
   DOCUMENT_LABELS,
   MAX_PORTFOLIO_PHOTOS,
@@ -21,6 +25,8 @@ import {
   thumbnailUrl,
   type DocumentReviewStatus,
   type DocumentType,
+  type PhotoDetails,
+  type PortfolioPhoto,
 } from '../services/portfolio-service';
 
 /** Picks a photo and reports the outcome; returns null when the user backed out. */
@@ -44,22 +50,52 @@ const uploadMessage = (error: unknown) =>
   error instanceof Error && /5 MB|not configured/.test(error.message) ? error.message : failureMessage(error, 'upload this photo');
 
 /** The builder's public work photos, with add and remove. */
+const NO_DETAILS: PhotoDetails = { caption: '', kind: null, bookingId: null, service: null };
+
+/** The photo whose details sheet is open: a newly picked one, or an existing one being edited. */
+type Editing = { mode: 'add'; asset: ImagePickerAsset } | { mode: 'edit'; photo: PortfolioPhoto } | null;
+
 export function PortfolioManager({ builderId }: { builderId: string }) {
   const colors = useThemeColors();
   const photos = usePortfolio(builderId);
   const add = useAddPortfolioPhoto(builderId);
+  const update = useUpdatePortfolioPhoto(builderId);
   const remove = useRemovePortfolioPhoto(builderId);
   const count = photos.data?.length ?? 0;
+  const [editing, setEditing] = useState<Editing>(null);
+
+  const initialDetails = useMemo<PhotoDetails>(
+    () =>
+      editing?.mode === 'edit'
+        ? { caption: editing.photo.caption ?? '', kind: editing.photo.kind, bookingId: editing.photo.bookingId, service: editing.photo.service }
+        : NO_DETAILS,
+    [editing],
+  );
 
   const onAdd = async () => {
     try {
       const asset = await choosePhoto();
-      if (!asset) return;
-      await add.mutateAsync(asset);
-      toast.success('Photo added to your profile.');
+      if (asset) setEditing({ mode: 'add', asset });
     } catch (error) {
-      console.warn('Portfolio upload failed:', error);
+      console.warn('Choosing a photo failed:', error);
       toast.error(uploadMessage(error));
+    }
+  };
+
+  const onSubmitDetails = async (details: PhotoDetails) => {
+    if (!editing) return;
+    try {
+      if (editing.mode === 'add') {
+        await add.mutateAsync({ asset: editing.asset, details });
+        toast.success('Photo added to your profile.');
+      } else {
+        await update.mutateAsync({ photo: editing.photo, details });
+        toast.success('Photo details saved.');
+      }
+      setEditing(null);
+    } catch (error) {
+      console.warn('Saving portfolio photo failed:', error);
+      toast.error(editing.mode === 'add' ? uploadMessage(error) : failureMessage(error, 'save these details'));
     }
   };
 
@@ -85,12 +121,27 @@ export function PortfolioManager({ builderId }: { builderId: string }) {
   return (
     <View>
       <Text className="mb-3 font-body text-sm text-muted">
-        Show customers your best work. Up to {MAX_PORTFOLIO_PHOTOS} photos, 5 MB each.
+        Show customers your best work. Up to {MAX_PORTFOLIO_PHOTOS} photos, 5 MB each. Tap a photo to add a caption, mark it
+        before or after, or link it to a completed job.
       </Text>
       <View className="flex-row flex-wrap gap-2">
         {photos.data?.map((photo) => (
-          <View key={photo.id} className="h-24 w-24 overflow-hidden rounded-2xl bg-subtle">
-            <Image source={{ uri: thumbnailUrl(photo.url, 300) }} className="h-full w-full" accessibilityLabel="Work photo" />
+          <Pressable
+            key={photo.id}
+            accessibilityRole="button"
+            accessibilityLabel={photo.caption ? `Edit photo: ${photo.caption}` : 'Edit photo details'}
+            onPress={() => setEditing({ mode: 'edit', photo })}
+            className="h-24 w-24 overflow-hidden rounded-2xl bg-subtle active:opacity-85"
+          >
+            <Image source={{ uri: thumbnailUrl(photo.url, 300) }} className="h-full w-full" />
+            <View className="absolute bottom-1 left-1 flex-row gap-1">
+              <KindBadge kind={photo.kind} />
+              {photo.bookingId ? (
+                <View className="h-5 w-5 items-center justify-center rounded-full bg-black/60">
+                  <BadgeCheck size={12} color="#FFFFFF" />
+                </View>
+              ) : null}
+            </View>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Remove photo"
@@ -99,7 +150,7 @@ export function PortfolioManager({ builderId }: { builderId: string }) {
             >
               <Trash2 size={16} color="#FFFFFF" />
             </Pressable>
-          </View>
+          </Pressable>
         ))}
         {count < MAX_PORTFOLIO_PHOTOS ? (
           <Pressable
@@ -121,6 +172,17 @@ export function PortfolioManager({ builderId }: { builderId: string }) {
         ) : null}
       </View>
       {add.isPending ? <Text className="mt-2 font-medium text-sm text-muted">Uploading photo…</Text> : null}
+      <PhotoDetailsSheet
+        visible={editing !== null}
+        builderId={builderId}
+        previewUri={editing ? (editing.mode === 'add' ? editing.asset.uri : thumbnailUrl(editing.photo.url, 800)) : null}
+        initial={initialDetails}
+        title={editing?.mode === 'edit' ? 'Photo details' : 'Add work photo'}
+        submitLabel={editing?.mode === 'edit' ? 'Save' : 'Upload photo'}
+        busy={add.isPending || update.isPending}
+        onSubmit={onSubmitDetails}
+        onClose={() => setEditing(null)}
+      />
     </View>
   );
 }

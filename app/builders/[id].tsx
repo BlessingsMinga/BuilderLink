@@ -1,12 +1,12 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { BadgeCheck, Bookmark, Check, ImageIcon, MapPin, MessageSquareText, Star } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
-import { Image, Modal, Pressable, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Image, Pressable, Text, View } from 'react-native';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
 import { useBuilder } from '@/features/builders/hooks/use-builders';
 import { CHECK_LABELS, formatResponseTime } from '@/features/builders/services/builder-service';
 import { useFavoriteBuilderIds, useToggleFavorite } from '@/features/favorites/hooks/use-favorites';
+import { KindBadge, PhotoViewer } from '@/features/portfolio/components/photo-viewer';
 import { usePortfolio } from '@/features/portfolio/hooks/use-portfolio';
 import { thumbnailUrl } from '@/features/portfolio/services/portfolio-service';
 import { useBuilderReviews } from '@/features/reviews/hooks/use-reviews';
@@ -47,7 +47,7 @@ export default function BuilderDetail() {
   const toggleFavorite = useToggleFavorite(session?.userId);
   const [favoriteError, setFavoriteError] = useState<string | null>(null);
   const portfolio = usePortfolio(builder?.id);
-  const [openPhoto, setOpenPhoto] = useState<string | null>(null);
+  const [openPhoto, setOpenPhoto] = useState<number | null>(null);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
 
@@ -261,16 +261,24 @@ export default function BuilderDetail() {
                 </View>
               ) : (
                 <View className="flex-row flex-wrap" style={{ gap: GRID_GAP }}>
-                  {visiblePhotos.map((photo) => (
+                  {visiblePhotos.map((photo, index) => (
                     <Pressable
                       key={photo.id}
                       accessibilityRole="imagebutton"
                       accessibilityLabel={photo.caption ? `Work photo: ${photo.caption}` : 'Open work photo'}
-                      onPress={() => setOpenPhoto(photo.url)}
+                      onPress={() => setOpenPhoto(index)}
                       style={{ width: tileWidth }}
                       className="overflow-hidden rounded-2xl active:opacity-85"
                     >
                       <Image source={{ uri: thumbnailUrl(photo.url, 480) }} style={{ width: tileWidth, height: tileWidth }} className="bg-subtle" />
+                      <View className="absolute left-2 top-2 flex-row gap-1.5">
+                        <KindBadge kind={photo.kind} />
+                        {photo.bookingId ? (
+                          <View accessibilityLabel="Job done on BuilderLink" className="h-6 w-6 items-center justify-center rounded-full bg-black/60">
+                            <BadgeCheck size={14} color="#FFFFFF" />
+                          </View>
+                        ) : null}
+                      </View>
                       {photo.caption ? (
                         <View className="absolute bottom-2 left-2 right-2 rounded-lg bg-black/70 px-2 py-1">
                           <Text numberOfLines={1} className="font-semibold text-xs text-white">
@@ -350,16 +358,7 @@ export default function BuilderDetail() {
         )}
       </Screen>
 
-      <Modal visible={openPhoto !== null} transparent animationType="fade" onRequestClose={() => setOpenPhoto(null)}>
-        <View className="flex-1 bg-black">
-          <SafeAreaView edges={['top']} className="items-end px-4 py-2">
-            <HeaderButton onHero label="Close photo" onPress={() => setOpenPhoto(null)}>
-              <Text className="font-bold text-2xl text-white">×</Text>
-            </HeaderButton>
-          </SafeAreaView>
-          {openPhoto ? <Image source={{ uri: openPhoto }} resizeMode="contain" className="flex-1" accessibilityLabel="Work photo" /> : null}
-        </View>
-      </Modal>
+      <PhotoViewer photos={photos} openIndex={openPhoto} onClose={() => setOpenPhoto(null)} />
     </Protected>
   );
 }

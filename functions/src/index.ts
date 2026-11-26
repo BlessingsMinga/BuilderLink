@@ -29,6 +29,9 @@ type Booking = {
   quote_amount?: number | null;
   decline_reason?: string | null;
   cancel_reason?: string | null;
+  quote?: { items: { label: string; amount: number }[]; total: number; note?: string | null } | null;
+  quote_status?: 'sent' | 'accepted' | 'revision_requested' | null;
+  quote_feedback?: string | null;
   created_at?: FirebaseFirestore.Timestamp | null;
 };
 
@@ -109,8 +112,15 @@ export const onBookingUpdated = onDocumentUpdated({ document: 'bookings/{booking
   // The customer picked a new date; the booking waits for the builder again.
   const rescheduled = after.status === 'pending' && after.preferred_date !== before.preferred_date;
 
-  // The builder's first reply to a request: accept, decline, or a counter-offer.
-  const firstReply = before.status === 'pending' && !before.proposed_date && (after.status !== 'pending' || proposedNow);
+  const quoteSentNow = after.quote_status === 'sent' && JSON.stringify(after.quote) !== JSON.stringify(before.quote);
+  const quoteRevisionRequested = before.quote_status === 'sent' && after.quote_status === 'revision_requested';
+
+  // The builder's first reply to a request: accept, decline, a counter-offer or a quote.
+  const firstReply =
+    before.status === 'pending' &&
+    !before.proposed_date &&
+    !before.quote &&
+    (after.status !== 'pending' || proposedNow || quoteSentNow);
   if (firstReply && after.status !== 'cancelled' && before.created_at) {
     const minutes = Math.max(0, Math.round((Date.now() - before.created_at.toMillis()) / 60_000));
     tasks.push(recordResponseTime(after.builder_id, minutes));
@@ -127,7 +137,15 @@ export const onBookingUpdated = onDocumentUpdated({ document: 'bookings/{booking
   } else if (before.status !== after.status) {
     switch (after.status) {
       case 'accepted':
-        if (before.proposed_date) {
+        if (before.quote_status === 'sent' && after.quote) {
+          tasks.push(
+            notify(after.builder_id, {
+              title: 'Quote accepted',
+              body: `${after.customer_name} accepted your ${formatMoney(after.quote.total)} quote. The job is confirmed for ${formatDate(after.preferred_date)}.`,
+              data,
+            }),
+          );
+        } else if (before.proposed_date) {
           tasks.push(
             notify(after.builder_id, {
               title: 'New date agreed',
@@ -182,6 +200,25 @@ export const onBookingUpdated = onDocumentUpdated({ document: 'bookings/{booking
         );
         break;
     }
+  } else if (quoteSentNow && after.quote) {
+    const when = after.proposed_date ? ` for ${formatDate(after.proposed_date)}` : '';
+    tasks.push(
+      notify(after.customer_id, {
+        title: before.quote ? 'Quote updated' : 'New quote',
+        body: `${after.builder_name} quoted ${formatMoney(after.quote.total)}${when}. Tap to review and accept.`,
+        data,
+      }),
+    );
+  } else if (quoteRevisionRequested) {
+    tasks.push(
+      notify(after.builder_id, {
+        title: 'Quote changes requested',
+        body: after.quote_feedback
+          ? `${after.customer_name}: “${after.quote_feedback}”`
+          : `${after.customer_name} asked you to revise your quote.`,
+        data,
+      }),
+    );
   } else if (proposedNow && after.proposed_date) {
     const quote = after.quote_amount != null ? ` Quote: ${formatMoney(after.quote_amount)}.` : '';
     tasks.push(

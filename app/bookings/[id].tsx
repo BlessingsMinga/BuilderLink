@@ -6,6 +6,14 @@ import { Alert, Pressable, Text, View } from 'react-native';
 import { useAuthStore } from '@/features/authentication/store/auth-store';
 import { BOOKING_STEPS, StatusBadge, completedSteps } from '@/features/bookings/components/booking-card';
 import { DateField } from '@/features/bookings/components/date-field';
+import { JobProgress } from '@/features/bookings/components/job-progress';
+import {
+  QuoteEditor,
+  QuoteSummary,
+  parseQuoteDraft,
+  quoteToDraft,
+  type QuoteDraftLine,
+} from '@/features/bookings/components/quote';
 import { useBooking, useBookingAction } from '@/features/bookings/hooks/use-bookings';
 import {
   formatBookingDate,
@@ -27,12 +35,15 @@ import { failureMessage, toast } from '@/shared/components/toast';
 import { useThemeColors } from '@/shared/theme';
 
 /** A reply that needs extra input before it is sent. */
-type Panel = 'accept' | 'decline' | 'propose' | 'cancel' | 'reschedule';
+type Panel = 'quote' | 'decline' | 'cancel' | 'reschedule' | 'revision';
 
 const SUCCESS: Record<BookingAction['type'], string> = {
   accept: 'Request accepted. The customer has been notified.',
   decline: 'Request declined. The customer has been notified.',
   propose: 'New date sent. We’ll let you know when the customer replies.',
+  sendQuote: 'Quote sent. We’ll let you know when the customer replies.',
+  acceptQuote: 'Quote accepted. Your booking is confirmed.',
+  requestRevision: 'Request sent. We’ll let you know when the builder sends a new quote.',
   complete: 'Job marked as completed. Nice work!',
   cancel: 'Booking cancelled.',
   acceptProposal: 'New date accepted. Your booking is confirmed.',
@@ -44,13 +55,24 @@ function statusExplanation(booking: Booking, perspective: BookingPerspective): s
   const other = perspective === 'builder' ? booking.customerName : booking.builderName;
   switch (booking.status) {
     case 'pending':
+      if (booking.quoteStatus === 'sent' && booking.quote) {
+        const when = booking.proposedDate ? ` for ${formatBookingDate(booking.proposedDate)}` : '';
+        return perspective === 'builder'
+          ? `You sent a quote of ${formatMoney(booking.quote.total)}${when}. Waiting for ${other} to reply.`
+          : `${other} sent a quote of ${formatMoney(booking.quote.total)}${when}. Accept it to confirm the booking, or ask for changes.`;
+      }
+      if (booking.quoteStatus === 'revision_requested') {
+        return perspective === 'builder'
+          ? `${other} asked you to revise your quote. Send a new one, accept as is, or decline.`
+          : `You asked ${other} for a revised quote. We’ll notify you when it arrives.`;
+      }
       if (booking.proposedDate) {
         return perspective === 'builder'
           ? `You proposed ${formatBookingDate(booking.proposedDate)}. Waiting for ${other} to agree.`
           : `${other} can’t make ${formatBookingDate(booking.preferredDate)} and proposed ${formatBookingDate(booking.proposedDate)} instead.`;
       }
       return perspective === 'builder'
-        ? 'Accept, decline or propose another date. The customer is told straight away.'
+        ? 'Send a quote, accept or decline. You can offer another date with your quote. The customer is told straight away.'
         : `Waiting for ${other} to respond. We’ll notify you when they do.`;
     case 'accepted':
       return perspective === 'builder'
@@ -74,7 +96,8 @@ export default function BookingDetail() {
   const bookingAction = useBookingAction();
 
   const [panel, setPanel] = useState<Panel | null>(null);
-  const [quote, setQuote] = useState('');
+  const [quoteLines, setQuoteLines] = useState<QuoteDraftLine[]>([]);
+  const [quoteNote, setQuoteNote] = useState('');
   const [reason, setReason] = useState('');
   const [proposedDate, setProposedDate] = useState<string | null>(null);
   const [panelError, setPanelError] = useState<string | null>(null);
@@ -92,9 +115,11 @@ export default function BookingDetail() {
     setPanel(next);
     setPanelError(null);
     setActionError(null);
-    setQuote(booking?.quoteAmount != null ? String(booking.quoteAmount) : '');
+    setQuoteLines(quoteToDraft(booking?.quote ?? null));
+    setQuoteNote(booking?.quote?.note ?? '');
     setReason('');
-    setProposedDate(null);
+    // A revised quote keeps the date offered with the previous one.
+    setProposedDate(next === 'quote' ? (booking?.proposedDate ?? null) : null);
   };
 
   const run = async (action: BookingAction) => {
@@ -120,19 +145,22 @@ export default function BookingDetail() {
   const submitPanel = () => {
     if (!booking || !panel) return;
     setPanelError(null);
-    const quoteText = quote.replace(/[\s,]/g, '');
-    const quoteAmount = quoteText === '' ? null : Number(quoteText);
-    if (quoteAmount !== null && (!Number.isInteger(quoteAmount) || quoteAmount < 0)) {
-      setPanelError('Enter the price as a whole number of kwacha, e.g. 150000.');
-      return;
-    }
-    if (panel === 'accept') run({ type: 'accept', quoteAmount });
     if (panel === 'decline') run({ type: 'decline', reason });
     if (panel === 'cancel') run({ type: 'cancel', reason });
-    if (panel === 'propose') {
-      if (!proposedDate) return setPanelError('Choose the date you can do the job.');
-      if (proposedDate === booking.preferredDate) return setPanelError('Pick a different date from the one requested.');
-      run({ type: 'propose', date: proposedDate, quoteAmount });
+    if (panel === 'revision') run({ type: 'requestRevision', feedback: reason });
+    if (panel === 'quote') {
+      const parsed = parseQuoteDraft(quoteLines);
+      if ('error' in parsed) return setPanelError(parsed.error);
+      if (proposedDate && proposedDate === booking.preferredDate) {
+        return setPanelError('Pick a different date from the one requested, or leave the date empty.');
+      }
+      if (parsed.items.length > 0) {
+        run({ type: 'sendQuote', items: parsed.items, note: quoteNote, date: proposedDate });
+      } else if (proposedDate) {
+        run({ type: 'propose', date: proposedDate, quoteAmount: booking.quoteAmount });
+      } else {
+        setPanelError('Add at least one priced line, or choose another date.');
+      }
     }
     if (panel === 'reschedule') {
       if (!proposedDate) return setPanelError('Choose the new date.');
@@ -144,7 +172,13 @@ export default function BookingDetail() {
   const busy = bookingAction.isPending;
   let footer: ReactNode;
   if (booking && panel) {
-    const confirmLabel = { accept: 'Accept request', decline: 'Decline request', propose: 'Send new date', cancel: 'Cancel booking', reschedule: 'Move booking' }[panel];
+    const confirmLabel = {
+      quote: booking.quote ? 'Send revised quote' : 'Send quote',
+      decline: 'Decline request',
+      cancel: 'Cancel booking',
+      reschedule: 'Move booking',
+      revision: 'Ask for changes',
+    }[panel];
     footer = (
       <View>
         <ErrorText>{actionError}</ErrorText>
@@ -162,8 +196,20 @@ export default function BookingDetail() {
     const buttons: { label: string; onPress: () => void; outline?: boolean }[] = [];
     if (perspective === 'builder' && booking.status === 'pending') {
       buttons.push({ label: 'Decline', outline: true, onPress: () => openPanel('decline') });
-      if (!booking.proposedDate) buttons.push({ label: 'Other date', outline: true, onPress: () => openPanel('propose') });
-      buttons.push({ label: 'Accept', onPress: () => openPanel('accept') });
+      if (booking.quoteStatus === 'sent') {
+        buttons.push({ label: 'Revise quote', outline: true, onPress: () => openPanel('quote') });
+      } else if (!booking.proposedDate) {
+        buttons.push({ label: booking.quote ? 'New quote' : 'Quote', outline: true, onPress: () => openPanel('quote') });
+        buttons.push({
+          label: 'Accept',
+          onPress: () =>
+            confirmThen(
+              'Accept',
+              booking.quote ? `Accept this job at your last quote of ${formatMoney(booking.quote.total)}?` : 'Accept this request without a quote?',
+              { type: 'accept', quoteAmount: booking.quoteAmount },
+            ),
+        });
+      }
     }
     if (perspective === 'builder' && booking.status === 'accepted') {
       buttons.push({
@@ -172,7 +218,16 @@ export default function BookingDetail() {
       });
     }
     if (perspective === 'customer' && (booking.status === 'pending' || booking.status === 'accepted')) {
-      if (booking.status === 'pending' && booking.proposedDate) {
+      if (booking.status === 'pending' && booking.quoteStatus === 'sent' && booking.quote) {
+        const total = formatMoney(booking.quote.total);
+        const date = formatBookingDate(booking.proposedDate ?? booking.preferredDate);
+        buttons.push({ label: 'Cancel', outline: true, onPress: () => openPanel('cancel') });
+        buttons.push({ label: 'Changes', outline: true, onPress: () => openPanel('revision') });
+        buttons.push({
+          label: 'Accept quote',
+          onPress: () => confirmThen('Accept quote', `Confirm your booking for ${date} at ${total}?`, { type: 'acceptQuote' }),
+        });
+      } else if (booking.status === 'pending' && booking.proposedDate) {
         buttons.push({ label: 'Cancel booking', outline: true, onPress: () => openPanel('cancel') });
         const date = booking.proposedDate;
         buttons.push({
@@ -250,7 +305,25 @@ export default function BookingDetail() {
               {booking.status === 'cancelled' && booking.cancelReason ? (
                 <Text className="mt-2 font-body text-sm text-muted">Reason: “{booking.cancelReason}”</Text>
               ) : null}
+              {booking.status === 'pending' && booking.quoteStatus === 'revision_requested' && booking.quoteFeedback ? (
+                <Text className="mt-2 font-body text-sm text-muted">Requested changes: “{booking.quoteFeedback}”</Text>
+              ) : null}
             </View>
+
+            {booking.quote ? (
+              <View className="mt-4">
+                <QuoteSummary
+                  quote={booking.quote}
+                  title={
+                    booking.quoteStatus === 'accepted'
+                      ? 'Agreed quote'
+                      : booking.quoteStatus === 'revision_requested'
+                        ? 'Previous quote'
+                        : 'Quote'
+                  }
+                />
+              </View>
+            ) : null}
 
             {steps !== null ? (
               <>
@@ -269,7 +342,7 @@ export default function BookingDetail() {
               {booking.proposedDate && booking.status === 'pending' ? (
                 <Detail icon={<CalendarClock size={20} color={colors.warn} />} label="First asked for" value={formatBookingDate(booking.preferredDate)} />
               ) : null}
-              {booking.quoteAmount != null ? (
+              {booking.quoteAmount != null && !booking.quote ? (
                 <Detail icon={<Banknote size={20} color={colors.brand} />} label="Builder’s quote" value={formatMoney(booking.quoteAmount)} />
               ) : null}
               <Detail icon={<MapPin size={20} color={colors.brand} />} label="Location" value={booking.location} />
@@ -297,35 +370,43 @@ export default function BookingDetail() {
               <ChevronRight size={20} color={colors.faint} />
             </Pressable>
 
+            {booking.status === 'accepted' || booking.status === 'completed' ? (
+              <JobProgress booking={booking} perspective={perspective} />
+            ) : null}
+
             {panel ? (
               <View className="mt-8 gap-4 rounded-2xl border border-line bg-surface p-4">
-                {panel === 'accept' ? (
+                {panel === 'quote' ? (
                   <>
-                    <Text className="font-heading text-lg text-ink">Accept this request</Text>
-                    <FormField
-                      label="Your price in kwacha (optional)"
-                      value={quote}
-                      onChangeText={setQuote}
-                      keyboardType="number-pad"
-                      placeholder="e.g. 150000"
-                      maxLength={12}
-                    />
+                    <Text className="font-heading text-lg text-ink">{booking.quote ? 'Revise your quote' : 'Send a quote'}</Text>
+                    <Text className="font-body text-sm text-muted">
+                      {booking.customerName} can accept your quote, which confirms the booking, or ask for changes.
+                    </Text>
+                    <QuoteEditor lines={quoteLines} onChangeLines={setQuoteLines} note={quoteNote} onChangeNote={setQuoteNote} />
+                    <View className="gap-2">
+                      <Text className="font-medium text-sm text-ink">Different date (optional)</Text>
+                      <Text className="font-body text-sm text-muted">
+                        They asked for {formatBookingDate(booking.preferredDate)}. Leave empty if that works for you.
+                      </Text>
+                      <DateField value={proposedDate} onChange={setProposedDate} />
+                      {proposedDate ? (
+                        <Pressable accessibilityRole="button" onPress={() => setProposedDate(null)} className="self-start py-1 active:opacity-60">
+                          <Text className="font-semibold text-sm text-brand">Keep the requested date</Text>
+                        </Pressable>
+                      ) : null}
+                    </View>
                   </>
                 ) : null}
-                {panel === 'propose' ? (
+                {panel === 'revision' ? (
                   <>
-                    <Text className="font-heading text-lg text-ink">Propose another date</Text>
-                    <Text className="font-body text-sm text-muted">
-                      {booking.customerName} asked for {formatBookingDate(booking.preferredDate)}. They can accept your date or cancel.
-                    </Text>
-                    <DateField value={proposedDate} onChange={setProposedDate} />
+                    <Text className="font-heading text-lg text-ink">Ask for changes</Text>
                     <FormField
-                      label="Your price in kwacha (optional)"
-                      value={quote}
-                      onChangeText={setQuote}
-                      keyboardType="number-pad"
-                      placeholder="e.g. 150000"
-                      maxLength={12}
+                      label={`What should ${booking.builderName} change? (optional)`}
+                      value={reason}
+                      onChangeText={setReason}
+                      multiline
+                      placeholder="e.g. Can you use my own materials and lower the price?"
+                      maxLength={300}
                     />
                   </>
                 ) : null}

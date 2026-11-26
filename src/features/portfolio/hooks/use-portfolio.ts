@@ -6,9 +6,11 @@ import {
   fetchPortfolio,
   removeBuilderDocument,
   removePortfolioPhoto,
+  updatePortfolioPhoto,
   uploadBuilderDocument,
   type BuilderDocument,
   type DocumentType,
+  type PhotoDetails,
   type PortfolioPhoto,
 } from '../services/portfolio-service';
 
@@ -23,7 +25,15 @@ export function usePortfolio(builderId: string | undefined) {
 export function useAddPortfolioPhoto(builderId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (asset: ImagePickerAsset) => addPortfolioPhoto(builderId!, asset),
+    mutationFn: ({ asset, details }: { asset: ImagePickerAsset; details: PhotoDetails }) => addPortfolioPhoto(builderId!, asset, details),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['portfolio', builderId] }),
+  });
+}
+
+export function useUpdatePortfolioPhoto(builderId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ photo, details }: { photo: PortfolioPhoto; details: PhotoDetails }) => updatePortfolioPhoto(photo, details),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['portfolio', builderId] }),
   });
 }
